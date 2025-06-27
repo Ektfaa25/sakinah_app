@@ -3,6 +3,13 @@
 - `lib/main.dart` - Main app entry point with theme configuration and routing setup.
 - `lib/core/theme/app_theme.dart` - App-wide theme with pastel colors and glassy UI styling.
 - `lib/core/theme/app_colors.dart` - Color palette definitions (sage green, dusty rose, cream, lavender).
+- `lib/core/theme/app_typography.dart` - Typography configuration with Amiri font for Arabic and font fallbacks.
+- `lib/core/router/app_router.dart` - GoRouter configuration with comprehensive routing setup.
+- `lib/core/router/app_routes.dart` - Route names and parameters definitions.
+- `lib/l10n/app_localizations.dart` - Generated localization class for i18n support.
+- `lib/l10n/app_en.arb` - English translation strings.
+- `lib/l10n/app_ar.arb` - Arabic translation strings.
+- `l10n.yaml` - Localization configuration file.
 - `lib/features/mood/presentation/pages/mood_selection_page.dart` - Main mood selection interface.
 - `lib/features/mood/presentation/widgets/mood_card.dart` - Individual mood selection cards with emoji and gradients.
 - `lib/features/mood/domain/entities/mood.dart` - Mood entity model.
@@ -21,6 +28,7 @@
 - `lib/shared/widgets/glassy_container.dart` - Reusable glassy UI container component.
 - `lib/shared/widgets/custom_button.dart` - Custom button with pastel styling.
 - `assets/fonts/Amiri-Regular.ttf` - Arabic calligraphy font file.
+- `assets/fonts/Amiri-Bold.ttf` - Arabic calligraphy font file (bold).
 - `assets/data/azkar_database.json` - Local azkar data with emotional mappings.
 
 ### Notes
@@ -33,15 +41,15 @@
 
 ## Tasks
 
-- [ ] 1.0 Setup Project Architecture and Core Infrastructure
-  - [ ] 1.1 Configure Flutter project with Clean Architecture folder structure (lib/core, lib/features, lib/shared)
-  - [ ] 1.2 Add dependencies to pubspec.yaml (flutter_bloc, drift, drift_flutter, supabase_flutter, audioplayers, backdrop_filter)
-  - [ ] 1.3 Initialize Drift database with table definitions and create DAOs for local storage
-  - [ ] 1.4 Setup Supabase client configuration and environment variables
-  - [ ] 1.5 Create base repository interfaces and dependency injection setup
-  - [ ] 1.6 Configure app routing with go_router for navigation
-  - [ ] 1.7 Setup localization support for Arabic and English (flutter_localizations)
-  - [ ] 1.8 Add Amiri font to assets and configure font fallbacks
+- [x] 1.0 Setup Project Architecture and Core Infrastructure
+  - [x] 1.1 Configure Flutter project with Clean Architecture folder structure (lib/core, lib/features, lib/shared)
+  - [x] 1.2 Add dependencies to pubspec.yaml (flutter_bloc, drift, drift_flutter, supabase_flutter, audioplayers, backdrop_filter)
+  - [x] 1.3 Initialize Drift database with table definitions and create DAOs for local storage
+  - [x] 1.4 Setup Supabase client configuration and environment variables
+  - [x] 1.5 Create base repository interfaces and dependency injection setup
+  - [x] 1.6 Configure app routing with go_router for navigation
+  - [x] 1.7 Setup localization support for Arabic and English (flutter_localizations)
+  - [x] 1.8 Add Amiri font to assets and configure font fallbacks
 
 - [ ] 2.0 Implement Emotion-Based Mood Selection System
   - [ ] 2.1 Create Mood entity with emotional states (happy, sad, anxious, grateful, stressed, peaceful)

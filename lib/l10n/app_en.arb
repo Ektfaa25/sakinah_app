@@ -1,0 +1,103 @@
+{
+  "@@locale": "en",
+  "appTitle": "Sakīnah",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "welcome": "Welcome",
+  "@welcome": {
+    "description": "Welcome message"
+  },
+  "howAreYouFeeling": "How are you feeling today?",
+  "@howAreYouFeeling": {
+    "description": "Mood selection prompt"
+  },
+  "selectMood": "Select your mood",
+  "@selectMood": {
+    "description": "Instruction to select mood"
+  },
+  "happy": "Happy",
+  "@happy": {
+    "description": "Happy mood"
+  },
+  "sad": "Sad",
+  "@sad": {
+    "description": "Sad mood"
+  },
+  "anxious": "Anxious",
+  "@anxious": {
+    "description": "Anxious mood"
+  },
+  "grateful": "Grateful",
+  "@grateful": {
+    "description": "Grateful mood"
+  },
+  "stressed": "Stressed",
+  "@stressed": {
+    "description": "Stressed mood"
+  },
+  "peaceful": "Peaceful",
+  "@peaceful": {
+    "description": "Peaceful mood"
+  },
+  "azkarForYou": "Azkar for you",
+  "@azkarForYou": {
+    "description": "Azkar recommendations title"
+  },
+  "markAsCompleted": "Mark as completed",
+  "@markAsCompleted": {
+    "description": "Button to mark azkar as completed"
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "Completed status"
+  },
+  "myProgress": "My Progress",
+  "@myProgress": {
+    "description": "Progress page title"
+  },
+  "streak": "Streak",
+  "@streak": {
+    "description": "Streak counter label"
+  },
+  "days": "days",
+  "@days": {
+    "description": "Days unit"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings page title"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home tab label"
+  },
+  "azkar": "Azkar",
+  "@azkar": {
+    "description": "Azkar tab label"
+  },
+  "progress": "Progress",
+  "@progress": {
+    "description": "Progress tab label"
+  },
+  "bismillah": "In the name of Allah",
+  "@bismillah": {
+    "description": "Bismillah translation"
+  },
+  "alhamdulillah": "All praise is due to Allah",
+  "@alhamdulillah": {
+    "description": "Alhamdulillah translation"
+  },
+  "subhanallah": "Glory be to Allah",
+  "@subhanallah": {
+    "description": "Subhanallah translation"
+  },
+  "allahuAkbar": "Allah is the Greatest",
+  "@allahuAkbar": {
+    "description": "Allahu Akbar translation"
+  },
+  "laIlahaIllaAllah": "There is no god but Allah",
+  "@laIlahaIllaAllah": {
+    "description": "La ilaha illa Allah translation"
+  }
+}

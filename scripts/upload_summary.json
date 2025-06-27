@@ -1,0 +1,23 @@
+{
+  "total_records_in_csv": 345,
+  "already_uploaded": 13,
+  "remaining_to_upload": 332,
+  "batch_size": 25,
+  "total_batches": 14,
+  "batch_files": [
+    "remaining_batch_1.sql",
+    "remaining_batch_2.sql",
+    "remaining_batch_3.sql",
+    "remaining_batch_4.sql",
+    "remaining_batch_5.sql",
+    "remaining_batch_6.sql",
+    "remaining_batch_7.sql",
+    "remaining_batch_8.sql",
+    "remaining_batch_9.sql",
+    "remaining_batch_10.sql",
+    "remaining_batch_11.sql",
+    "remaining_batch_12.sql",
+    "remaining_batch_13.sql",
+    "remaining_batch_14.sql"
+  ]
+}
