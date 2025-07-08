@@ -1,212 +1,251 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:sakinah_app/core/router/app_routes.dart';
+import 'package:sakinah_app/core/theme/app_typography.dart';
 import 'package:sakinah_app/features/mood/domain/entities/mood.dart';
+import 'package:sakinah_app/features/mood/presentation/bloc/mood_bloc.dart';
+import 'package:sakinah_app/features/mood/presentation/widgets/mood_card.dart';
+import 'package:sakinah_app/l10n/app_localizations.dart';
 
-/// Helper class to store mood display data
-class MoodDisplayData {
-  final Mood mood;
-  final String nameArabic;
-  final String nameEnglish;
-  final int color;
-
-  const MoodDisplayData({
-    required this.mood,
-    required this.nameArabic,
-    required this.nameEnglish,
-    required this.color,
-  });
-}
-
-class MoodSelectionPage extends StatelessWidget {
+class MoodSelectionPage extends StatefulWidget {
   const MoodSelectionPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
-              Text(
-                'كيف تشعر اليوم؟',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                textDirection: TextDirection.rtl,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'How are you feeling today?',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 48),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 1.2,
-                  children: _getMoodOptions().map((moodData) {
-                    return _MoodCard(
-                      moodData: moodData,
-                      onTap: () => _onMoodSelected(context, moodData),
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => context.go(AppRoutes.home),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('تخطي'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<MoodDisplayData> _getMoodOptions() {
-    return [
-      MoodDisplayData(
-        mood: const Mood(
-          name: 'grateful',
-          emoji: '🤲',
-          description: 'Feeling thankful and blessed',
-        ),
-        nameArabic: 'شاكر',
-        nameEnglish: 'Grateful',
-        color: 0xFF4CAF50,
-      ),
-      MoodDisplayData(
-        mood: const Mood(
-          name: 'anxious',
-          emoji: '😰',
-          description: 'Feeling worried or stressed',
-        ),
-        nameArabic: 'قلق',
-        nameEnglish: 'Anxious',
-        color: 0xFFFF9800,
-      ),
-      MoodDisplayData(
-        mood: const Mood(
-          name: 'peaceful',
-          emoji: '😌',
-          description: 'Feeling calm and at peace',
-        ),
-        nameArabic: 'مطمئن',
-        nameEnglish: 'Peaceful',
-        color: 0xFF2196F3,
-      ),
-      MoodDisplayData(
-        mood: const Mood(
-          name: 'sad',
-          emoji: '😢',
-          description: 'Feeling down or melancholy',
-        ),
-        nameArabic: 'حزين',
-        nameEnglish: 'Sad',
-        color: 0xFF9C27B0,
-      ),
-      MoodDisplayData(
-        mood: const Mood(
-          name: 'hopeful',
-          emoji: '🌟',
-          description: 'Feeling optimistic about the future',
-        ),
-        nameArabic: 'متفائل',
-        nameEnglish: 'Hopeful',
-        color: 0xFFFFEB3B,
-      ),
-      MoodDisplayData(
-        mood: const Mood(
-          name: 'confused',
-          emoji: '🤔',
-          description: 'Feeling uncertain or lost',
-        ),
-        nameArabic: 'متحير',
-        nameEnglish: 'Confused',
-        color: 0xFF607D8B,
-      ),
-    ];
-  }
-
-  void _onMoodSelected(BuildContext context, MoodDisplayData moodData) {
-    // TODO: Save the selected mood to database
-    // TODO: Navigate to azkar recommendations based on mood
-    context.push('${AppRoutes.azkarDisplay}?mood=${moodData.mood.name}');
-  }
+  State<MoodSelectionPage> createState() => _MoodSelectionPageState();
 }
 
-class _MoodCard extends StatelessWidget {
-  final MoodDisplayData moodData;
-  final VoidCallback onTap;
+class _MoodSelectionPageState extends State<MoodSelectionPage>
+    with TickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late AnimationController _scaleController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
-  const _MoodCard({required this.moodData, required this.onTap});
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize animations
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
+    );
+
+    // Start animations
+    _fadeController.forward();
+    _scaleController.forward();
+
+    // Load moods when page initializes
+    context.read<MoodBloc>().add(const LoadMoods());
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _scaleController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(moodData.color).withOpacity(0.1),
-                Color(moodData.color).withOpacity(0.05),
-              ],
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(moodData.mood.emoji, style: const TextStyle(fontSize: 32)),
-              const SizedBox(height: 8),
-              Text(
-                moodData.nameArabic,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Color(moodData.color),
+    final localizations = AppLocalizations.of(context);
+    final isArabic = AppTypography.isArabicLocale(context);
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: SafeArea(
+        child: BlocConsumer<MoodBloc, MoodState>(
+          listener: (context, state) {
+            if (state is MoodSelected) {
+              // Show success feedback
+              HapticFeedback.lightImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 2),
                 ),
-                textDirection: TextDirection.rtl,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                moodData.nameEnglish,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+              );
+
+              // Navigate to azkar display after a short delay
+              Future.delayed(const Duration(milliseconds: 1500), () {
+                if (mounted) {
+                  context.push(
+                    '${AppRoutes.azkarDisplay}?mood=${state.mood.name}',
+                  );
+                }
+              });
+            } else if (state is MoodError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
                 ),
-                textAlign: TextAlign.center,
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is MoodLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+
+                    // Title section with animations
+                    ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FadeInDown(
+                            duration: const Duration(milliseconds: 600),
+                            child: Text(
+                              localizations?.howAreYouFeeling ??
+                                  'How are you feeling today?',
+                              style: isArabic
+                                  ? ArabicTextStyles.headline.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                    )
+                                  : EnglishTextStyles.headline.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                    ),
+                              textDirection: isArabic
+                                  ? TextDirection.rtl
+                                  : TextDirection.ltr,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          FadeInUp(
+                            duration: const Duration(milliseconds: 600),
+                            delay: const Duration(milliseconds: 200),
+                            child: Text(
+                              localizations?.selectMood ?? 'Select your mood',
+                              style:
+                                  (isArabic
+                                          ? ArabicTextStyles.body
+                                          : EnglishTextStyles.body)
+                                      .copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                      ),
+                              textDirection: isArabic
+                                  ? TextDirection.rtl
+                                  : TextDirection.ltr,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 48),
+
+                    // Mood grid
+                    Expanded(child: _buildMoodGrid(state)),
+
+                    const SizedBox(height: 24),
+
+                    // Skip button
+                    FadeInUp(
+                      duration: const Duration(milliseconds: 600),
+                      delay: const Duration(milliseconds: 800),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => context.go(AppRoutes.home),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                          child: Text(
+                            isArabic ? 'تخطي' : 'Skip',
+                            style: (isArabic
+                                ? ArabicTextStyles.body
+                                : EnglishTextStyles.button),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
+  }
+
+  Widget _buildMoodGrid(MoodState state) {
+    final moods = state is MoodLoaded ? state.moods : Mood.predefinedMoods;
+    final selectedMood = state is MoodLoaded ? state.selectedMood : null;
+
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.9,
+      ),
+      itemCount: moods.length.clamp(0, 6), // Show max 6 moods for better UX
+      itemBuilder: (context, index) {
+        final mood = moods[index];
+        final isSelected = selectedMood?.name == mood.name;
+
+        return FadeInUp(
+          duration: const Duration(milliseconds: 600),
+          delay: Duration(milliseconds: 300 + (index * 100)),
+          child: MoodCard(
+            mood: mood,
+            isSelected: isSelected,
+            onTap: () => _onMoodSelected(mood),
+          ),
+        );
+      },
+    );
+  }
+
+  void _onMoodSelected(Mood mood) {
+    // Haptic feedback
+    HapticFeedback.mediumImpact();
+
+    // Select mood via Bloc
+    context.read<MoodBloc>().add(SelectMood(mood: mood));
   }
 }

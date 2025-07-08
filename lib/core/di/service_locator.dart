@@ -1,14 +1,21 @@
 import 'package:get_it/get_it.dart';
 import 'package:sakinah_app/core/database/drift_service.dart';
 import 'package:sakinah_app/core/network/supabase_service.dart';
+import 'package:sakinah_app/features/azkar/data/services/azkar_supabase_service.dart';
 
 // Repository imports
 import 'package:sakinah_app/features/mood/domain/repositories/mood_repository.dart';
 import 'package:sakinah_app/features/azkar/domain/repositories/azkar_repository.dart';
 import 'package:sakinah_app/features/progress/domain/repositories/progress_repository.dart';
 import 'package:sakinah_app/features/mood/data/repositories/mood_repository_impl.dart';
-import 'package:sakinah_app/features/azkar/data/repositories/azkar_repository_impl.dart';
+import 'package:sakinah_app/features/azkar/data/repositories/local_azkar_repository_impl.dart';
+import 'package:sakinah_app/features/azkar/data/datasources/local_azkar_data_source.dart';
 import 'package:sakinah_app/features/progress/data/repositories/progress_repository_impl.dart';
+
+// BLoC imports
+import 'package:sakinah_app/features/mood/presentation/bloc/mood_bloc.dart';
+import 'package:sakinah_app/features/azkar/presentation/bloc/azkar_bloc.dart';
+import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
 
 /// Service locator for dependency injection
 final GetIt sl = GetIt.instance;
@@ -21,11 +28,11 @@ Future<void> initializeDependencies() async {
   // Repositories
   await _initRepositories();
 
+  // BLoCs
+  await _initBlocs();
+
   // Use cases (will be added when needed)
   // await _initUseCases();
-
-  // BLoCs (will be added when needed)
-  // await _initBlocs();
 }
 
 /// Initialize core services
@@ -35,6 +42,9 @@ Future<void> _initCoreServices() async {
 
   // Supabase service (singleton)
   sl.registerLazySingleton<SupabaseService>(() => SupabaseService.instance);
+
+  // Azkar Supabase service (singleton)
+  sl.registerLazySingleton<AzkarSupabaseService>(() => AzkarSupabaseService());
 
   // Initialize services
   await sl<DriftService>().initializeDatabase();
@@ -46,9 +56,12 @@ Future<void> _initRepositories() async {
   // Mood repository
   sl.registerLazySingleton<MoodRepository>(() => MoodRepositoryImpl());
 
-  // Azkar repository
+  // Local azkar data source
+  sl.registerLazySingleton<LocalAzkarDataSource>(() => LocalAzkarDataSource());
+
+  // Azkar repository (using local data source)
   sl.registerLazySingleton<AzkarRepository>(
-    () => AzkarRepositoryImpl(sl<SupabaseService>()),
+    () => LocalAzkarRepositoryImpl(sl<LocalAzkarDataSource>()),
   );
 
   // Progress repository
@@ -79,28 +92,19 @@ Future<void> _initUseCases() async {
 }
 */
 
-/// Initialize BLoCs (to be added when needed)
-/*
+/// Initialize BLoCs
 Future<void> _initBlocs() async {
   // Mood BLoC
-  sl.registerFactory(() => MoodBloc(
-    getAllMoodsUseCase: sl<GetAllMoodsUseCase>(),
-    trackMoodSelectionUseCase: sl<TrackMoodSelectionUseCase>(),
-  ));
-  
+  sl.registerFactory(() => MoodBloc(moodRepository: sl<MoodRepository>()));
+
   // Azkar BLoC
-  sl.registerFactory(() => AzkarBloc(
-    getAzkarByMoodUseCase: sl<GetAzkarByMoodUseCase>(),
-    getAzkarRecommendationsUseCase: sl<GetAzkarRecommendationsUseCase>(),
-  ));
-  
+  sl.registerFactory(() => AzkarBloc());
+
   // Progress BLoC
-  sl.registerFactory(() => ProgressBloc(
-    updateDailyProgressUseCase: sl<UpdateDailyProgressUseCase>(),
-    getCurrentStreakUseCase: sl<GetCurrentStreakUseCase>(),
-  ));
+  sl.registerFactory(
+    () => ProgressBloc(progressRepository: sl<ProgressRepository>()),
+  );
 }
-*/
 
 /// Reset all dependencies (useful for testing)
 Future<void> resetDependencies() async {

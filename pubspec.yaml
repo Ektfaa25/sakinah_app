@@ -54,6 +54,9 @@ dependencies:
   # UI & Animations
   animate_do: ^3.3.4
   lottie: ^3.1.2
+  fl_chart: ^0.69.0
+  screenshot: ^3.0.0
+  share_plus: ^9.0.0
 
   # Navigation
   go_router: ^14.2.0
@@ -75,7 +78,7 @@ dependencies:
   # JSON Serialization
   json_annotation: ^4.9.0
 
-  # CSV parsing
+  # CSV Processing
   csv: ^6.0.0
 
 dev_dependencies:
@@ -103,7 +106,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-  
+
   # Enable localization generation
   generate: true
 

@@ -12,54 +12,36 @@ class $MoodEntriesTable extends MoodEntries
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _moodMeta = const VerificationMeta('mood');
   @override
   late final GeneratedColumn<String> mood = GeneratedColumn<String>(
-    'mood',
-    aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 50,
-    ),
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+      'mood', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
   static const VerificationMeta _emojiMeta = const VerificationMeta('emoji');
   @override
   late final GeneratedColumn<String> emoji = GeneratedColumn<String>(
-    'emoji',
-    aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 10,
-    ),
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+      'emoji', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 10),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [id, mood, emoji, createdAt];
   @override
@@ -68,10 +50,8 @@ class $MoodEntriesTable extends MoodEntries
   String get actualTableName => $name;
   static const String $name = 'mood_entries';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<MoodEntry> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<MoodEntry> instance,
+      {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -79,25 +59,19 @@ class $MoodEntriesTable extends MoodEntries
     }
     if (data.containsKey('mood')) {
       context.handle(
-        _moodMeta,
-        mood.isAcceptableOrUnknown(data['mood']!, _moodMeta),
-      );
+          _moodMeta, mood.isAcceptableOrUnknown(data['mood']!, _moodMeta));
     } else if (isInserting) {
       context.missing(_moodMeta);
     }
     if (data.containsKey('emoji')) {
       context.handle(
-        _emojiMeta,
-        emoji.isAcceptableOrUnknown(data['emoji']!, _emojiMeta),
-      );
+          _emojiMeta, emoji.isAcceptableOrUnknown(data['emoji']!, _emojiMeta));
     } else if (isInserting) {
       context.missing(_emojiMeta);
     }
     if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     }
     return context;
   }
@@ -108,22 +82,14 @@ class $MoodEntriesTable extends MoodEntries
   MoodEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MoodEntry(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      mood: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}mood'],
-      )!,
-      emoji: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}emoji'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      mood: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mood'])!,
+      emoji: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}emoji'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -138,12 +104,11 @@ class MoodEntry extends DataClass implements Insertable<MoodEntry> {
   final String mood;
   final String emoji;
   final DateTime createdAt;
-  const MoodEntry({
-    required this.id,
-    required this.mood,
-    required this.emoji,
-    required this.createdAt,
-  });
+  const MoodEntry(
+      {required this.id,
+      required this.mood,
+      required this.emoji,
+      required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -163,10 +128,8 @@ class MoodEntry extends DataClass implements Insertable<MoodEntry> {
     );
   }
 
-  factory MoodEntry.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory MoodEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MoodEntry(
       id: serializer.fromJson<int>(json['id']),
@@ -186,17 +149,14 @@ class MoodEntry extends DataClass implements Insertable<MoodEntry> {
     };
   }
 
-  MoodEntry copyWith({
-    int? id,
-    String? mood,
-    String? emoji,
-    DateTime? createdAt,
-  }) => MoodEntry(
-    id: id ?? this.id,
-    mood: mood ?? this.mood,
-    emoji: emoji ?? this.emoji,
-    createdAt: createdAt ?? this.createdAt,
-  );
+  MoodEntry copyWith(
+          {int? id, String? mood, String? emoji, DateTime? createdAt}) =>
+      MoodEntry(
+        id: id ?? this.id,
+        mood: mood ?? this.mood,
+        emoji: emoji ?? this.emoji,
+        createdAt: createdAt ?? this.createdAt,
+      );
   MoodEntry copyWithCompanion(MoodEntriesCompanion data) {
     return MoodEntry(
       id: data.id.present ? data.id.value : this.id,
@@ -245,8 +205,8 @@ class MoodEntriesCompanion extends UpdateCompanion<MoodEntry> {
     required String mood,
     required String emoji,
     this.createdAt = const Value.absent(),
-  }) : mood = Value(mood),
-       emoji = Value(emoji);
+  })  : mood = Value(mood),
+        emoji = Value(emoji);
   static Insertable<MoodEntry> custom({
     Expression<int>? id,
     Expression<String>? mood,
@@ -261,12 +221,11 @@ class MoodEntriesCompanion extends UpdateCompanion<MoodEntry> {
     });
   }
 
-  MoodEntriesCompanion copyWith({
-    Value<int>? id,
-    Value<String>? mood,
-    Value<String>? emoji,
-    Value<DateTime>? createdAt,
-  }) {
+  MoodEntriesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? mood,
+      Value<String>? emoji,
+      Value<DateTime>? createdAt}) {
     return MoodEntriesCompanion(
       id: id ?? this.id,
       mood: mood ?? this.mood,
@@ -314,120 +273,80 @@ class $AzkarEntriesTable extends AzkarEntries
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _arabicTextMeta = const VerificationMeta(
-    'arabicText',
-  );
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _arabicTextMeta =
+      const VerificationMeta('arabicText');
   @override
   late final GeneratedColumn<String> arabicText = GeneratedColumn<String>(
-    'arabic_text',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _transliterationMeta = const VerificationMeta(
-    'transliteration',
-  );
+      'arabic_text', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _transliterationMeta =
+      const VerificationMeta('transliteration');
   @override
   late final GeneratedColumn<String> transliteration = GeneratedColumn<String>(
-    'transliteration',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _translationMeta = const VerificationMeta(
-    'translation',
-  );
+      'transliteration', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _translationMeta =
+      const VerificationMeta('translation');
   @override
   late final GeneratedColumn<String> translation = GeneratedColumn<String>(
-    'translation',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _categoryMeta = const VerificationMeta(
-    'category',
-  );
+      'translation', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
   @override
   late final GeneratedColumn<String> category = GeneratedColumn<String>(
-    'category',
-    aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 100,
-    ),
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _associatedMoodsMeta = const VerificationMeta(
-    'associatedMoods',
-  );
+      'category', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 100),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _associatedMoodsMeta =
+      const VerificationMeta('associatedMoods');
   @override
   late final GeneratedColumn<String> associatedMoods = GeneratedColumn<String>(
-    'associated_moods',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _repetitionsMeta = const VerificationMeta(
-    'repetitions',
-  );
+      'associated_moods', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _repetitionsMeta =
+      const VerificationMeta('repetitions');
   @override
   late final GeneratedColumn<int> repetitions = GeneratedColumn<int>(
-    'repetitions',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(1),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+      'repetitions', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    arabicText,
-    transliteration,
-    translation,
-    category,
-    associatedMoods,
-    repetitions,
-    createdAt,
-  ];
+        id,
+        arabicText,
+        transliteration,
+        translation,
+        category,
+        associatedMoods,
+        repetitions,
+        createdAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'azkar_entries';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<AzkarEntry> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<AzkarEntry> instance,
+      {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -435,63 +354,47 @@ class $AzkarEntriesTable extends AzkarEntries
     }
     if (data.containsKey('arabic_text')) {
       context.handle(
-        _arabicTextMeta,
-        arabicText.isAcceptableOrUnknown(data['arabic_text']!, _arabicTextMeta),
-      );
+          _arabicTextMeta,
+          arabicText.isAcceptableOrUnknown(
+              data['arabic_text']!, _arabicTextMeta));
     } else if (isInserting) {
       context.missing(_arabicTextMeta);
     }
     if (data.containsKey('transliteration')) {
       context.handle(
-        _transliterationMeta,
-        transliteration.isAcceptableOrUnknown(
-          data['transliteration']!,
           _transliterationMeta,
-        ),
-      );
+          transliteration.isAcceptableOrUnknown(
+              data['transliteration']!, _transliterationMeta));
     }
     if (data.containsKey('translation')) {
       context.handle(
-        _translationMeta,
-        translation.isAcceptableOrUnknown(
-          data['translation']!,
           _translationMeta,
-        ),
-      );
+          translation.isAcceptableOrUnknown(
+              data['translation']!, _translationMeta));
     }
     if (data.containsKey('category')) {
-      context.handle(
-        _categoryMeta,
-        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
-      );
+      context.handle(_categoryMeta,
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
     } else if (isInserting) {
       context.missing(_categoryMeta);
     }
     if (data.containsKey('associated_moods')) {
       context.handle(
-        _associatedMoodsMeta,
-        associatedMoods.isAcceptableOrUnknown(
-          data['associated_moods']!,
           _associatedMoodsMeta,
-        ),
-      );
+          associatedMoods.isAcceptableOrUnknown(
+              data['associated_moods']!, _associatedMoodsMeta));
     } else if (isInserting) {
       context.missing(_associatedMoodsMeta);
     }
     if (data.containsKey('repetitions')) {
       context.handle(
-        _repetitionsMeta,
-        repetitions.isAcceptableOrUnknown(
-          data['repetitions']!,
           _repetitionsMeta,
-        ),
-      );
+          repetitions.isAcceptableOrUnknown(
+              data['repetitions']!, _repetitionsMeta));
     }
     if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     }
     return context;
   }
@@ -502,38 +405,22 @@ class $AzkarEntriesTable extends AzkarEntries
   AzkarEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return AzkarEntry(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      arabicText: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}arabic_text'],
-      )!,
-      transliteration: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}transliteration'],
-      ),
-      translation: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}translation'],
-      ),
-      category: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}category'],
-      )!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      arabicText: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}arabic_text'])!,
+      transliteration: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}transliteration']),
+      translation: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}translation']),
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
       associatedMoods: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}associated_moods'],
-      )!,
-      repetitions: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}repetitions'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
+          DriftSqlType.string, data['${effectivePrefix}associated_moods'])!,
+      repetitions: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}repetitions'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -552,16 +439,15 @@ class AzkarEntry extends DataClass implements Insertable<AzkarEntry> {
   final String associatedMoods;
   final int repetitions;
   final DateTime createdAt;
-  const AzkarEntry({
-    required this.id,
-    required this.arabicText,
-    this.transliteration,
-    this.translation,
-    required this.category,
-    required this.associatedMoods,
-    required this.repetitions,
-    required this.createdAt,
-  });
+  const AzkarEntry(
+      {required this.id,
+      required this.arabicText,
+      this.transliteration,
+      this.translation,
+      required this.category,
+      required this.associatedMoods,
+      required this.repetitions,
+      required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -597,10 +483,8 @@ class AzkarEntry extends DataClass implements Insertable<AzkarEntry> {
     );
   }
 
-  factory AzkarEntry.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory AzkarEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AzkarEntry(
       id: serializer.fromJson<int>(json['id']),
@@ -628,46 +512,43 @@ class AzkarEntry extends DataClass implements Insertable<AzkarEntry> {
     };
   }
 
-  AzkarEntry copyWith({
-    int? id,
-    String? arabicText,
-    Value<String?> transliteration = const Value.absent(),
-    Value<String?> translation = const Value.absent(),
-    String? category,
-    String? associatedMoods,
-    int? repetitions,
-    DateTime? createdAt,
-  }) => AzkarEntry(
-    id: id ?? this.id,
-    arabicText: arabicText ?? this.arabicText,
-    transliteration: transliteration.present
-        ? transliteration.value
-        : this.transliteration,
-    translation: translation.present ? translation.value : this.translation,
-    category: category ?? this.category,
-    associatedMoods: associatedMoods ?? this.associatedMoods,
-    repetitions: repetitions ?? this.repetitions,
-    createdAt: createdAt ?? this.createdAt,
-  );
+  AzkarEntry copyWith(
+          {int? id,
+          String? arabicText,
+          Value<String?> transliteration = const Value.absent(),
+          Value<String?> translation = const Value.absent(),
+          String? category,
+          String? associatedMoods,
+          int? repetitions,
+          DateTime? createdAt}) =>
+      AzkarEntry(
+        id: id ?? this.id,
+        arabicText: arabicText ?? this.arabicText,
+        transliteration: transliteration.present
+            ? transliteration.value
+            : this.transliteration,
+        translation: translation.present ? translation.value : this.translation,
+        category: category ?? this.category,
+        associatedMoods: associatedMoods ?? this.associatedMoods,
+        repetitions: repetitions ?? this.repetitions,
+        createdAt: createdAt ?? this.createdAt,
+      );
   AzkarEntry copyWithCompanion(AzkarEntriesCompanion data) {
     return AzkarEntry(
       id: data.id.present ? data.id.value : this.id,
-      arabicText: data.arabicText.present
-          ? data.arabicText.value
-          : this.arabicText,
+      arabicText:
+          data.arabicText.present ? data.arabicText.value : this.arabicText,
       transliteration: data.transliteration.present
           ? data.transliteration.value
           : this.transliteration,
-      translation: data.translation.present
-          ? data.translation.value
-          : this.translation,
+      translation:
+          data.translation.present ? data.translation.value : this.translation,
       category: data.category.present ? data.category.value : this.category,
       associatedMoods: data.associatedMoods.present
           ? data.associatedMoods.value
           : this.associatedMoods,
-      repetitions: data.repetitions.present
-          ? data.repetitions.value
-          : this.repetitions,
+      repetitions:
+          data.repetitions.present ? data.repetitions.value : this.repetitions,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -688,16 +569,8 @@ class AzkarEntry extends DataClass implements Insertable<AzkarEntry> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    arabicText,
-    transliteration,
-    translation,
-    category,
-    associatedMoods,
-    repetitions,
-    createdAt,
-  );
+  int get hashCode => Object.hash(id, arabicText, transliteration, translation,
+      category, associatedMoods, repetitions, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -740,9 +613,9 @@ class AzkarEntriesCompanion extends UpdateCompanion<AzkarEntry> {
     required String associatedMoods,
     this.repetitions = const Value.absent(),
     this.createdAt = const Value.absent(),
-  }) : arabicText = Value(arabicText),
-       category = Value(category),
-       associatedMoods = Value(associatedMoods);
+  })  : arabicText = Value(arabicText),
+        category = Value(category),
+        associatedMoods = Value(associatedMoods);
   static Insertable<AzkarEntry> custom({
     Expression<int>? id,
     Expression<String>? arabicText,
@@ -765,16 +638,15 @@ class AzkarEntriesCompanion extends UpdateCompanion<AzkarEntry> {
     });
   }
 
-  AzkarEntriesCompanion copyWith({
-    Value<int>? id,
-    Value<String>? arabicText,
-    Value<String?>? transliteration,
-    Value<String?>? translation,
-    Value<String>? category,
-    Value<String>? associatedMoods,
-    Value<int>? repetitions,
-    Value<DateTime>? createdAt,
-  }) {
+  AzkarEntriesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? arabicText,
+      Value<String?>? transliteration,
+      Value<String?>? translation,
+      Value<String>? category,
+      Value<String>? associatedMoods,
+      Value<int>? repetitions,
+      Value<DateTime>? createdAt}) {
     return AzkarEntriesCompanion(
       id: id ?? this.id,
       arabicText: arabicText ?? this.arabicText,
@@ -842,128 +714,85 @@ class $ProgressEntriesTable extends ProgressEntries
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
   late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
-    'date',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _azkarCompletedMeta = const VerificationMeta(
-    'azkarCompleted',
-  );
+      'date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _azkarCompletedMeta =
+      const VerificationMeta('azkarCompleted');
   @override
   late final GeneratedColumn<int> azkarCompleted = GeneratedColumn<int>(
-    'azkar_completed',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _streakCountMeta = const VerificationMeta(
-    'streakCount',
-  );
+      'azkar_completed', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _streakCountMeta =
+      const VerificationMeta('streakCount');
   @override
   late final GeneratedColumn<int> streakCount = GeneratedColumn<int>(
-    'streak_count',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _completedAzkarIdsMeta = const VerificationMeta(
-    'completedAzkarIds',
-  );
+      'streak_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _completedAzkarIdsMeta =
+      const VerificationMeta('completedAzkarIds');
   @override
   late final GeneratedColumn<String> completedAzkarIds =
-      GeneratedColumn<String>(
-        'completed_azkar_ids',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      );
-  static const VerificationMeta _reflectionMeta = const VerificationMeta(
-    'reflection',
-  );
+      GeneratedColumn<String>('completed_azkar_ids', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _reflectionMeta =
+      const VerificationMeta('reflection');
   @override
   late final GeneratedColumn<String> reflection = GeneratedColumn<String>(
-    'reflection',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _moodBeforeMeta = const VerificationMeta(
-    'moodBefore',
-  );
+      'reflection', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _moodBeforeMeta =
+      const VerificationMeta('moodBefore');
   @override
   late final GeneratedColumn<String> moodBefore = GeneratedColumn<String>(
-    'mood_before',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _moodAfterMeta = const VerificationMeta(
-    'moodAfter',
-  );
+      'mood_before', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _moodAfterMeta =
+      const VerificationMeta('moodAfter');
   @override
   late final GeneratedColumn<String> moodAfter = GeneratedColumn<String>(
-    'mood_after',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+      'mood_after', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    date,
-    azkarCompleted,
-    streakCount,
-    completedAzkarIds,
-    reflection,
-    moodBefore,
-    moodAfter,
-    createdAt,
-  ];
+        id,
+        date,
+        azkarCompleted,
+        streakCount,
+        completedAzkarIds,
+        reflection,
+        moodBefore,
+        moodAfter,
+        createdAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'progress_entries';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<ProgressEntry> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<ProgressEntry> instance,
+      {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -971,64 +800,49 @@ class $ProgressEntriesTable extends ProgressEntries
     }
     if (data.containsKey('date')) {
       context.handle(
-        _dateMeta,
-        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
-      );
+          _dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
     } else if (isInserting) {
       context.missing(_dateMeta);
     }
     if (data.containsKey('azkar_completed')) {
       context.handle(
-        _azkarCompletedMeta,
-        azkarCompleted.isAcceptableOrUnknown(
-          data['azkar_completed']!,
           _azkarCompletedMeta,
-        ),
-      );
+          azkarCompleted.isAcceptableOrUnknown(
+              data['azkar_completed']!, _azkarCompletedMeta));
     }
     if (data.containsKey('streak_count')) {
       context.handle(
-        _streakCountMeta,
-        streakCount.isAcceptableOrUnknown(
-          data['streak_count']!,
           _streakCountMeta,
-        ),
-      );
+          streakCount.isAcceptableOrUnknown(
+              data['streak_count']!, _streakCountMeta));
     }
     if (data.containsKey('completed_azkar_ids')) {
       context.handle(
-        _completedAzkarIdsMeta,
-        completedAzkarIds.isAcceptableOrUnknown(
-          data['completed_azkar_ids']!,
           _completedAzkarIdsMeta,
-        ),
-      );
+          completedAzkarIds.isAcceptableOrUnknown(
+              data['completed_azkar_ids']!, _completedAzkarIdsMeta));
     } else if (isInserting) {
       context.missing(_completedAzkarIdsMeta);
     }
     if (data.containsKey('reflection')) {
       context.handle(
-        _reflectionMeta,
-        reflection.isAcceptableOrUnknown(data['reflection']!, _reflectionMeta),
-      );
+          _reflectionMeta,
+          reflection.isAcceptableOrUnknown(
+              data['reflection']!, _reflectionMeta));
     }
     if (data.containsKey('mood_before')) {
       context.handle(
-        _moodBeforeMeta,
-        moodBefore.isAcceptableOrUnknown(data['mood_before']!, _moodBeforeMeta),
-      );
+          _moodBeforeMeta,
+          moodBefore.isAcceptableOrUnknown(
+              data['mood_before']!, _moodBeforeMeta));
     }
     if (data.containsKey('mood_after')) {
-      context.handle(
-        _moodAfterMeta,
-        moodAfter.isAcceptableOrUnknown(data['mood_after']!, _moodAfterMeta),
-      );
+      context.handle(_moodAfterMeta,
+          moodAfter.isAcceptableOrUnknown(data['mood_after']!, _moodAfterMeta));
     }
     if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     }
     return context;
   }
@@ -1039,42 +853,24 @@ class $ProgressEntriesTable extends ProgressEntries
   ProgressEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ProgressEntry(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      date: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}date'],
-      )!,
-      azkarCompleted: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}azkar_completed'],
-      )!,
-      streakCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}streak_count'],
-      )!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      date: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
+      azkarCompleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}azkar_completed'])!,
+      streakCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}streak_count'])!,
       completedAzkarIds: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}completed_azkar_ids'],
-      )!,
-      reflection: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}reflection'],
-      ),
-      moodBefore: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}mood_before'],
-      ),
-      moodAfter: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}mood_after'],
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
+          DriftSqlType.string, data['${effectivePrefix}completed_azkar_ids'])!,
+      reflection: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reflection']),
+      moodBefore: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mood_before']),
+      moodAfter: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mood_after']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -1094,17 +890,16 @@ class ProgressEntry extends DataClass implements Insertable<ProgressEntry> {
   final String? moodBefore;
   final String? moodAfter;
   final DateTime createdAt;
-  const ProgressEntry({
-    required this.id,
-    required this.date,
-    required this.azkarCompleted,
-    required this.streakCount,
-    required this.completedAzkarIds,
-    this.reflection,
-    this.moodBefore,
-    this.moodAfter,
-    required this.createdAt,
-  });
+  const ProgressEntry(
+      {required this.id,
+      required this.date,
+      required this.azkarCompleted,
+      required this.streakCount,
+      required this.completedAzkarIds,
+      this.reflection,
+      this.moodBefore,
+      this.moodAfter,
+      required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1146,10 +941,8 @@ class ProgressEntry extends DataClass implements Insertable<ProgressEntry> {
     );
   }
 
-  factory ProgressEntry.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory ProgressEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ProgressEntry(
       id: serializer.fromJson<int>(json['id']),
@@ -1179,27 +972,27 @@ class ProgressEntry extends DataClass implements Insertable<ProgressEntry> {
     };
   }
 
-  ProgressEntry copyWith({
-    int? id,
-    DateTime? date,
-    int? azkarCompleted,
-    int? streakCount,
-    String? completedAzkarIds,
-    Value<String?> reflection = const Value.absent(),
-    Value<String?> moodBefore = const Value.absent(),
-    Value<String?> moodAfter = const Value.absent(),
-    DateTime? createdAt,
-  }) => ProgressEntry(
-    id: id ?? this.id,
-    date: date ?? this.date,
-    azkarCompleted: azkarCompleted ?? this.azkarCompleted,
-    streakCount: streakCount ?? this.streakCount,
-    completedAzkarIds: completedAzkarIds ?? this.completedAzkarIds,
-    reflection: reflection.present ? reflection.value : this.reflection,
-    moodBefore: moodBefore.present ? moodBefore.value : this.moodBefore,
-    moodAfter: moodAfter.present ? moodAfter.value : this.moodAfter,
-    createdAt: createdAt ?? this.createdAt,
-  );
+  ProgressEntry copyWith(
+          {int? id,
+          DateTime? date,
+          int? azkarCompleted,
+          int? streakCount,
+          String? completedAzkarIds,
+          Value<String?> reflection = const Value.absent(),
+          Value<String?> moodBefore = const Value.absent(),
+          Value<String?> moodAfter = const Value.absent(),
+          DateTime? createdAt}) =>
+      ProgressEntry(
+        id: id ?? this.id,
+        date: date ?? this.date,
+        azkarCompleted: azkarCompleted ?? this.azkarCompleted,
+        streakCount: streakCount ?? this.streakCount,
+        completedAzkarIds: completedAzkarIds ?? this.completedAzkarIds,
+        reflection: reflection.present ? reflection.value : this.reflection,
+        moodBefore: moodBefore.present ? moodBefore.value : this.moodBefore,
+        moodAfter: moodAfter.present ? moodAfter.value : this.moodAfter,
+        createdAt: createdAt ?? this.createdAt,
+      );
   ProgressEntry copyWithCompanion(ProgressEntriesCompanion data) {
     return ProgressEntry(
       id: data.id.present ? data.id.value : this.id,
@@ -1207,18 +1000,15 @@ class ProgressEntry extends DataClass implements Insertable<ProgressEntry> {
       azkarCompleted: data.azkarCompleted.present
           ? data.azkarCompleted.value
           : this.azkarCompleted,
-      streakCount: data.streakCount.present
-          ? data.streakCount.value
-          : this.streakCount,
+      streakCount:
+          data.streakCount.present ? data.streakCount.value : this.streakCount,
       completedAzkarIds: data.completedAzkarIds.present
           ? data.completedAzkarIds.value
           : this.completedAzkarIds,
-      reflection: data.reflection.present
-          ? data.reflection.value
-          : this.reflection,
-      moodBefore: data.moodBefore.present
-          ? data.moodBefore.value
-          : this.moodBefore,
+      reflection:
+          data.reflection.present ? data.reflection.value : this.reflection,
+      moodBefore:
+          data.moodBefore.present ? data.moodBefore.value : this.moodBefore,
       moodAfter: data.moodAfter.present ? data.moodAfter.value : this.moodAfter,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
@@ -1241,17 +1031,8 @@ class ProgressEntry extends DataClass implements Insertable<ProgressEntry> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    date,
-    azkarCompleted,
-    streakCount,
-    completedAzkarIds,
-    reflection,
-    moodBefore,
-    moodAfter,
-    createdAt,
-  );
+  int get hashCode => Object.hash(id, date, azkarCompleted, streakCount,
+      completedAzkarIds, reflection, moodBefore, moodAfter, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1298,8 +1079,8 @@ class ProgressEntriesCompanion extends UpdateCompanion<ProgressEntry> {
     this.moodBefore = const Value.absent(),
     this.moodAfter = const Value.absent(),
     this.createdAt = const Value.absent(),
-  }) : date = Value(date),
-       completedAzkarIds = Value(completedAzkarIds);
+  })  : date = Value(date),
+        completedAzkarIds = Value(completedAzkarIds);
   static Insertable<ProgressEntry> custom({
     Expression<int>? id,
     Expression<DateTime>? date,
@@ -1324,17 +1105,16 @@ class ProgressEntriesCompanion extends UpdateCompanion<ProgressEntry> {
     });
   }
 
-  ProgressEntriesCompanion copyWith({
-    Value<int>? id,
-    Value<DateTime>? date,
-    Value<int>? azkarCompleted,
-    Value<int>? streakCount,
-    Value<String>? completedAzkarIds,
-    Value<String?>? reflection,
-    Value<String?>? moodBefore,
-    Value<String?>? moodAfter,
-    Value<DateTime>? createdAt,
-  }) {
+  ProgressEntriesCompanion copyWith(
+      {Value<int>? id,
+      Value<DateTime>? date,
+      Value<int>? azkarCompleted,
+      Value<int>? streakCount,
+      Value<String>? completedAzkarIds,
+      Value<String?>? reflection,
+      Value<String?>? moodBefore,
+      Value<String?>? moodAfter,
+      Value<DateTime>? createdAt}) {
     return ProgressEntriesCompanion(
       id: id ?? this.id,
       date: date ?? this.date,
@@ -1407,47 +1187,32 @@ class $UserSettingsTable extends UserSettings
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _keyMeta = const VerificationMeta('key');
   @override
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
-    'key',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
+      'key', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   static const VerificationMeta _valueMeta = const VerificationMeta('value');
   @override
   late final GeneratedColumn<String> value = GeneratedColumn<String>(
-    'value',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
+      'value', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [id, key, value, updatedAt];
   @override
@@ -1456,10 +1221,8 @@ class $UserSettingsTable extends UserSettings
   String get actualTableName => $name;
   static const String $name = 'user_settings';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<UserSettingsEntry> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<UserSettingsEntry> instance,
+      {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -1467,25 +1230,19 @@ class $UserSettingsTable extends UserSettings
     }
     if (data.containsKey('key')) {
       context.handle(
-        _keyMeta,
-        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
-      );
+          _keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('value')) {
       context.handle(
-        _valueMeta,
-        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
-      );
+          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
     } else if (isInserting) {
       context.missing(_valueMeta);
     }
     if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
     return context;
   }
@@ -1496,22 +1253,14 @@ class $UserSettingsTable extends UserSettings
   UserSettingsEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return UserSettingsEntry(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      key: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}key'],
-      )!,
-      value: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}value'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      key: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
+      value: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}value'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
     );
   }
 
@@ -1527,12 +1276,11 @@ class UserSettingsEntry extends DataClass
   final String key;
   final String value;
   final DateTime updatedAt;
-  const UserSettingsEntry({
-    required this.id,
-    required this.key,
-    required this.value,
-    required this.updatedAt,
-  });
+  const UserSettingsEntry(
+      {required this.id,
+      required this.key,
+      required this.value,
+      required this.updatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1552,10 +1300,8 @@ class UserSettingsEntry extends DataClass
     );
   }
 
-  factory UserSettingsEntry.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory UserSettingsEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return UserSettingsEntry(
       id: serializer.fromJson<int>(json['id']),
@@ -1575,17 +1321,14 @@ class UserSettingsEntry extends DataClass
     };
   }
 
-  UserSettingsEntry copyWith({
-    int? id,
-    String? key,
-    String? value,
-    DateTime? updatedAt,
-  }) => UserSettingsEntry(
-    id: id ?? this.id,
-    key: key ?? this.key,
-    value: value ?? this.value,
-    updatedAt: updatedAt ?? this.updatedAt,
-  );
+  UserSettingsEntry copyWith(
+          {int? id, String? key, String? value, DateTime? updatedAt}) =>
+      UserSettingsEntry(
+        id: id ?? this.id,
+        key: key ?? this.key,
+        value: value ?? this.value,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
   UserSettingsEntry copyWithCompanion(UserSettingsCompanion data) {
     return UserSettingsEntry(
       id: data.id.present ? data.id.value : this.id,
@@ -1634,8 +1377,8 @@ class UserSettingsCompanion extends UpdateCompanion<UserSettingsEntry> {
     required String key,
     required String value,
     this.updatedAt = const Value.absent(),
-  }) : key = Value(key),
-       value = Value(value);
+  })  : key = Value(key),
+        value = Value(value);
   static Insertable<UserSettingsEntry> custom({
     Expression<int>? id,
     Expression<String>? key,
@@ -1650,12 +1393,11 @@ class UserSettingsCompanion extends UpdateCompanion<UserSettingsEntry> {
     });
   }
 
-  UserSettingsCompanion copyWith({
-    Value<int>? id,
-    Value<String>? key,
-    Value<String>? value,
-    Value<DateTime>? updatedAt,
-  }) {
+  UserSettingsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? key,
+      Value<String>? value,
+      Value<DateTime>? updatedAt}) {
     return UserSettingsCompanion(
       id: id ?? this.id,
       key: key ?? this.key,
@@ -1699,916 +1441,585 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $MoodEntriesTable moodEntries = $MoodEntriesTable(this);
   late final $AzkarEntriesTable azkarEntries = $AzkarEntriesTable(this);
-  late final $ProgressEntriesTable progressEntries = $ProgressEntriesTable(
-    this,
-  );
+  late final $ProgressEntriesTable progressEntries =
+      $ProgressEntriesTable(this);
   late final $UserSettingsTable userSettings = $UserSettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    moodEntries,
-    azkarEntries,
-    progressEntries,
-    userSettings,
-  ];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [moodEntries, azkarEntries, progressEntries, userSettings];
 }
 
-typedef $$MoodEntriesTableCreateCompanionBuilder =
-    MoodEntriesCompanion Function({
-      Value<int> id,
-      required String mood,
-      required String emoji,
-      Value<DateTime> createdAt,
-    });
-typedef $$MoodEntriesTableUpdateCompanionBuilder =
-    MoodEntriesCompanion Function({
-      Value<int> id,
-      Value<String> mood,
-      Value<String> emoji,
-      Value<DateTime> createdAt,
-    });
+typedef $$MoodEntriesTableCreateCompanionBuilder = MoodEntriesCompanion
+    Function({
+  Value<int> id,
+  required String mood,
+  required String emoji,
+  Value<DateTime> createdAt,
+});
+typedef $$MoodEntriesTableUpdateCompanionBuilder = MoodEntriesCompanion
+    Function({
+  Value<int> id,
+  Value<String> mood,
+  Value<String> emoji,
+  Value<DateTime> createdAt,
+});
+
+class $$MoodEntriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $MoodEntriesTable,
+    MoodEntry,
+    $$MoodEntriesTableFilterComposer,
+    $$MoodEntriesTableOrderingComposer,
+    $$MoodEntriesTableCreateCompanionBuilder,
+    $$MoodEntriesTableUpdateCompanionBuilder> {
+  $$MoodEntriesTableTableManager(_$AppDatabase db, $MoodEntriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$MoodEntriesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$MoodEntriesTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> mood = const Value.absent(),
+            Value<String> emoji = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              MoodEntriesCompanion(
+            id: id,
+            mood: mood,
+            emoji: emoji,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String mood,
+            required String emoji,
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              MoodEntriesCompanion.insert(
+            id: id,
+            mood: mood,
+            emoji: emoji,
+            createdAt: createdAt,
+          ),
+        ));
+}
 
 class $$MoodEntriesTableFilterComposer
-    extends Composer<_$AppDatabase, $MoodEntriesTable> {
-  $$MoodEntriesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+    extends FilterComposer<_$AppDatabase, $MoodEntriesTable> {
+  $$MoodEntriesTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get mood => $composableBuilder(
-    column: $table.mood,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get mood => $state.composableBuilder(
+      column: $state.table.mood,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get emoji => $composableBuilder(
-    column: $table.emoji,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get emoji => $state.composableBuilder(
+      column: $state.table.emoji,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$MoodEntriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $MoodEntriesTable> {
-  $$MoodEntriesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+    extends OrderingComposer<_$AppDatabase, $MoodEntriesTable> {
+  $$MoodEntriesTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get mood => $composableBuilder(
-    column: $table.mood,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get mood => $state.composableBuilder(
+      column: $state.table.mood,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get emoji => $composableBuilder(
-    column: $table.emoji,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get emoji => $state.composableBuilder(
+      column: $state.table.emoji,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$MoodEntriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $MoodEntriesTable> {
-  $$MoodEntriesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+typedef $$AzkarEntriesTableCreateCompanionBuilder = AzkarEntriesCompanion
+    Function({
+  Value<int> id,
+  required String arabicText,
+  Value<String?> transliteration,
+  Value<String?> translation,
+  required String category,
+  required String associatedMoods,
+  Value<int> repetitions,
+  Value<DateTime> createdAt,
+});
+typedef $$AzkarEntriesTableUpdateCompanionBuilder = AzkarEntriesCompanion
+    Function({
+  Value<int> id,
+  Value<String> arabicText,
+  Value<String?> transliteration,
+  Value<String?> translation,
+  Value<String> category,
+  Value<String> associatedMoods,
+  Value<int> repetitions,
+  Value<DateTime> createdAt,
+});
 
-  GeneratedColumn<String> get mood =>
-      $composableBuilder(column: $table.mood, builder: (column) => column);
-
-  GeneratedColumn<String> get emoji =>
-      $composableBuilder(column: $table.emoji, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-}
-
-class $$MoodEntriesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $MoodEntriesTable,
-          MoodEntry,
-          $$MoodEntriesTableFilterComposer,
-          $$MoodEntriesTableOrderingComposer,
-          $$MoodEntriesTableAnnotationComposer,
-          $$MoodEntriesTableCreateCompanionBuilder,
-          $$MoodEntriesTableUpdateCompanionBuilder,
-          (
-            MoodEntry,
-            BaseReferences<_$AppDatabase, $MoodEntriesTable, MoodEntry>,
-          ),
-          MoodEntry,
-          PrefetchHooks Function()
-        > {
-  $$MoodEntriesTableTableManager(_$AppDatabase db, $MoodEntriesTable table)
-    : super(
-        TableManagerState(
+class $$AzkarEntriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $AzkarEntriesTable,
+    AzkarEntry,
+    $$AzkarEntriesTableFilterComposer,
+    $$AzkarEntriesTableOrderingComposer,
+    $$AzkarEntriesTableCreateCompanionBuilder,
+    $$AzkarEntriesTableUpdateCompanionBuilder> {
+  $$AzkarEntriesTableTableManager(_$AppDatabase db, $AzkarEntriesTable table)
+      : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$MoodEntriesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$MoodEntriesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$MoodEntriesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> mood = const Value.absent(),
-                Value<String> emoji = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => MoodEntriesCompanion(
-                id: id,
-                mood: mood,
-                emoji: emoji,
-                createdAt: createdAt,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required String mood,
-                required String emoji,
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => MoodEntriesCompanion.insert(
-                id: id,
-                mood: mood,
-                emoji: emoji,
-                createdAt: createdAt,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          filteringComposer:
+              $$AzkarEntriesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$AzkarEntriesTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> arabicText = const Value.absent(),
+            Value<String?> transliteration = const Value.absent(),
+            Value<String?> translation = const Value.absent(),
+            Value<String> category = const Value.absent(),
+            Value<String> associatedMoods = const Value.absent(),
+            Value<int> repetitions = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              AzkarEntriesCompanion(
+            id: id,
+            arabicText: arabicText,
+            transliteration: transliteration,
+            translation: translation,
+            category: category,
+            associatedMoods: associatedMoods,
+            repetitions: repetitions,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String arabicText,
+            Value<String?> transliteration = const Value.absent(),
+            Value<String?> translation = const Value.absent(),
+            required String category,
+            required String associatedMoods,
+            Value<int> repetitions = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              AzkarEntriesCompanion.insert(
+            id: id,
+            arabicText: arabicText,
+            transliteration: transliteration,
+            translation: translation,
+            category: category,
+            associatedMoods: associatedMoods,
+            repetitions: repetitions,
+            createdAt: createdAt,
+          ),
+        ));
 }
 
-typedef $$MoodEntriesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $MoodEntriesTable,
-      MoodEntry,
-      $$MoodEntriesTableFilterComposer,
-      $$MoodEntriesTableOrderingComposer,
-      $$MoodEntriesTableAnnotationComposer,
-      $$MoodEntriesTableCreateCompanionBuilder,
-      $$MoodEntriesTableUpdateCompanionBuilder,
-      (MoodEntry, BaseReferences<_$AppDatabase, $MoodEntriesTable, MoodEntry>),
-      MoodEntry,
-      PrefetchHooks Function()
-    >;
-typedef $$AzkarEntriesTableCreateCompanionBuilder =
-    AzkarEntriesCompanion Function({
-      Value<int> id,
-      required String arabicText,
-      Value<String?> transliteration,
-      Value<String?> translation,
-      required String category,
-      required String associatedMoods,
-      Value<int> repetitions,
-      Value<DateTime> createdAt,
-    });
-typedef $$AzkarEntriesTableUpdateCompanionBuilder =
-    AzkarEntriesCompanion Function({
-      Value<int> id,
-      Value<String> arabicText,
-      Value<String?> transliteration,
-      Value<String?> translation,
-      Value<String> category,
-      Value<String> associatedMoods,
-      Value<int> repetitions,
-      Value<DateTime> createdAt,
-    });
-
 class $$AzkarEntriesTableFilterComposer
-    extends Composer<_$AppDatabase, $AzkarEntriesTable> {
-  $$AzkarEntriesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+    extends FilterComposer<_$AppDatabase, $AzkarEntriesTable> {
+  $$AzkarEntriesTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get arabicText => $composableBuilder(
-    column: $table.arabicText,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get arabicText => $state.composableBuilder(
+      column: $state.table.arabicText,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get transliteration => $composableBuilder(
-    column: $table.transliteration,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get transliteration => $state.composableBuilder(
+      column: $state.table.transliteration,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get translation => $composableBuilder(
-    column: $table.translation,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get translation => $state.composableBuilder(
+      column: $state.table.translation,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get category => $composableBuilder(
-    column: $table.category,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get category => $state.composableBuilder(
+      column: $state.table.category,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get associatedMoods => $composableBuilder(
-    column: $table.associatedMoods,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get associatedMoods => $state.composableBuilder(
+      column: $state.table.associatedMoods,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<int> get repetitions => $composableBuilder(
-    column: $table.repetitions,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get repetitions => $state.composableBuilder(
+      column: $state.table.repetitions,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$AzkarEntriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $AzkarEntriesTable> {
-  $$AzkarEntriesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+    extends OrderingComposer<_$AppDatabase, $AzkarEntriesTable> {
+  $$AzkarEntriesTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get arabicText => $composableBuilder(
-    column: $table.arabicText,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get arabicText => $state.composableBuilder(
+      column: $state.table.arabicText,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get transliteration => $composableBuilder(
-    column: $table.transliteration,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get transliteration => $state.composableBuilder(
+      column: $state.table.transliteration,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get translation => $composableBuilder(
-    column: $table.translation,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get translation => $state.composableBuilder(
+      column: $state.table.translation,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get category => $composableBuilder(
-    column: $table.category,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get category => $state.composableBuilder(
+      column: $state.table.category,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get associatedMoods => $composableBuilder(
-    column: $table.associatedMoods,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get associatedMoods => $state.composableBuilder(
+      column: $state.table.associatedMoods,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<int> get repetitions => $composableBuilder(
-    column: $table.repetitions,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get repetitions => $state.composableBuilder(
+      column: $state.table.repetitions,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$AzkarEntriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $AzkarEntriesTable> {
-  $$AzkarEntriesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+typedef $$ProgressEntriesTableCreateCompanionBuilder = ProgressEntriesCompanion
+    Function({
+  Value<int> id,
+  required DateTime date,
+  Value<int> azkarCompleted,
+  Value<int> streakCount,
+  required String completedAzkarIds,
+  Value<String?> reflection,
+  Value<String?> moodBefore,
+  Value<String?> moodAfter,
+  Value<DateTime> createdAt,
+});
+typedef $$ProgressEntriesTableUpdateCompanionBuilder = ProgressEntriesCompanion
+    Function({
+  Value<int> id,
+  Value<DateTime> date,
+  Value<int> azkarCompleted,
+  Value<int> streakCount,
+  Value<String> completedAzkarIds,
+  Value<String?> reflection,
+  Value<String?> moodBefore,
+  Value<String?> moodAfter,
+  Value<DateTime> createdAt,
+});
 
-  GeneratedColumn<String> get arabicText => $composableBuilder(
-    column: $table.arabicText,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get transliteration => $composableBuilder(
-    column: $table.transliteration,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get translation => $composableBuilder(
-    column: $table.translation,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get category =>
-      $composableBuilder(column: $table.category, builder: (column) => column);
-
-  GeneratedColumn<String> get associatedMoods => $composableBuilder(
-    column: $table.associatedMoods,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get repetitions => $composableBuilder(
-    column: $table.repetitions,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-}
-
-class $$AzkarEntriesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $AzkarEntriesTable,
-          AzkarEntry,
-          $$AzkarEntriesTableFilterComposer,
-          $$AzkarEntriesTableOrderingComposer,
-          $$AzkarEntriesTableAnnotationComposer,
-          $$AzkarEntriesTableCreateCompanionBuilder,
-          $$AzkarEntriesTableUpdateCompanionBuilder,
-          (
-            AzkarEntry,
-            BaseReferences<_$AppDatabase, $AzkarEntriesTable, AzkarEntry>,
-          ),
-          AzkarEntry,
-          PrefetchHooks Function()
-        > {
-  $$AzkarEntriesTableTableManager(_$AppDatabase db, $AzkarEntriesTable table)
-    : super(
-        TableManagerState(
+class $$ProgressEntriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ProgressEntriesTable,
+    ProgressEntry,
+    $$ProgressEntriesTableFilterComposer,
+    $$ProgressEntriesTableOrderingComposer,
+    $$ProgressEntriesTableCreateCompanionBuilder,
+    $$ProgressEntriesTableUpdateCompanionBuilder> {
+  $$ProgressEntriesTableTableManager(
+      _$AppDatabase db, $ProgressEntriesTable table)
+      : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$AzkarEntriesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$AzkarEntriesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$AzkarEntriesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> arabicText = const Value.absent(),
-                Value<String?> transliteration = const Value.absent(),
-                Value<String?> translation = const Value.absent(),
-                Value<String> category = const Value.absent(),
-                Value<String> associatedMoods = const Value.absent(),
-                Value<int> repetitions = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => AzkarEntriesCompanion(
-                id: id,
-                arabicText: arabicText,
-                transliteration: transliteration,
-                translation: translation,
-                category: category,
-                associatedMoods: associatedMoods,
-                repetitions: repetitions,
-                createdAt: createdAt,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required String arabicText,
-                Value<String?> transliteration = const Value.absent(),
-                Value<String?> translation = const Value.absent(),
-                required String category,
-                required String associatedMoods,
-                Value<int> repetitions = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => AzkarEntriesCompanion.insert(
-                id: id,
-                arabicText: arabicText,
-                transliteration: transliteration,
-                translation: translation,
-                category: category,
-                associatedMoods: associatedMoods,
-                repetitions: repetitions,
-                createdAt: createdAt,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          filteringComposer:
+              $$ProgressEntriesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$ProgressEntriesTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<DateTime> date = const Value.absent(),
+            Value<int> azkarCompleted = const Value.absent(),
+            Value<int> streakCount = const Value.absent(),
+            Value<String> completedAzkarIds = const Value.absent(),
+            Value<String?> reflection = const Value.absent(),
+            Value<String?> moodBefore = const Value.absent(),
+            Value<String?> moodAfter = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              ProgressEntriesCompanion(
+            id: id,
+            date: date,
+            azkarCompleted: azkarCompleted,
+            streakCount: streakCount,
+            completedAzkarIds: completedAzkarIds,
+            reflection: reflection,
+            moodBefore: moodBefore,
+            moodAfter: moodAfter,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required DateTime date,
+            Value<int> azkarCompleted = const Value.absent(),
+            Value<int> streakCount = const Value.absent(),
+            required String completedAzkarIds,
+            Value<String?> reflection = const Value.absent(),
+            Value<String?> moodBefore = const Value.absent(),
+            Value<String?> moodAfter = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              ProgressEntriesCompanion.insert(
+            id: id,
+            date: date,
+            azkarCompleted: azkarCompleted,
+            streakCount: streakCount,
+            completedAzkarIds: completedAzkarIds,
+            reflection: reflection,
+            moodBefore: moodBefore,
+            moodAfter: moodAfter,
+            createdAt: createdAt,
+          ),
+        ));
 }
 
-typedef $$AzkarEntriesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $AzkarEntriesTable,
-      AzkarEntry,
-      $$AzkarEntriesTableFilterComposer,
-      $$AzkarEntriesTableOrderingComposer,
-      $$AzkarEntriesTableAnnotationComposer,
-      $$AzkarEntriesTableCreateCompanionBuilder,
-      $$AzkarEntriesTableUpdateCompanionBuilder,
-      (
-        AzkarEntry,
-        BaseReferences<_$AppDatabase, $AzkarEntriesTable, AzkarEntry>,
-      ),
-      AzkarEntry,
-      PrefetchHooks Function()
-    >;
-typedef $$ProgressEntriesTableCreateCompanionBuilder =
-    ProgressEntriesCompanion Function({
-      Value<int> id,
-      required DateTime date,
-      Value<int> azkarCompleted,
-      Value<int> streakCount,
-      required String completedAzkarIds,
-      Value<String?> reflection,
-      Value<String?> moodBefore,
-      Value<String?> moodAfter,
-      Value<DateTime> createdAt,
-    });
-typedef $$ProgressEntriesTableUpdateCompanionBuilder =
-    ProgressEntriesCompanion Function({
-      Value<int> id,
-      Value<DateTime> date,
-      Value<int> azkarCompleted,
-      Value<int> streakCount,
-      Value<String> completedAzkarIds,
-      Value<String?> reflection,
-      Value<String?> moodBefore,
-      Value<String?> moodAfter,
-      Value<DateTime> createdAt,
-    });
-
 class $$ProgressEntriesTableFilterComposer
-    extends Composer<_$AppDatabase, $ProgressEntriesTable> {
-  $$ProgressEntriesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+    extends FilterComposer<_$AppDatabase, $ProgressEntriesTable> {
+  $$ProgressEntriesTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<DateTime> get date => $composableBuilder(
-    column: $table.date,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get date => $state.composableBuilder(
+      column: $state.table.date,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<int> get azkarCompleted => $composableBuilder(
-    column: $table.azkarCompleted,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get azkarCompleted => $state.composableBuilder(
+      column: $state.table.azkarCompleted,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<int> get streakCount => $composableBuilder(
-    column: $table.streakCount,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get streakCount => $state.composableBuilder(
+      column: $state.table.streakCount,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get completedAzkarIds => $composableBuilder(
-    column: $table.completedAzkarIds,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get completedAzkarIds => $state.composableBuilder(
+      column: $state.table.completedAzkarIds,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get reflection => $composableBuilder(
-    column: $table.reflection,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get reflection => $state.composableBuilder(
+      column: $state.table.reflection,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get moodBefore => $composableBuilder(
-    column: $table.moodBefore,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get moodBefore => $state.composableBuilder(
+      column: $state.table.moodBefore,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get moodAfter => $composableBuilder(
-    column: $table.moodAfter,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get moodAfter => $state.composableBuilder(
+      column: $state.table.moodAfter,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$ProgressEntriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $ProgressEntriesTable> {
-  $$ProgressEntriesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+    extends OrderingComposer<_$AppDatabase, $ProgressEntriesTable> {
+  $$ProgressEntriesTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<DateTime> get date => $composableBuilder(
-    column: $table.date,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get date => $state.composableBuilder(
+      column: $state.table.date,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<int> get azkarCompleted => $composableBuilder(
-    column: $table.azkarCompleted,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get azkarCompleted => $state.composableBuilder(
+      column: $state.table.azkarCompleted,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<int> get streakCount => $composableBuilder(
-    column: $table.streakCount,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get streakCount => $state.composableBuilder(
+      column: $state.table.streakCount,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get completedAzkarIds => $composableBuilder(
-    column: $table.completedAzkarIds,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get completedAzkarIds => $state.composableBuilder(
+      column: $state.table.completedAzkarIds,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get reflection => $composableBuilder(
-    column: $table.reflection,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get reflection => $state.composableBuilder(
+      column: $state.table.reflection,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get moodBefore => $composableBuilder(
-    column: $table.moodBefore,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get moodBefore => $state.composableBuilder(
+      column: $state.table.moodBefore,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get moodAfter => $composableBuilder(
-    column: $table.moodAfter,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get moodAfter => $state.composableBuilder(
+      column: $state.table.moodAfter,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$ProgressEntriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ProgressEntriesTable> {
-  $$ProgressEntriesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+typedef $$UserSettingsTableCreateCompanionBuilder = UserSettingsCompanion
+    Function({
+  Value<int> id,
+  required String key,
+  required String value,
+  Value<DateTime> updatedAt,
+});
+typedef $$UserSettingsTableUpdateCompanionBuilder = UserSettingsCompanion
+    Function({
+  Value<int> id,
+  Value<String> key,
+  Value<String> value,
+  Value<DateTime> updatedAt,
+});
 
-  GeneratedColumn<DateTime> get date =>
-      $composableBuilder(column: $table.date, builder: (column) => column);
-
-  GeneratedColumn<int> get azkarCompleted => $composableBuilder(
-    column: $table.azkarCompleted,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get streakCount => $composableBuilder(
-    column: $table.streakCount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get completedAzkarIds => $composableBuilder(
-    column: $table.completedAzkarIds,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get reflection => $composableBuilder(
-    column: $table.reflection,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get moodBefore => $composableBuilder(
-    column: $table.moodBefore,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get moodAfter =>
-      $composableBuilder(column: $table.moodAfter, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-}
-
-class $$ProgressEntriesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $ProgressEntriesTable,
-          ProgressEntry,
-          $$ProgressEntriesTableFilterComposer,
-          $$ProgressEntriesTableOrderingComposer,
-          $$ProgressEntriesTableAnnotationComposer,
-          $$ProgressEntriesTableCreateCompanionBuilder,
-          $$ProgressEntriesTableUpdateCompanionBuilder,
-          (
-            ProgressEntry,
-            BaseReferences<_$AppDatabase, $ProgressEntriesTable, ProgressEntry>,
-          ),
-          ProgressEntry,
-          PrefetchHooks Function()
-        > {
-  $$ProgressEntriesTableTableManager(
-    _$AppDatabase db,
-    $ProgressEntriesTable table,
-  ) : super(
-        TableManagerState(
+class $$UserSettingsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $UserSettingsTable,
+    UserSettingsEntry,
+    $$UserSettingsTableFilterComposer,
+    $$UserSettingsTableOrderingComposer,
+    $$UserSettingsTableCreateCompanionBuilder,
+    $$UserSettingsTableUpdateCompanionBuilder> {
+  $$UserSettingsTableTableManager(_$AppDatabase db, $UserSettingsTable table)
+      : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$ProgressEntriesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ProgressEntriesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ProgressEntriesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<DateTime> date = const Value.absent(),
-                Value<int> azkarCompleted = const Value.absent(),
-                Value<int> streakCount = const Value.absent(),
-                Value<String> completedAzkarIds = const Value.absent(),
-                Value<String?> reflection = const Value.absent(),
-                Value<String?> moodBefore = const Value.absent(),
-                Value<String?> moodAfter = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => ProgressEntriesCompanion(
-                id: id,
-                date: date,
-                azkarCompleted: azkarCompleted,
-                streakCount: streakCount,
-                completedAzkarIds: completedAzkarIds,
-                reflection: reflection,
-                moodBefore: moodBefore,
-                moodAfter: moodAfter,
-                createdAt: createdAt,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required DateTime date,
-                Value<int> azkarCompleted = const Value.absent(),
-                Value<int> streakCount = const Value.absent(),
-                required String completedAzkarIds,
-                Value<String?> reflection = const Value.absent(),
-                Value<String?> moodBefore = const Value.absent(),
-                Value<String?> moodAfter = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => ProgressEntriesCompanion.insert(
-                id: id,
-                date: date,
-                azkarCompleted: azkarCompleted,
-                streakCount: streakCount,
-                completedAzkarIds: completedAzkarIds,
-                reflection: reflection,
-                moodBefore: moodBefore,
-                moodAfter: moodAfter,
-                createdAt: createdAt,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          filteringComposer:
+              $$UserSettingsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$UserSettingsTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> key = const Value.absent(),
+            Value<String> value = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              UserSettingsCompanion(
+            id: id,
+            key: key,
+            value: value,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String key,
+            required String value,
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              UserSettingsCompanion.insert(
+            id: id,
+            key: key,
+            value: value,
+            updatedAt: updatedAt,
+          ),
+        ));
 }
 
-typedef $$ProgressEntriesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $ProgressEntriesTable,
-      ProgressEntry,
-      $$ProgressEntriesTableFilterComposer,
-      $$ProgressEntriesTableOrderingComposer,
-      $$ProgressEntriesTableAnnotationComposer,
-      $$ProgressEntriesTableCreateCompanionBuilder,
-      $$ProgressEntriesTableUpdateCompanionBuilder,
-      (
-        ProgressEntry,
-        BaseReferences<_$AppDatabase, $ProgressEntriesTable, ProgressEntry>,
-      ),
-      ProgressEntry,
-      PrefetchHooks Function()
-    >;
-typedef $$UserSettingsTableCreateCompanionBuilder =
-    UserSettingsCompanion Function({
-      Value<int> id,
-      required String key,
-      required String value,
-      Value<DateTime> updatedAt,
-    });
-typedef $$UserSettingsTableUpdateCompanionBuilder =
-    UserSettingsCompanion Function({
-      Value<int> id,
-      Value<String> key,
-      Value<String> value,
-      Value<DateTime> updatedAt,
-    });
-
 class $$UserSettingsTableFilterComposer
-    extends Composer<_$AppDatabase, $UserSettingsTable> {
-  $$UserSettingsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+    extends FilterComposer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get key => $state.composableBuilder(
+      column: $state.table.key,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
+      column: $state.table.updatedAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$UserSettingsTableOrderingComposer
-    extends Composer<_$AppDatabase, $UserSettingsTable> {
-  $$UserSettingsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+    extends OrderingComposer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get key => $state.composableBuilder(
+      column: $state.table.key,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
+      column: $state.table.updatedAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
-
-class $$UserSettingsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $UserSettingsTable> {
-  $$UserSettingsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get key =>
-      $composableBuilder(column: $table.key, builder: (column) => column);
-
-  GeneratedColumn<String> get value =>
-      $composableBuilder(column: $table.value, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-}
-
-class $$UserSettingsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $UserSettingsTable,
-          UserSettingsEntry,
-          $$UserSettingsTableFilterComposer,
-          $$UserSettingsTableOrderingComposer,
-          $$UserSettingsTableAnnotationComposer,
-          $$UserSettingsTableCreateCompanionBuilder,
-          $$UserSettingsTableUpdateCompanionBuilder,
-          (
-            UserSettingsEntry,
-            BaseReferences<
-              _$AppDatabase,
-              $UserSettingsTable,
-              UserSettingsEntry
-            >,
-          ),
-          UserSettingsEntry,
-          PrefetchHooks Function()
-        > {
-  $$UserSettingsTableTableManager(_$AppDatabase db, $UserSettingsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$UserSettingsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$UserSettingsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$UserSettingsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> key = const Value.absent(),
-                Value<String> value = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-              }) => UserSettingsCompanion(
-                id: id,
-                key: key,
-                value: value,
-                updatedAt: updatedAt,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required String key,
-                required String value,
-                Value<DateTime> updatedAt = const Value.absent(),
-              }) => UserSettingsCompanion.insert(
-                id: id,
-                key: key,
-                value: value,
-                updatedAt: updatedAt,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$UserSettingsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $UserSettingsTable,
-      UserSettingsEntry,
-      $$UserSettingsTableFilterComposer,
-      $$UserSettingsTableOrderingComposer,
-      $$UserSettingsTableAnnotationComposer,
-      $$UserSettingsTableCreateCompanionBuilder,
-      $$UserSettingsTableUpdateCompanionBuilder,
-      (
-        UserSettingsEntry,
-        BaseReferences<_$AppDatabase, $UserSettingsTable, UserSettingsEntry>,
-      ),
-      UserSettingsEntry,
-      PrefetchHooks Function()
-    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;

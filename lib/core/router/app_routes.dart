@@ -17,6 +17,11 @@ class AppRoutes {
   static const String progress = '/progress';
   static const String settings = '/settings';
 
+  // New azkar routes
+  static const String azkarCategories = '/azkar-categories';
+  static const String azkarCategory = '/azkar-category';
+  static const String azkarDetailNew = '/azkar-detail-new';
+
   // Secondary routes
   static const String customAzkar = '/custom-azkar';
   static const String addAzkar = '/add-azkar';
@@ -37,4 +42,7 @@ class RouteParams {
   static const String mood = 'mood';
   static const String date = 'date';
   static const String category = 'category';
+  static const String categoryId = 'categoryId';
+  static const String azkarIndex = 'azkarIndex';
+  static const String totalAzkar = 'totalAzkar';
 }

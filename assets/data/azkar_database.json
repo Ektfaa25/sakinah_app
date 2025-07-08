@@ -1,0 +1,281 @@
+{
+    "azkar_database": {
+        "version": "1.0.0",
+        "last_updated": "2025-07-06",
+        "categories": {
+            "morning": {
+                "name": "أذكار الصباح",
+                "name_en": "Morning Azkar",
+                "description": "Remembrances to be recited in the morning",
+                "emoji": "🌅"
+            },
+            "evening": {
+                "name": "أذكار المساء",
+                "name_en": "Evening Azkar",
+                "description": "Remembrances to be recited in the evening",
+                "emoji": "🌆"
+            },
+            "gratitude": {
+                "name": "أذكار الشكر",
+                "name_en": "Gratitude Azkar",
+                "description": "Remembrances expressing gratitude",
+                "emoji": "🙏"
+            },
+            "peace": {
+                "name": "أذكار السكينة",
+                "name_en": "Peace & Tranquility",
+                "description": "Remembrances for inner peace",
+                "emoji": "☮️"
+            },
+            "stress_relief": {
+                "name": "أذكار تفريج الكرب",
+                "name_en": "Stress Relief",
+                "description": "Remembrances for anxiety and stress",
+                "emoji": "💆‍♀️"
+            },
+            "protection": {
+                "name": "أذكار الحماية",
+                "name_en": "Protection",
+                "description": "Seeking Allah's protection",
+                "emoji": "🛡️"
+            }
+        },
+        "mood_mappings": {
+            "happy": [
+                "gratitude",
+                "morning",
+                "protection"
+            ],
+            "sad": [
+                "peace",
+                "gratitude",
+                "stress_relief"
+            ],
+            "anxious": [
+                "stress_relief",
+                "peace",
+                "protection"
+            ],
+            "grateful": [
+                "gratitude",
+                "morning",
+                "evening"
+            ],
+            "stressed": [
+                "stress_relief",
+                "peace",
+                "protection"
+            ],
+            "peaceful": [
+                "peace",
+                "gratitude",
+                "morning"
+            ]
+        },
+        "azkar": [
+            {
+                "id": 1,
+                "category": "morning",
+                "arabic_text": "أَعُوذُ بِاللهِ مِنْ الشَّيْطَانِ الرَّجِيمِ\nاللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ",
+                "transliteration": "A'udhu billahi min ash-shaytanir-rajeem. Allahu la ilaha illa huwal-hayyul-qayyum. La ta'khudhuhhu sinatun wa la nawm. Lahu ma fis-samawati wa ma fil-ard. Man dhal-ladhi yashfa'u 'indahu illa bi-idhnihi. Ya'lamu ma bayna aydihim wa ma khalfahum wa la yuhituna bi-shay'in min 'ilmihi illa bima sha'a. Wasi'a kursiyyuhus-samawati wal-arda wa la ya'uduhhu hifdhuhuma wa huwal-'aliyyul-'adheem.",
+                "translation": "I seek refuge in Allah from Satan the expelled. Allah - there is no deity except Him, the Ever-Living, the Sustainer of existence. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and whatever is on the earth. Who is it that can intercede with Him except by His permission? He knows what is before them and what will be after them, and they encompass not a thing of His knowledge except for what He wills. His Kursi extends over the heavens and the earth, and their preservation tires Him not. And He is the Most High, the Most Great.",
+                "repetitions": 1,
+                "reference": "آية الكرسي - سورة البقرة 255",
+                "benefits": "من قالها حين يصبح أجير من الجن حتى يمسى",
+                "associated_moods": [
+                    "peaceful",
+                    "anxious",
+                    "stressed"
+                ],
+                "tags": [
+                    "protection",
+                    "morning",
+                    "powerful"
+                ]
+            },
+            {
+                "id": 2,
+                "category": "morning",
+                "arabic_text": "بِسْمِ اللهِ الرَّحْمنِ الرَّحِيم\nقُلْ هُوَ ٱللَّهُ أَحَدٌ، ٱللَّهُ ٱلصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+                "transliteration": "Bismillahir-rahmanir-raheem. Qul huwa Allahu ahad. Allahu as-samad. Lam yalid wa lam yulad. Wa lam yakun lahu kufuwan ahad.",
+                "translation": "In the name of Allah, the Entirely Merciful, the Especially Merciful. Say: He is Allah, the One! Allah, the Eternal, Absolute; He begets not, nor is He begotten; And there is none like unto Him.",
+                "repetitions": 3,
+                "reference": "سورة الإخلاص",
+                "benefits": "من قالها حين يصبح وحين يمسى كفته من كل شىء",
+                "associated_moods": [
+                    "peaceful",
+                    "grateful",
+                    "happy"
+                ],
+                "tags": [
+                    "protection",
+                    "morning",
+                    "evening",
+                    "unity"
+                ]
+            },
+            {
+                "id": 3,
+                "category": "morning",
+                "arabic_text": "بِسْمِ اللهِ الرَّحْمنِ الرَّحِيم\nقُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ، مِن شَرِّ مَا خَلَقَ، وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ، وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ، وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+                "transliteration": "Bismillahir-rahmanir-raheem. Qul a'udhu bi-rabbil-falaq. Min sharri ma khalaq. Wa min sharri ghasiqin idha waqab. Wa min sharrin-naffathati fil-'uqad. Wa min sharri hasidin idha hasad.",
+                "translation": "In the name of Allah, the Entirely Merciful, the Especially Merciful. Say: I seek refuge in the Lord of daybreak, From the evil of that which He created, And from the evil of darkness when it settles, And from the evil of the blowers in knots, And from the evil of an envier when he envies.",
+                "repetitions": 3,
+                "reference": "سورة الفلق",
+                "benefits": "من قالها حين يصبح وحين يمسى كفته من كل شىء",
+                "associated_moods": [
+                    "anxious",
+                    "stressed",
+                    "peaceful"
+                ],
+                "tags": [
+                    "protection",
+                    "morning",
+                    "evening",
+                    "refuge"
+                ]
+            },
+            {
+                "id": 4,
+                "category": "gratitude",
+                "arabic_text": "الْحَمْدُ للّهِ رَبِّ الْعَالَمِينَ",
+                "transliteration": "Alhamdulillahi rabbil-alameen",
+                "translation": "All praise is for Allah, Lord of all the worlds",
+                "repetitions": 1,
+                "reference": "سورة الفاتحة",
+                "benefits": "أساس الشكر والحمد",
+                "associated_moods": [
+                    "grateful",
+                    "happy",
+                    "peaceful"
+                ],
+                "tags": [
+                    "gratitude",
+                    "praise",
+                    "fundamental"
+                ]
+            },
+            {
+                "id": 5,
+                "category": "gratitude",
+                "arabic_text": "اللّهُـمَّ ما أَصْبَـَحَ بي مِـنْ نِعْـمَةٍ أَو بِأَحَـدٍ مِـنْ خَلْـقِك ، فَمِـنْكَ وَحْـدَكَ لا شريكَ لَـك ، فَلَـكَ الْحَمْـدُ وَلَـكَ الشُّكْـر",
+                "transliteration": "Allahumma ma asbaha bee min ni'matin aw bi-ahadin min khalqika fa-minka wahdaka la shareeka laka fa-lakal-hamdu wa lakash-shukr",
+                "translation": "O Allah, whatever blessing I or any of Your creation have risen upon, it is from You alone, without partner, so for You is all praise and unto You all thanks",
+                "repetitions": 1,
+                "reference": "أبو داود",
+                "benefits": "من قالها حين يصبح أدى شكر يومه",
+                "associated_moods": [
+                    "grateful",
+                    "happy",
+                    "peaceful"
+                ],
+                "tags": [
+                    "gratitude",
+                    "morning",
+                    "blessings"
+                ]
+            },
+            {
+                "id": 6,
+                "category": "stress_relief",
+                "arabic_text": "حَسْبِـيَ اللّهُ لا إلهَ إلاّ هُوَ عَلَـيهِ تَوَكَّـلتُ وَهُوَ رَبُّ العَرْشِ العَظـيم",
+                "transliteration": "Hasbiya Allahu la ilaha illa huwa 'alayhi tawakkaltu wa huwa rabbul-'arshil-'adheem",
+                "translation": "Allah is sufficient for me; there is no deity except Him. On Him I have relied, and He is the Lord of the Great Throne",
+                "repetitions": 7,
+                "reference": "ابن السني",
+                "benefits": "من قالها كفاه الله ما أهمه من أمر الدنيا والآخرة",
+                "associated_moods": [
+                    "stressed",
+                    "anxious",
+                    "sad"
+                ],
+                "tags": [
+                    "trust",
+                    "reliance",
+                    "stress_relief"
+                ]
+            },
+            {
+                "id": 7,
+                "category": "peace",
+                "arabic_text": "سُبْحـانَ اللهِ وَبِحَمْـدِهِ",
+                "transliteration": "Subhan Allahi wa bihamdih",
+                "translation": "Glory is to Allah and praise is to Him",
+                "repetitions": 100,
+                "reference": "البخاري ومسلم",
+                "benefits": "من قالها في يوم مائة مرة حطت خطاياه وإن كانت مثل زبد البحر",
+                "associated_moods": [
+                    "peaceful",
+                    "grateful",
+                    "happy"
+                ],
+                "tags": [
+                    "peace",
+                    "praise",
+                    "purification"
+                ]
+            },
+            {
+                "id": 8,
+                "category": "peace",
+                "arabic_text": "سُبْحـانَ اللهِ وَبِحَمْـدِهِ عَدَدَ خَلْـقِه ، وَرِضـا نَفْسِـه ، وَزِنَـةَ عَـرْشِـه ، وَمِـدادَ كَلِمـاتِـه",
+                "transliteration": "Subhan Allahi wa bihamdih, 'adada khalqihi, wa rida nafsihi, wa zinata 'arshihi, wa midada kalimatih",
+                "translation": "Glory is to Allah and praise is to Him, by the number of His creation, by His pleasure, by the weight of His throne, and by the ink of His words",
+                "repetitions": 3,
+                "reference": "مسلم",
+                "benefits": "أجر عظيم بكلمات قليلة",
+                "associated_moods": [
+                    "peaceful",
+                    "grateful",
+                    "happy"
+                ],
+                "tags": [
+                    "peace",
+                    "magnification",
+                    "immense_reward"
+                ]
+            },
+            {
+                "id": 9,
+                "category": "stress_relief",
+                "arabic_text": "لا إلهَ إلاّ اللّهُ وَحْدَهُ لا شريكَ لهُ، لهُ المُلكُ ولهُ الحَمد، وهوَ على كلّ شيءٍ قدير",
+                "transliteration": "La ilaha illa Allahu wahdahu la shareeka lahu, lahul-mulku wa lahul-hamdu, wa huwa 'ala kulli shay'in qadeer",
+                "translation": "There is no deity except Allah, alone without partner. To Him belongs dominion and to Him belongs all praise, and He is over all things competent",
+                "repetitions": 10,
+                "reference": "البخاري ومسلم",
+                "benefits": "من قالها عشر مرات كان كمن أعتق أربعة أنفس من ولد إسماعيل",
+                "associated_moods": [
+                    "stressed",
+                    "anxious",
+                    "sad"
+                ],
+                "tags": [
+                    "unity",
+                    "praise",
+                    "stress_relief"
+                ]
+            },
+            {
+                "id": 10,
+                "category": "protection",
+                "arabic_text": "بِسـمِ اللهِ الذي لا يَضُـرُّ مَعَ اسمِـهِ شَيءٌ في الأرْضِ وَلا في السّمـاءِ وَهـوَ السّمـيعُ العَلـيم",
+                "transliteration": "Bismillah alladhi la yadurru ma'a ismihi shay'un fil-ardi wa la fis-sama'i wa huwas-samee'ul-'aleem",
+                "translation": "In the name of Allah with whose name nothing is harmed on earth nor in the heavens, and He is the Hearing, the Knowing",
+                "repetitions": 3,
+                "reference": "ابن ماجة",
+                "benefits": "لم يضره من الله شيء",
+                "associated_moods": [
+                    "anxious",
+                    "stressed",
+                    "peaceful"
+                ],
+                "tags": [
+                    "protection",
+                    "safety",
+                    "morning",
+                    "evening"
+                ]
+            }
+        ]
+    }
+}

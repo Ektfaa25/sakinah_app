@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Typography configuration for the Sakinah app
-/// 
+///
 /// Provides font configurations for different languages:
 /// - Amiri font for Arabic text (beautiful calligraphy)
 /// - Roboto/System fonts for English text
@@ -17,16 +17,18 @@ class AppTypography {
     FontWeight? fontWeight,
     Color? color,
   }) {
-    final isArabic = locale == 'ar' || 
-                    Localizations.localeOf(context).languageCode == 'ar';
-    
+    final isArabic =
+        locale == 'ar' || Localizations.localeOf(context).languageCode == 'ar';
+
     return TextStyle(
       fontFamily: isArabic ? arabicFontFamily : englishFontFamily,
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
       // RTL text direction for Arabic
-      textBaseline: isArabic ? TextBaseline.ideographic : TextBaseline.alphabetic,
+      textBaseline: isArabic
+          ? TextBaseline.ideographic
+          : TextBaseline.alphabetic,
     );
   }
 
@@ -40,6 +42,194 @@ class AppTypography {
   static bool isArabicLocale(BuildContext context) {
     return Localizations.localeOf(context).languageCode == 'ar';
   }
+
+  /// Light theme text theme
+  static const TextTheme lightTextTheme = TextTheme(
+    displayLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 57,
+      fontWeight: FontWeight.w400,
+      height: 1.12,
+    ),
+    displayMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 45,
+      fontWeight: FontWeight.w400,
+      height: 1.16,
+    ),
+    displaySmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 36,
+      fontWeight: FontWeight.w400,
+      height: 1.22,
+    ),
+    headlineLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 32,
+      fontWeight: FontWeight.w400,
+      height: 1.25,
+    ),
+    headlineMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 28,
+      fontWeight: FontWeight.w400,
+      height: 1.29,
+    ),
+    headlineSmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 24,
+      fontWeight: FontWeight.w400,
+      height: 1.33,
+    ),
+    titleLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 22,
+      fontWeight: FontWeight.w400,
+      height: 1.27,
+    ),
+    titleMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      height: 1.50,
+    ),
+    titleSmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      height: 1.43,
+    ),
+    bodyLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      height: 1.50,
+    ),
+    bodyMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      height: 1.43,
+    ),
+    bodySmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      height: 1.33,
+    ),
+    labelLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      height: 1.43,
+    ),
+    labelMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      height: 1.33,
+    ),
+    labelSmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+      height: 1.45,
+    ),
+  );
+
+  /// Dark theme text theme
+  static const TextTheme darkTextTheme = TextTheme(
+    displayLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 57,
+      fontWeight: FontWeight.w400,
+      height: 1.12,
+    ),
+    displayMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 45,
+      fontWeight: FontWeight.w400,
+      height: 1.16,
+    ),
+    displaySmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 36,
+      fontWeight: FontWeight.w400,
+      height: 1.22,
+    ),
+    headlineLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 32,
+      fontWeight: FontWeight.w400,
+      height: 1.25,
+    ),
+    headlineMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 28,
+      fontWeight: FontWeight.w400,
+      height: 1.29,
+    ),
+    headlineSmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 24,
+      fontWeight: FontWeight.w400,
+      height: 1.33,
+    ),
+    titleLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 22,
+      fontWeight: FontWeight.w400,
+      height: 1.27,
+    ),
+    titleMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      height: 1.50,
+    ),
+    titleSmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      height: 1.43,
+    ),
+    bodyLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      height: 1.50,
+    ),
+    bodyMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      height: 1.43,
+    ),
+    bodySmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      height: 1.33,
+    ),
+    labelLarge: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      height: 1.43,
+    ),
+    labelMedium: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      height: 1.33,
+    ),
+    labelSmall: TextStyle(
+      fontFamily: englishFontFamily,
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+      height: 1.45,
+    ),
+  );
 }
 
 /// Predefined text styles for Arabic content
@@ -133,16 +323,17 @@ class EnglishTextStyles {
 extension LocalizedTextStyle on TextStyle {
   /// Apply Arabic font family
   TextStyle get arabic => copyWith(fontFamily: AppTypography.arabicFontFamily);
-  
+
   /// Apply English font family
-  TextStyle get english => copyWith(fontFamily: AppTypography.englishFontFamily);
-  
+  TextStyle get english =>
+      copyWith(fontFamily: AppTypography.englishFontFamily);
+
   /// Apply font family based on context locale
   TextStyle localized(BuildContext context) {
     final isArabic = AppTypography.isArabicLocale(context);
     return copyWith(
-      fontFamily: isArabic 
-          ? AppTypography.arabicFontFamily 
+      fontFamily: isArabic
+          ? AppTypography.arabicFontFamily
           : AppTypography.englishFontFamily,
     );
   }

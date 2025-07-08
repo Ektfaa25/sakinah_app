@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sakinah_app/core/router/app_routes.dart';
+import 'package:sakinah_app/core/di/service_locator.dart';
 import 'package:sakinah_app/features/mood/presentation/pages/mood_selection_page.dart';
+import 'package:sakinah_app/features/mood/presentation/bloc/mood_bloc.dart';
 import 'package:sakinah_app/features/home/presentation/pages/home_page.dart';
 import 'package:sakinah_app/features/azkar/presentation/pages/azkar_display_page.dart';
-import 'package:sakinah_app/test_page.dart';
+import 'package:sakinah_app/features/azkar/presentation/pages/azkar_categories_screen.dart';
+import 'package:sakinah_app/features/azkar/presentation/pages/azkar_category_screen.dart';
+import 'package:sakinah_app/features/azkar/presentation/pages/azkar_detail_screen.dart';
+import 'package:sakinah_app/features/azkar/domain/entities/azkar_new.dart';
+import 'package:sakinah_app/features/progress/presentation/pages/progress_page.dart';
+import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
 
 // Import pages (will be created later)
 // import 'package:sakinah_app/features/splash/presentation/pages/splash_page.dart';
@@ -89,19 +97,14 @@ class AppRouter {
               builder: (context, state) => const HomePage(),
             ),
 
-            // Mood selection route
-            GoRoute(
-              path: AppRoutes.moodSelection,
-              name: 'mood-selection',
-              builder: (context, state) => const MoodSelectionPage(),
-            ),
-
             // Progress route
             GoRoute(
               path: AppRoutes.progress,
               name: 'progress',
-              builder: (context, state) =>
-                  _buildPlaceholderPage('Progress', 'Your spiritual progress'),
+              builder: (context, state) => BlocProvider(
+                create: (context) => sl<ProgressBloc>(),
+                child: const ProgressPage(),
+              ),
             ),
 
             // Settings route
@@ -114,13 +117,73 @@ class AppRouter {
           ],
         ),
 
+        // Mood selection route (outside shell for full screen)
+        GoRoute(
+          path: AppRoutes.moodSelection,
+          name: 'mood-selection',
+          builder: (context, state) => BlocProvider(
+            create: (context) => sl<MoodBloc>(),
+            child: const MoodSelectionPage(),
+          ),
+        ),
+
         // Azkar routes (outside shell for full screen)
         GoRoute(
           path: AppRoutes.azkarDisplay,
           name: 'azkar-display',
           builder: (context, state) {
             final mood = state.uri.queryParameters[RouteParams.mood];
-            return AzkarDisplayPage(mood: mood);
+            final category = state.uri.queryParameters[RouteParams.category];
+            return AzkarDisplayPage(mood: mood, category: category);
+          },
+        ),
+
+        // New azkar categories route
+        GoRoute(
+          path: AppRoutes.azkarCategories,
+          name: 'azkar-categories',
+          builder: (context, state) => const AzkarScreen(),
+        ),
+
+        // Azkar category route with category parameter
+        GoRoute(
+          path: '${AppRoutes.azkarCategory}/:${RouteParams.categoryId}',
+          name: 'azkar-category',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final category = extra?['category'] as AzkarCategory?;
+
+            if (category == null) {
+              return _buildPlaceholderPage('Error', 'Category not found');
+            }
+
+            return AzkarCategoryScreen(category: category);
+          },
+        ),
+
+        // New azkar detail route
+        GoRoute(
+          path: '${AppRoutes.azkarDetailNew}/:${RouteParams.azkarId}',
+          name: 'azkar-detail-new',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final azkar = extra?['azkar'] as Azkar?;
+            final category = extra?['category'] as AzkarCategory?;
+            final azkarIndex = extra?['azkarIndex'] as int? ?? 0;
+            final totalAzkar = extra?['totalAzkar'] as int? ?? 1;
+            final azkarList = extra?['azkarList'] as List<Azkar>?;
+
+            if (azkar == null || category == null) {
+              return _buildPlaceholderPage('Error', 'Azkar not found');
+            }
+
+            return AzkarDetailScreen(
+              azkar: azkar,
+              category: category,
+              azkarIndex: azkarIndex,
+              totalAzkar: totalAzkar,
+              azkarList: azkarList,
+            );
           },
         ),
 
@@ -190,13 +253,6 @@ class AppRouter {
           builder: (context, state) =>
               _buildPlaceholderPage('Feedback', 'Share your thoughts'),
         ),
-
-        // Test route (for development)
-        GoRoute(
-          path: AppRoutes.test,
-          name: 'test',
-          builder: (context, state) => const TestPage(),
-        ),
       ],
 
       // Error handling
@@ -261,7 +317,6 @@ class AppRouter {
       unselectedItemColor: Colors.grey[500],
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.mood), label: 'Mood'),
         BottomNavigationBarItem(
           icon: Icon(Icons.trending_up),
           label: 'Progress',
@@ -282,18 +337,15 @@ class AppRouter {
         context.go(AppRoutes.home);
         break;
       case 1:
-        context.go(AppRoutes.moodSelection);
-        break;
-      case 2:
         context.go(AppRoutes.progress);
         break;
-      case 3:
+      case 2:
         context.go(AppRoutes.settings);
         break;
     }
   }
 
-  /// Navigate to test route for development
+  /// Navigate to mood selection for testing
   static void _navigateToTestRoute() {
     final context = _rootNavigatorKey.currentContext;
     if (context == null) return;
@@ -338,18 +390,6 @@ class AppRouter {
         ),
       ),
     );
-  }
-
-  /// Check if route is public (doesn't require authentication)
-  static bool _isPublicRoute(String location) {
-    const publicRoutes = [
-      AppRoutes.splash,
-      AppRoutes.onboarding,
-      AppRoutes.login,
-      AppRoutes.signup,
-      AppRoutes.forgotPassword,
-    ];
-    return publicRoutes.contains(location);
   }
 }
 
