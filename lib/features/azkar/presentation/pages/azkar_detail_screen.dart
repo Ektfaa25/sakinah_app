@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
+import 'dart:async';
 import '../../domain/entities/azkar_new.dart';
 
 class AzkarDetailScreen extends StatefulWidget {
@@ -35,6 +36,9 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
   Map<int, int> _azkarCounts = {};
   Map<int, bool> _azkarCompleted = {};
   late PageController _pageController;
+  late ScrollController _scrollController;
+  bool _showPageIndicator = false;
+  Timer? _hideIndicatorTimer;
 
   @override
   void initState() {
@@ -43,6 +47,8 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     _initAzkarData();
     _loadUserProgress();
     _pageController = PageController(initialPage: widget.azkarIndex);
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -50,6 +56,8 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     _animationController.dispose();
     _pulseController.dispose();
     _pageController.dispose();
+    _scrollController.dispose();
+    _hideIndicatorTimer?.cancel();
     super.dispose();
   }
 
@@ -98,6 +106,30 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     _animationController.forward();
   }
 
+  void _onScroll() {
+    // Only show indicator when user scrolls near the end of the content
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    final threshold = maxScroll * 0.8; // Show when 80% scrolled
+
+    if (!_showPageIndicator && currentScroll > threshold && maxScroll > 0) {
+      setState(() {
+        _showPageIndicator = true;
+      });
+    }
+
+    // Reset the hide timer with smoother delay
+    _hideIndicatorTimer?.cancel();
+    _hideIndicatorTimer = Timer(const Duration(milliseconds: 2500), () {
+      // Reduced from 3000 to 2500
+      if (mounted) {
+        setState(() {
+          _showPageIndicator = false;
+        });
+      }
+    });
+  }
+
   Future<void> _loadUserProgress() async {
     try {
       // TODO: Implement progress tracking with existing database
@@ -140,10 +172,22 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       _currentAzkarIndex = index;
       _currentCount = _azkarCounts[index] ?? 0;
       _isCompleted = _azkarCompleted[index] ?? false;
+      _showPageIndicator = true; // Show indicator when page changes
     });
     print(
       '📄 Updated state via swipe - count: $_currentCount, completed: $_isCompleted',
     );
+
+    // Hide indicator after 2.5 seconds with smooth transition
+    _hideIndicatorTimer?.cancel();
+    _hideIndicatorTimer = Timer(const Duration(milliseconds: 2500), () {
+      // Reduced from 3000 to 2500
+      if (mounted) {
+        setState(() {
+          _showPageIndicator = false;
+        });
+      }
+    });
   }
 
   // Helper function to get correct word form based on count
@@ -188,13 +232,24 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                   ),
                 ],
               ),
-              // Fixed page indicator at bottom
+              // Fixed page indicator at bottom with scroll-based visibility
               if (widget.azkarList != null && widget.azkarList!.length > 1)
-                Positioned(
-                  bottom: 20,
+                AnimatedPositioned(
+                  duration: const Duration(
+                    milliseconds: 600,
+                  ), // Increased from 300 to 600
+                  curve: Curves.easeInOutCubic, // Changed to smoother curve
+                  bottom: _showPageIndicator ? 20 : -100,
                   left: 0,
                   right: 0,
-                  child: _buildPageIndicator(categoryColor),
+                  child: AnimatedOpacity(
+                    duration: const Duration(
+                      milliseconds: 600,
+                    ), // Increased from 300 to 600
+                    curve: Curves.easeInOutCubic, // Added smooth curve
+                    opacity: _showPageIndicator ? 1.0 : 0.0,
+                    child: _buildPageIndicator(categoryColor),
+                  ),
                 ),
             ],
           ),
@@ -205,6 +260,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
 
   Widget _buildAzkarPage(Azkar azkar, Color categoryColor) {
     return SingleChildScrollView(
+      controller: _scrollController,
       physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(
         24,
@@ -369,18 +425,22 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         children: [
           // Enhanced progress circle with modern design
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(12), // Reduced from 20 to 12
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: _isCompleted
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.shadow.withValues(alpha: 0.1),
-                  blurRadius: 20,
-                  spreadRadius: 5,
-                  offset: const Offset(0, 6),
+                  color: _isCompleted
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Theme.of(
+                          context,
+                        ).colorScheme.shadow.withValues(alpha: 0.1),
+                  blurRadius: 15, // Reduced from 20 to 15
+                  spreadRadius: 3, // Reduced from 5 to 3
+                  offset: const Offset(0, 4), // Reduced from 6 to 4
                 ),
               ],
             ),
@@ -388,12 +448,14 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: 90,
-                  height: 90,
+                  width: 70, // Reduced from 90 to 70
+                  height: 70, // Reduced from 90 to 70
                   child: CircularProgressIndicator(
                     value: progress.clamp(0.0, 1.0),
-                    strokeWidth: 6,
-                    backgroundColor: categoryColor.withValues(alpha: 0.15),
+                    strokeWidth: 5, // Reduced from 6 to 5
+                    backgroundColor: _isCompleted
+                        ? Colors.green.withValues(alpha: 0.3)
+                        : categoryColor.withValues(alpha: 0.15),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       _isCompleted ? Colors.green : categoryColor,
                     ),
@@ -409,10 +471,12 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                       onTap: _isCompleted
                           ? null
                           : () => _incrementCounter(azkar),
-                      borderRadius: BorderRadius.circular(32),
+                      borderRadius: BorderRadius.circular(
+                        25,
+                      ), // Reduced from 32 to 25
                       child: Container(
-                        width: 64,
-                        height: 64,
+                        width: 50, // Reduced from 64 to 50
+                        height: 50, // Reduced from 64 to 50
                         child: Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -423,16 +487,18 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                                   color: _isCompleted
                                       ? Colors.green
                                       : categoryColor,
-                                  size: 24,
+                                  size: 20, // Reduced from 24 to 20
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(
+                                  height: 1,
+                                ), // Reduced from 2 to 1
                                 Text(
                                   'تم',
                                   style: TextStyle(
                                     color: _isCompleted
                                         ? Colors.green
                                         : categoryColor,
-                                    fontSize: 10,
+                                    fontSize: 8, // Reduced from 10 to 8
                                     fontWeight: FontWeight.bold,
                                   ),
                                   textDirection: TextDirection.rtl,
@@ -442,23 +508,23 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                                   '$_currentCount',
                                   style: TextStyle(
                                     color: categoryColor,
-                                    fontSize: 20,
+                                    fontSize: 16, // Reduced from 20 to 16
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Container(
-                                  width: 20,
+                                  width: 16, // Reduced from 20 to 16
                                   height: 1,
                                   color: categoryColor.withValues(alpha: 0.6),
                                   margin: const EdgeInsets.symmetric(
-                                    vertical: 2,
+                                    vertical: 1, // Reduced from 2 to 1
                                   ),
                                 ),
                                 Text(
                                   '${azkar.repeatCount}',
                                   style: TextStyle(
                                     color: categoryColor.withValues(alpha: 0.9),
-                                    fontSize: 10,
+                                    fontSize: 8, // Reduced from 10 to 8
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -490,7 +556,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               ),
             ),
             child: Text(
-              'يُكرر ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
+              ' ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: _isCompleted ? Colors.green.shade700 : categoryColor,
                 fontWeight: FontWeight.w700,
@@ -540,7 +606,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               child: Text(
                 azkar.textAr,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: 24,
+                  fontSize: 20, // Reduced from 24 to 20
                   fontWeight: FontWeight.w700,
                   height: 2.2,
                   letterSpacing: 0.8,
@@ -623,31 +689,11 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                 ),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.translate,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'المعنى',
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                          textDirection: TextDirection.rtl,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
                     Text(
                       azkar.translation!,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        color: Colors
+                            .black87, // Changed to black87 for better visibility
                         fontSize: 16,
                         height: 1.8,
                         fontWeight: FontWeight.w500,
@@ -690,9 +736,8 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                       child: Text(
                         azkar.formattedReference,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onTertiaryContainer,
+                          color: Colors
+                              .black87, // Changed to black87 for better visibility
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -791,36 +836,52 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       return const SizedBox.shrink();
     }
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutBack, // Spring-like curve for smooth appearance
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+        color: Theme.of(
+          context,
+        ).colorScheme.surface.withOpacity(0.95), // Slightly more opaque
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '${_currentAzkarIndex + 1} من ${widget.azkarList!.length}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: categoryColor,
-              fontWeight: FontWeight.w600,
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            style:
+                Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: categoryColor,
+                  fontWeight: FontWeight.w600,
+                ) ??
+                TextStyle(color: categoryColor, fontWeight: FontWeight.w600),
+            child: Text(
+              '${_currentAzkarIndex + 1} من ${widget.azkarList!.length}',
+              textDirection: TextDirection.rtl,
             ),
-            textDirection: TextDirection.rtl,
           ),
           const SizedBox(height: 12),
-          // Fixed dots page indicator - optimized with keys to prevent unnecessary rebuilding
-          Container(
+          // Fixed dots page indicator with smooth transitions
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOutCubic,
             key: const ValueKey('page_indicator'),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 widget.azkarList!.length > 10 ? 10 : widget.azkarList!.length,
-                (index) => Container(
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic,
                   key: ValueKey('dot_$index'),
                   margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 12,
-                  height: 12,
+                  width: index == _currentAzkarIndex
+                      ? 16
+                      : 12, // Active dot slightly larger
+                  height: index == _currentAzkarIndex ? 16 : 12,
                   decoration: BoxDecoration(
                     color: index == _currentAzkarIndex
                         ? categoryColor // Active dot - full color
@@ -828,6 +889,15 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                             0.3,
                           ), // Inactive dots - faded
                     shape: BoxShape.circle,
+                    boxShadow: index == _currentAzkarIndex
+                        ? [
+                            BoxShadow(
+                              color: categoryColor.withOpacity(0.3),
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : null,
                   ),
                 ),
               ),

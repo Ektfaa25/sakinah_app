@@ -25,6 +25,76 @@ import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.da
 // import 'package:sakinah_app/features/progress/presentation/pages/progress_page.dart';
 // import 'package:sakinah_app/features/settings/presentation/pages/settings_page.dart';
 
+/// Create a temporary AzkarCategory object from category ID for navigation
+AzkarCategory? _createCategoryFromId(String categoryId) {
+  final now = DateTime.now();
+
+  switch (categoryId) {
+    case 'morning':
+      return AzkarCategory(
+        id: 'morning',
+        nameAr: 'أذكار الصباح',
+        nameEn: 'Morning Azkar',
+        description: 'Morning remembrance of Allah',
+        icon: 'morning',
+        color: '#FF9800',
+        orderIndex: 1,
+        isActive: true,
+        createdAt: now,
+      );
+    case 'evening':
+      return AzkarCategory(
+        id: 'evening',
+        nameAr: 'أذكار المساء',
+        nameEn: 'Evening Azkar',
+        description: 'Evening remembrance of Allah',
+        icon: 'evening',
+        color: '#3F51B5',
+        orderIndex: 2,
+        isActive: true,
+        createdAt: now,
+      );
+    case 'sleep':
+      return AzkarCategory(
+        id: 'sleep',
+        nameAr: 'أذكار النوم',
+        nameEn: 'Sleep Azkar',
+        description: 'Bedtime remembrance of Allah',
+        icon: 'sleep',
+        color: '#9C27B0',
+        orderIndex: 3,
+        isActive: true,
+        createdAt: now,
+      );
+    case 'after_prayer':
+      return AzkarCategory(
+        id: 'after_prayer',
+        nameAr: 'الأذكار بعد الصلاة',
+        nameEn: 'After Prayer Azkar',
+        description: 'Remembrance after prayer',
+        icon: 'after_prayer',
+        color: '#009688',
+        orderIndex: 4,
+        isActive: true,
+        createdAt: now,
+      );
+    case 'istighfar_tawbah':
+      return AzkarCategory(
+        id: 'istighfar_tawbah',
+        nameAr: 'الاستغفار والتوبة',
+        nameEn: 'Istighfar & Tawbah',
+        description: 'Seeking forgiveness and repentance',
+        icon: 'istighfar',
+        color: '#F44336',
+        orderIndex: 5,
+        isActive: true,
+        createdAt: now,
+      );
+    default:
+      return null;
+  }
+}
+
 /// App router configuration using GoRouter
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey =
@@ -150,8 +220,11 @@ class AppRouter {
           path: '${AppRoutes.azkarCategory}/:${RouteParams.categoryId}',
           name: 'azkar-category',
           builder: (context, state) {
-            final extra = state.extra as Map<String, dynamic>?;
-            final category = extra?['category'] as AzkarCategory?;
+            final categoryId =
+                state.pathParameters[RouteParams.categoryId] ?? '';
+
+            // Create a temporary category object for now
+            final category = _createCategoryFromId(categoryId);
 
             if (category == null) {
               return _buildPlaceholderPage('Error', 'Category not found');
