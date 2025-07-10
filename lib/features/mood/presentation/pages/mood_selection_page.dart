@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sakinah_app/core/router/app_routes.dart';
-import 'package:sakinah_app/core/theme/app_typography.dart';
 import 'package:sakinah_app/features/mood/domain/entities/mood.dart';
 import 'package:sakinah_app/features/mood/presentation/bloc/mood_bloc.dart';
 import 'package:sakinah_app/features/mood/presentation/widgets/mood_card.dart';
@@ -66,7 +66,7 @@ class _MoodSelectionPageState extends State<MoodSelectionPage>
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    final isArabic = AppTypography.isArabicLocale(context);
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -126,17 +126,12 @@ class _MoodSelectionPageState extends State<MoodSelectionPage>
                             child: Text(
                               localizations?.howAreYouFeeling ??
                                   'How are you feeling today?',
-                              style: isArabic
-                                  ? ArabicTextStyles.headline.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
-                                    )
-                                  : EnglishTextStyles.headline.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
-                                    ),
+                              style: GoogleFonts.playpenSans(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                height: 1.3,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                               textDirection: isArabic
                                   ? TextDirection.rtl
                                   : TextDirection.ltr,
@@ -148,15 +143,14 @@ class _MoodSelectionPageState extends State<MoodSelectionPage>
                             delay: const Duration(milliseconds: 200),
                             child: Text(
                               localizations?.selectMood ?? 'Select your mood',
-                              style:
-                                  (isArabic
-                                          ? ArabicTextStyles.body
-                                          : EnglishTextStyles.body)
-                                      .copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                      ),
+                              style: GoogleFonts.playpenSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                height: 1.4,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                               textDirection: isArabic
                                   ? TextDirection.rtl
                                   : TextDirection.ltr,
@@ -195,9 +189,10 @@ class _MoodSelectionPageState extends State<MoodSelectionPage>
                           ),
                           child: Text(
                             isArabic ? 'تخطي' : 'Skip',
-                            style: (isArabic
-                                ? ArabicTextStyles.body
-                                : EnglishTextStyles.button),
+                            style: GoogleFonts.playpenSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),

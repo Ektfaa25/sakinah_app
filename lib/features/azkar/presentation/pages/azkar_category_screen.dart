@@ -151,7 +151,9 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: const Color(
+                                0xFF1A1A2E,
+                              ), // Navy blue dark almost black
                             ),
                         textDirection: TextDirection.rtl,
                       ),
@@ -161,9 +163,9 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
                           widget.category.nameEn!,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
+                                color: const Color(
+                                  0xFF1A1A2E,
+                                ), // Navy blue dark almost black
                               ),
                         ),
                       ],
@@ -191,7 +193,9 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
                 child: Text(
                   widget.category.description!,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: const Color(
+                      0xFF1A1A2E,
+                    ), // Navy blue dark almost black
                     height: 1.5,
                   ),
                   textDirection: TextDirection.rtl,
@@ -265,9 +269,10 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
               delay: const Duration(milliseconds: 200),
               child: Text(
                 'حدث خطأ في تحميل الأذكار',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1A1A2E), // Navy blue dark almost black
+                ),
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.rtl,
               ),
@@ -279,7 +284,7 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
               child: Text(
                 _error!,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: const Color(0xFF1A1A2E), // Navy blue dark almost black
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -341,9 +346,10 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
               delay: const Duration(milliseconds: 200),
               child: Text(
                 'لا توجد أذكار في هذه الفئة',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1A1A2E), // Navy blue dark almost black
+                ),
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.rtl,
               ),
@@ -355,7 +361,7 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
               child: Text(
                 'جاري إضافة المزيد من الأذكار قريباً',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: const Color(0xFF1A1A2E), // Navy blue dark almost black
                 ),
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.rtl,
@@ -419,6 +425,9 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
                             fontSize: 24,
                             height: 2.0,
                             fontWeight: FontWeight.w600,
+                            color: const Color(
+                              0xFF1A1A2E,
+                            ), // Navy blue dark almost black
                           ),
                       textAlign: TextAlign.center,
                       textDirection: TextDirection.rtl,
@@ -438,9 +447,9 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
                               ?.copyWith(
                                 height: 1.6,
                                 fontStyle: FontStyle.italic,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
+                                color: const Color(
+                                  0xFF1A1A2E,
+                                ), // Navy blue dark almost black
                               ),
                           textAlign: TextAlign.center,
                         ),
@@ -458,7 +467,9 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
                             azkar.formattedReference,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: categoryColor,
+                                  color: const Color(
+                                    0xFF1A1A2E,
+                                  ), // Navy blue dark almost black
                                   fontWeight: FontWeight.w500,
                                 ),
                             textDirection: TextDirection.rtl,
@@ -528,7 +539,7 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
             Text(
               label,
               style: TextStyle(
-                color: color,
+                color: const Color(0xFF1A1A2E), // Navy blue dark almost black
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),

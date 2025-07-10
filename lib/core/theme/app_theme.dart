@@ -129,7 +129,7 @@ class AppTheme {
 
   static const BottomNavigationBarThemeData _lightBottomNavigationBarTheme =
       BottomNavigationBarThemeData(
-        backgroundColor: AppColors.lightSurface,
+        backgroundColor: Color(0xFFE3F1F1), // Updated to use #E3F1F1
         selectedItemColor: AppColors.lightPrimary,
         unselectedItemColor: AppColors.lightOnSurface,
         type: BottomNavigationBarType.fixed,
@@ -247,7 +247,7 @@ class AppTheme {
 
   static const BottomNavigationBarThemeData _darkBottomNavigationBarTheme =
       BottomNavigationBarThemeData(
-        backgroundColor: AppColors.darkSurface,
+        backgroundColor: Color(0xFFE3F1F1), // Updated to use #E3F1F1
         selectedItemColor: AppColors.darkPrimary,
         unselectedItemColor: AppColors.darkOnSurface,
         type: BottomNavigationBarType.fixed,

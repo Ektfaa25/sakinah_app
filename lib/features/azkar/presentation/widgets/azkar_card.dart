@@ -112,7 +112,6 @@ class _AzkarCardState extends State<AzkarCard>
                     child: Text(
                       widget.azkar.arabicText,
                       style: theme.textTheme.headlineSmall?.copyWith(
-                        fontFamily: 'Amiri',
                         fontSize: 24,
                         height: 1.8,
                         color: colorScheme.onSurface,

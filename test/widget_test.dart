@@ -7,38 +7,30 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sakinah_app/core/theme/app_typography.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   group('Sakinah App Tests', () {
-    testWidgets('AppTypography configuration test', (
+    testWidgets('Playpen Sans Arabic font configuration test', (
       WidgetTester tester,
     ) async {
-      // Verify Arabic font family
-      expect(AppTypography.arabicFontFamily, equals('Amiri'));
-      expect(AppTypography.englishFontFamily, equals('Roboto'));
+      // Verify Playpen Sans Arabic is being used
+      final textStyle = GoogleFonts.playpenSans();
+      expect(textStyle.fontFamily, contains('PlaypenSans'));
 
-      // Verify Arabic text styles are configured
-      expect(ArabicTextStyles.azkarText.fontFamily, equals('Amiri'));
-      expect(ArabicTextStyles.azkarText.fontSize, equals(24));
-
-      // Verify English text styles are configured
-      expect(EnglishTextStyles.button.fontFamily, equals('Roboto'));
-      expect(EnglishTextStyles.button.fontSize, equals(16));
+      // Test that the font loads and has valid properties
+      expect(textStyle.fontFamily, isNotNull);
     });
 
-    testWidgets('Localized TextStyle extension test', (
-      WidgetTester tester,
-    ) async {
-      const baseStyle = TextStyle(fontSize: 16);
+    testWidgets('Google Fonts integration test', (WidgetTester tester) async {
+      // Test creating text style with different weights
+      final lightStyle = GoogleFonts.playpenSans(fontWeight: FontWeight.w300);
+      final regularStyle = GoogleFonts.playpenSans(fontWeight: FontWeight.w400);
+      final boldStyle = GoogleFonts.playpenSans(fontWeight: FontWeight.w700);
 
-      // Test Arabic font application
-      final arabicStyle = baseStyle.arabic;
-      expect(arabicStyle.fontFamily, equals('Amiri'));
-
-      // Test English font application
-      final englishStyle = baseStyle.english;
-      expect(englishStyle.fontFamily, equals('Roboto'));
+      expect(lightStyle.fontWeight, equals(FontWeight.w300));
+      expect(regularStyle.fontWeight, equals(FontWeight.w400));
+      expect(boldStyle.fontWeight, equals(FontWeight.w700));
     });
   });
 }

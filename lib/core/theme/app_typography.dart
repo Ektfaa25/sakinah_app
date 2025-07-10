@@ -1,340 +1,228 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Typography configuration for the Sakinah app
-///
-/// Provides font configurations for different languages:
-/// - Amiri font for Arabic text (beautiful calligraphy)
-/// - Roboto/System fonts for English text
+/// Typography configuration for the entire app using Playpen Sans Arabic
 class AppTypography {
-  static const String arabicFontFamily = 'Amiri';
-  static const String englishFontFamily = 'Roboto';
+  static const String fontFamily = 'PlaypenSans';
 
-  /// Get text style based on locale/language
-  static TextStyle getLocalizedTextStyle({
-    required BuildContext context,
-    String? locale,
-    double? fontSize,
-    FontWeight? fontWeight,
-    Color? color,
-  }) {
-    final isArabic =
-        locale == 'ar' || Localizations.localeOf(context).languageCode == 'ar';
-
-    return TextStyle(
-      fontFamily: isArabic ? arabicFontFamily : englishFontFamily,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
-      color: color,
-      // RTL text direction for Arabic
-      textBaseline: isArabic
-          ? TextBaseline.ideographic
-          : TextBaseline.alphabetic,
-    );
-  }
-
-  /// Get appropriate text direction based on locale
-  static TextDirection getTextDirection(BuildContext context) {
-    final locale = Localizations.localeOf(context);
-    return locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr;
-  }
-
-  /// Check if current locale is Arabic
-  static bool isArabicLocale(BuildContext context) {
-    return Localizations.localeOf(context).languageCode == 'ar';
-  }
-
-  /// Light theme text theme
-  static const TextTheme lightTextTheme = TextTheme(
-    displayLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 57,
-      fontWeight: FontWeight.w400,
-      height: 1.12,
-    ),
-    displayMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 45,
-      fontWeight: FontWeight.w400,
-      height: 1.16,
-    ),
-    displaySmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 36,
-      fontWeight: FontWeight.w400,
-      height: 1.22,
-    ),
-    headlineLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 32,
-      fontWeight: FontWeight.w400,
-      height: 1.25,
-    ),
-    headlineMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 28,
-      fontWeight: FontWeight.w400,
-      height: 1.29,
-    ),
-    headlineSmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 24,
-      fontWeight: FontWeight.w400,
-      height: 1.33,
-    ),
-    titleLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 22,
-      fontWeight: FontWeight.w400,
-      height: 1.27,
-    ),
-    titleMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      height: 1.50,
-    ),
-    titleSmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      height: 1.43,
-    ),
-    bodyLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      height: 1.50,
-    ),
-    bodyMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
-      height: 1.43,
-    ),
-    bodySmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      height: 1.33,
-    ),
-    labelLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      height: 1.43,
-    ),
-    labelMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      height: 1.33,
-    ),
-    labelSmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 11,
-      fontWeight: FontWeight.w500,
-      height: 1.45,
-    ),
-  );
-
-  /// Dark theme text theme
-  static const TextTheme darkTextTheme = TextTheme(
-    displayLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 57,
-      fontWeight: FontWeight.w400,
-      height: 1.12,
-    ),
-    displayMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 45,
-      fontWeight: FontWeight.w400,
-      height: 1.16,
-    ),
-    displaySmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 36,
-      fontWeight: FontWeight.w400,
-      height: 1.22,
-    ),
-    headlineLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 32,
-      fontWeight: FontWeight.w400,
-      height: 1.25,
-    ),
-    headlineMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 28,
-      fontWeight: FontWeight.w400,
-      height: 1.29,
-    ),
-    headlineSmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 24,
-      fontWeight: FontWeight.w400,
-      height: 1.33,
-    ),
-    titleLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 22,
-      fontWeight: FontWeight.w400,
-      height: 1.27,
-    ),
-    titleMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      height: 1.50,
-    ),
-    titleSmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      height: 1.43,
-    ),
-    bodyLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      height: 1.50,
-    ),
-    bodyMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
-      height: 1.43,
-    ),
-    bodySmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      height: 1.33,
-    ),
-    labelLarge: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      height: 1.43,
-    ),
-    labelMedium: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      height: 1.33,
-    ),
-    labelSmall: TextStyle(
-      fontFamily: englishFontFamily,
-      fontSize: 11,
-      fontWeight: FontWeight.w500,
-      height: 1.45,
-    ),
-  );
-}
-
-/// Predefined text styles for Arabic content
-class ArabicTextStyles {
-  static const TextStyle headline = TextStyle(
-    fontFamily: AppTypography.arabicFontFamily,
+  /// Specialized Arabic text styles for optimal readability
+  static TextStyle arabicDisplayLarge = GoogleFonts.playpenSans(
     fontSize: 28,
     fontWeight: FontWeight.w700,
-    height: 1.5,
+    height: 2.0,
+    letterSpacing: 1.0,
+    color: const Color(0xFF1A1A1A),
   );
 
-  static const TextStyle title = TextStyle(
-    fontFamily: AppTypography.arabicFontFamily,
+  static TextStyle arabicHeadline = GoogleFonts.playpenSans(
     fontSize: 22,
-    fontWeight: FontWeight.w600,
-    height: 1.4,
-  );
-
-  static const TextStyle body = TextStyle(
-    fontFamily: AppTypography.arabicFontFamily,
-    fontSize: 18,
-    fontWeight: FontWeight.w400,
-    height: 1.6,
-  );
-
-  static const TextStyle caption = TextStyle(
-    fontFamily: AppTypography.arabicFontFamily,
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    height: 1.4,
-  );
-
-  /// Large azkar text style for beautiful display
-  static const TextStyle azkarText = TextStyle(
-    fontFamily: AppTypography.arabicFontFamily,
-    fontSize: 24,
     fontWeight: FontWeight.w600,
     height: 1.8,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    color: const Color(0xFF1A1A1A),
   );
 
-  /// Small azkar text for translations/transliterations
-  static const TextStyle azkarTranslation = TextStyle(
-    fontFamily: AppTypography.arabicFontFamily,
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    height: 1.4,
-    fontStyle: FontStyle.italic,
-  );
-}
-
-/// Predefined text styles for English content
-class EnglishTextStyles {
-  static const TextStyle headline = TextStyle(
-    fontFamily: AppTypography.englishFontFamily,
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
-    height: 1.3,
+  static TextStyle arabicBody = GoogleFonts.playpenSans(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    height: 2.2,
+    letterSpacing: 0.6,
+    color: const Color(0xFF1A1A1A),
   );
 
-  static const TextStyle title = TextStyle(
-    fontFamily: AppTypography.englishFontFamily,
-    fontSize: 22,
-    fontWeight: FontWeight.w600,
-    height: 1.3,
-  );
-
-  static const TextStyle body = TextStyle(
-    fontFamily: AppTypography.englishFontFamily,
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    height: 1.4,
-  );
-
-  static const TextStyle caption = TextStyle(
-    fontFamily: AppTypography.englishFontFamily,
+  static TextStyle arabicCaption = GoogleFonts.playpenSans(
     fontSize: 14,
-    fontWeight: FontWeight.w400,
-    height: 1.3,
+    fontWeight: FontWeight.w500,
+    height: 1.6,
+    letterSpacing: 0.4,
+    color: const Color(0xFF1A1A1A),
   );
 
-  static const TextStyle button = TextStyle(
-    fontFamily: AppTypography.englishFontFamily,
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 0.5,
+  /// Light theme text theme using Playpen Sans Arabic
+  static TextTheme lightTextTheme = TextTheme(
+    displayLarge: GoogleFonts.playpenSans(
+      fontSize: 32,
+      fontWeight: FontWeight.w300,
+      letterSpacing: -1.5,
+      color: const Color(0xFF1A1A1A),
+    ),
+    displayMedium: GoogleFonts.playpenSans(
+      fontSize: 28,
+      fontWeight: FontWeight.w300,
+      letterSpacing: -0.5,
+      color: const Color(0xFF1A1A1A),
+    ),
+    displaySmall: GoogleFonts.playpenSans(
+      fontSize: 24,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.0,
+      color: const Color(0xFF1A1A1A),
+    ),
+    headlineLarge: GoogleFonts.playpenSans(
+      fontSize: 22,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.0,
+      color: const Color(0xFF1A1A1A),
+    ),
+    headlineMedium: GoogleFonts.playpenSans(
+      fontSize: 20,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.15,
+      color: const Color(0xFF1A1A1A),
+    ),
+    headlineSmall: GoogleFonts.playpenSans(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.15,
+      color: const Color(0xFF1A1A1A),
+    ),
+    titleLarge: GoogleFonts.playpenSans(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.15,
+      color: const Color(0xFF1A1A1A),
+    ),
+    titleMedium: GoogleFonts.playpenSans(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.1,
+      color: const Color(0xFF1A1A1A),
+    ),
+    titleSmall: GoogleFonts.playpenSans(
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.1,
+      color: const Color(0xFF1A1A1A),
+    ),
+    bodyLarge: GoogleFonts.playpenSans(
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.5,
+      color: const Color(0xFF1A1A1A),
+    ),
+    bodyMedium: GoogleFonts.playpenSans(
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.25,
+      color: const Color(0xFF1A1A1A),
+    ),
+    bodySmall: GoogleFonts.playpenSans(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.4,
+      color: const Color(0xFF1A1A1A),
+    ),
+    labelLarge: GoogleFonts.playpenSans(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 1.25,
+      color: const Color(0xFF1A1A1A),
+    ),
+    labelMedium: GoogleFonts.playpenSans(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 1.5,
+      color: const Color(0xFF1A1A1A),
+    ),
+    labelSmall: GoogleFonts.playpenSans(
+      fontSize: 10,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 1.5,
+      color: const Color(0xFF1A1A1A),
+    ),
   );
-}
 
-/// Extension to add localized text styles to TextStyle
-extension LocalizedTextStyle on TextStyle {
-  /// Apply Arabic font family
-  TextStyle get arabic => copyWith(fontFamily: AppTypography.arabicFontFamily);
-
-  /// Apply English font family
-  TextStyle get english =>
-      copyWith(fontFamily: AppTypography.englishFontFamily);
-
-  /// Apply font family based on context locale
-  TextStyle localized(BuildContext context) {
-    final isArabic = AppTypography.isArabicLocale(context);
-    return copyWith(
-      fontFamily: isArabic
-          ? AppTypography.arabicFontFamily
-          : AppTypography.englishFontFamily,
-    );
-  }
+  /// Dark theme text theme using Playpen Sans Arabic
+  static TextTheme darkTextTheme = TextTheme(
+    displayLarge: GoogleFonts.playpenSans(
+      fontSize: 32,
+      fontWeight: FontWeight.w300,
+      letterSpacing: -1.5,
+      color: const Color(0xFFFFFFFF),
+    ),
+    displayMedium: GoogleFonts.playpenSans(
+      fontSize: 28,
+      fontWeight: FontWeight.w300,
+      letterSpacing: -0.5,
+      color: const Color(0xFFFFFFFF),
+    ),
+    displaySmall: GoogleFonts.playpenSans(
+      fontSize: 24,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.0,
+      color: const Color(0xFFFFFFFF),
+    ),
+    headlineLarge: GoogleFonts.playpenSans(
+      fontSize: 22,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.0,
+      color: const Color(0xFFFFFFFF),
+    ),
+    headlineMedium: GoogleFonts.playpenSans(
+      fontSize: 20,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.15,
+      color: const Color(0xFFFFFFFF),
+    ),
+    headlineSmall: GoogleFonts.playpenSans(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.15,
+      color: const Color(0xFFFFFFFF),
+    ),
+    titleLarge: GoogleFonts.playpenSans(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.15,
+      color: const Color(0xFFFFFFFF),
+    ),
+    titleMedium: GoogleFonts.playpenSans(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.1,
+      color: const Color(0xFFFFFFFF),
+    ),
+    titleSmall: GoogleFonts.playpenSans(
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.1,
+      color: const Color(0xFFFFFFFF),
+    ),
+    bodyLarge: GoogleFonts.playpenSans(
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.5,
+      color: const Color(0xFFFFFFFF),
+    ),
+    bodyMedium: GoogleFonts.playpenSans(
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.25,
+      color: const Color(0xFFFFFFFF),
+    ),
+    bodySmall: GoogleFonts.playpenSans(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.4,
+      color: const Color(0xFFFFFFFF),
+    ),
+    labelLarge: GoogleFonts.playpenSans(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 1.25,
+      color: const Color(0xFFFFFFFF),
+    ),
+    labelMedium: GoogleFonts.playpenSans(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 1.5,
+      color: const Color(0xFFFFFFFF),
+    ),
+    labelSmall: GoogleFonts.playpenSans(
+      fontSize: 10,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 1.5,
+      color: const Color(0xFFFFFFFF),
+    ),
+  );
 }

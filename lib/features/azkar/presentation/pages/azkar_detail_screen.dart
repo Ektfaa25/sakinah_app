@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import '../../domain/entities/azkar_new.dart';
 
@@ -271,9 +272,25 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildProgressSection(azkar, categoryColor),
-          const SizedBox(height: 24),
-          _buildAzkarText(azkar),
+          // Stack to position counter circle overlapping with card
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              _buildAzkarText(azkar),
+              // Position counter circle at bottom center of card, half overlapping
+              Positioned(
+                bottom:
+                    -50, // Half of counter circle height (94/2 = 47, rounded to 50)
+                left: 0,
+                right: 0,
+                child: _buildCounterCircle(azkar, categoryColor),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 80,
+          ), // Increased to accommodate overlapping circle
+          _buildRepetitionText(azkar, categoryColor),
           const SizedBox(height: 24),
           // Page indicator removed - now fixed at bottom of screen
         ],
@@ -367,7 +384,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                       ),
                       child: Text(
                         widget.category.nameAr,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        style: GoogleFonts.playpenSans(
                           fontWeight: FontWeight.w800,
                           fontSize: 20,
                           color: Theme.of(context).colorScheme.onSurface,
@@ -378,31 +395,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                       ),
                     ),
                     // Enhanced page info
-                    if (widget.azkarList != null &&
-                        widget.azkarList!.length > 1) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: categoryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'صفحة ${_currentAzkarIndex + 1} من ${widget.azkarList!.length}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: categoryColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 11,
-                              ),
-                          textAlign: TextAlign.center,
-                          textDirection: TextDirection.rtl,
-                        ),
-                      ),
-                    ],
+                    // Page number removed as requested
                   ],
                 ),
               ),
@@ -420,181 +413,206 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
 
     return FadeInUp(
       duration: const Duration(milliseconds: 600),
-      delay: const Duration(milliseconds: 200),
-      child: Column(
-        children: [
-          // Enhanced progress circle with modern design
-          Container(
-            padding: const EdgeInsets.all(12), // Reduced from 20 to 12
-            decoration: BoxDecoration(
-              color: _isCompleted
-                  ? Colors.green.withValues(alpha: 0.1)
-                  : Theme.of(context).colorScheme.surface,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: _isCompleted
-                      ? Colors.green.withValues(alpha: 0.2)
-                      : Theme.of(
-                          context,
-                        ).colorScheme.shadow.withValues(alpha: 0.1),
-                  blurRadius: 15, // Reduced from 20 to 15
-                  spreadRadius: 3, // Reduced from 5 to 3
-                  offset: const Offset(0, 4), // Reduced from 6 to 4
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 70, // Reduced from 90 to 70
-                  height: 70, // Reduced from 90 to 70
-                  child: CircularProgressIndicator(
-                    value: progress.clamp(0.0, 1.0),
-                    strokeWidth: 5, // Reduced from 6 to 5
-                    backgroundColor: _isCompleted
-                        ? Colors.green.withValues(alpha: 0.3)
-                        : categoryColor.withValues(alpha: 0.15),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      _isCompleted ? Colors.green : categoryColor,
-                    ),
-                    strokeCap: StrokeCap.round,
+      delay: const Duration(milliseconds: 400),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Enhanced progress circle with modern design
+            Container(
+              padding: const EdgeInsets.all(12), // Reduced from 20 to 12
+              decoration: BoxDecoration(
+                color: _isCompleted
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : Theme.of(context).colorScheme.surface,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: _isCompleted
+                        ? Colors.green.withValues(alpha: 0.2)
+                        : Theme.of(
+                            context,
+                          ).colorScheme.shadow.withValues(alpha: 0.1),
+                    blurRadius: 15, // Reduced from 20 to 15
+                    spreadRadius: 3, // Reduced from 5 to 3
+                    offset: const Offset(0, 4), // Reduced from 6 to 4
                   ),
-                ),
-                // Enhanced circular button
-                ScaleTransition(
-                  scale: _pulseAnimation,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _isCompleted
-                          ? null
-                          : () => _incrementCounter(azkar),
-                      borderRadius: BorderRadius.circular(
-                        25,
-                      ), // Reduced from 32 to 25
-                      child: Container(
-                        width: 50, // Reduced from 64 to 50
-                        height: 50, // Reduced from 64 to 50
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (_isCompleted) ...[
-                                Icon(
-                                  Icons.check_circle_outline,
-                                  color: _isCompleted
-                                      ? Colors.green
-                                      : categoryColor,
-                                  size: 20, // Reduced from 24 to 20
-                                ),
-                                const SizedBox(
-                                  height: 1,
-                                ), // Reduced from 2 to 1
-                                Text(
-                                  'تم',
-                                  style: TextStyle(
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 70, // Reduced from 90 to 70
+                    height: 70, // Reduced from 90 to 70
+                    child: CircularProgressIndicator(
+                      value: progress.clamp(0.0, 1.0),
+                      strokeWidth: 5, // Reduced from 6 to 5
+                      backgroundColor: _isCompleted
+                          ? Colors.green.withValues(alpha: 0.3)
+                          : categoryColor.withValues(alpha: 0.15),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        _isCompleted ? Colors.green : categoryColor,
+                      ),
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ),
+                  // Enhanced circular button
+                  ScaleTransition(
+                    scale: _pulseAnimation,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _isCompleted
+                            ? null
+                            : () => _incrementCounter(azkar),
+                        borderRadius: BorderRadius.circular(
+                          25,
+                        ), // Reduced from 32 to 25
+                        child: Container(
+                          width: 50, // Reduced from 64 to 50
+                          height: 50, // Reduced from 64 to 50
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_isCompleted) ...[
+                                  Icon(
+                                    Icons.check_circle_outline,
                                     color: _isCompleted
                                         ? Colors.green
                                         : categoryColor,
-                                    fontSize: 8, // Reduced from 10 to 8
-                                    fontWeight: FontWeight.bold,
+                                    size: 20, // Reduced from 24 to 20
                                   ),
-                                  textDirection: TextDirection.rtl,
-                                ),
-                              ] else ...[
-                                Text(
-                                  '$_currentCount',
-                                  style: TextStyle(
-                                    color: categoryColor,
-                                    fontSize: 16, // Reduced from 20 to 16
-                                    fontWeight: FontWeight.bold,
+                                  const SizedBox(
+                                    height: 1,
+                                  ), // Reduced from 2 to 1
+                                  Text(
+                                    'تم',
+                                    style: GoogleFonts.playpenSans(
+                                      color: _isCompleted
+                                          ? Colors.green
+                                          : categoryColor,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.1,
+                                    ),
+                                    textDirection: TextDirection.rtl,
                                   ),
-                                ),
-                                Container(
-                                  width: 16, // Reduced from 20 to 16
-                                  height: 1,
-                                  color: categoryColor.withValues(alpha: 0.6),
-                                  margin: const EdgeInsets.symmetric(
-                                    vertical: 1, // Reduced from 2 to 1
+                                ] else ...[
+                                  Text(
+                                    '$_currentCount',
+                                    style: GoogleFonts.playpenSans(
+                                      color: categoryColor,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  '${azkar.repeatCount}',
-                                  style: TextStyle(
-                                    color: categoryColor.withValues(alpha: 0.9),
-                                    fontSize: 8, // Reduced from 10 to 8
-                                    fontWeight: FontWeight.w600,
+                                  Container(
+                                    width: 16, // Reduced from 20 to 16
+                                    height: 1,
+                                    color: categoryColor.withValues(alpha: 0.6),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 1, // Reduced from 2 to 1
+                                    ),
                                   ),
-                                ),
+                                  Text(
+                                    '${azkar.repeatCount}',
+                                    style: GoogleFonts.playpenSans(
+                                      color: categoryColor.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Enhanced repetition text with container
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: (_isCompleted ? Colors.green : categoryColor).withValues(
-                alpha: 0.1,
+                ],
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
+            ),
+            const SizedBox(height: 16),
+            // Enhanced repetition text with container
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
                 color: (_isCompleted ? Colors.green : categoryColor).withValues(
-                  alpha: 0.3,
+                  alpha: 0.1,
                 ),
-                width: 1,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: (_isCompleted ? Colors.green : categoryColor)
+                      .withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                ' ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
+                style: GoogleFonts.playpenSans(
+                  color: _isCompleted ? Colors.green.shade700 : categoryColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.rtl,
               ),
             ),
-            child: Text(
-              ' ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: _isCompleted ? Colors.green.shade700 : categoryColor,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.center,
-              textDirection: TextDirection.rtl,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildAzkarText(Azkar azkar) {
+    final categoryColor = _parseColor(widget.category.getColor());
+
     return FadeInUp(
       duration: const Duration(milliseconds: 600),
       delay: const Duration(milliseconds: 300),
       child: Container(
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: categoryColor.withValues(
+            alpha: 0.15,
+          ), // Light category color background
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(
-                context,
-              ).colorScheme.shadow.withValues(alpha: 0.08),
-              blurRadius: 16,
+              color: categoryColor.withValues(
+                alpha: 0.25,
+              ), // Enhanced shadow with category color
+              blurRadius: 25, // Increased blur radius
+              spreadRadius: 4, // Increased spread
+              offset: const Offset(0, 8), // Increased offset
+            ),
+            BoxShadow(
+              color: categoryColor.withValues(
+                alpha: 0.15,
+              ), // Additional glow effect
+              blurRadius: 15,
               spreadRadius: 2,
               offset: const Offset(0, 4),
             ),
+            BoxShadow(
+              color: Theme.of(context).colorScheme.shadow.withValues(
+                alpha: 0.08,
+              ), // Subtle depth shadow
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: const Offset(0, 3),
+            ),
           ],
           border: Border.all(
-            color: Theme.of(
-              context,
-            ).colorScheme.outline.withValues(alpha: 0.08),
-            width: 1,
+            color: categoryColor.withValues(
+              alpha: 0.4,
+            ), // More visible border with category color
+            width: 2, // Thicker border
           ),
         ),
         child: Column(
@@ -605,19 +623,20 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
               child: Text(
                 azkar.textAr,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: 20, // Reduced from 24 to 20
+                style: GoogleFonts.playpenSans(
+                  fontSize:
+                      22, // Increased from 20 to 22 for better readability
                   fontWeight: FontWeight.w700,
-                  height: 2.2,
-                  letterSpacing: 0.8,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  height: 2.4, // Increased line height for Arabic text
+                  letterSpacing: 1.0, // Better spacing for Arabic characters
+                  color: const Color(
+                    0xFF2C1810,
+                  ), // Darker brown color for better contrast against cream background
                   shadows: [
                     Shadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
+                      color: categoryColor.withValues(alpha: 0.15),
                       offset: const Offset(0, 1),
-                      blurRadius: 2,
+                      blurRadius: 3,
                     ),
                   ],
                 ),
@@ -632,10 +651,26 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: categoryColor.withValues(
+                    alpha: 0.15,
+                  ), // Enhanced with category color and higher opacity
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: categoryColor.withValues(
+                      alpha: 0.35,
+                    ), // Category color border with higher opacity
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: categoryColor.withValues(
+                        alpha: 0.2,
+                      ), // Enhanced shadow
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -650,11 +685,14 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                         const SizedBox(width: 8),
                         Text(
                           'النطق',
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style: GoogleFonts.playpenSans(
+                            color: const Color(
+                              0xFF2C1810,
+                            ), // Dark brown for better contrast
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            letterSpacing: 0.2,
+                          ),
                           textDirection: TextDirection.rtl,
                         ),
                       ],
@@ -662,12 +700,16 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                     const SizedBox(height: 12),
                     Text(
                       azkar.transliteration!,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      style: GoogleFonts.playpenSans(
+                        color: const Color(
+                          0xFF2C1810,
+                        ), // Dark brown for better contrast
                         fontStyle: FontStyle.italic,
                         fontSize: 16,
-                        height: 1.8,
-                        letterSpacing: 0.3,
+                        height: 1.9, // Improved line height
+                        letterSpacing:
+                            0.4, // Better spacing for transliteration
+                        fontWeight: FontWeight.w400,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -682,21 +724,40 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer.withValues(alpha: 0.1),
+                  color: categoryColor.withValues(
+                    alpha: 0.18,
+                  ), // Enhanced with category color and higher opacity
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: categoryColor.withValues(
+                      alpha: 0.4,
+                    ), // Category color border with higher opacity
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: categoryColor.withValues(
+                        alpha: 0.25,
+                      ), // Enhanced shadow
+                      blurRadius: 15,
+                      spreadRadius: 3,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
                     Text(
                       azkar.translation!,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors
-                            .black87, // Changed to black87 for better visibility
+                      style: GoogleFonts.playpenSans(
+                        color: const Color(
+                          0xFF2C1810,
+                        ), // Dark brown for better contrast
                         fontSize: 16,
-                        height: 1.8,
+                        height: 1.9, // Improved line height for readability
                         fontWeight: FontWeight.w500,
+                        letterSpacing:
+                            0.3, // Added letter spacing for better readability
                       ),
                       textAlign: TextAlign.center,
                       textDirection: TextDirection.rtl,
@@ -735,11 +796,14 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                     Flexible(
                       child: Text(
                         azkar.formattedReference,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors
-                              .black87, // Changed to black87 for better visibility
+                        style: GoogleFonts.playpenSans(
+                          color: const Color(
+                            0xFF2C1810,
+                          ), // Dark brown for better contrast
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
+                          letterSpacing: 0.2,
+                          height: 1.4,
                         ),
                         textAlign: TextAlign.center,
                         textDirection: TextDirection.rtl,
@@ -818,10 +882,11 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
             const SizedBox(height: 4),
             Text(
               label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: GoogleFonts.playpenSans(
                 color: Theme.of(context).colorScheme.primary,
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
+                letterSpacing: 0.1,
               ),
               textDirection: TextDirection.rtl,
             ),
@@ -849,20 +914,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            style:
-                Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: categoryColor,
-                  fontWeight: FontWeight.w600,
-                ) ??
-                TextStyle(color: categoryColor, fontWeight: FontWeight.w600),
-            child: Text(
-              '${_currentAzkarIndex + 1} من ${widget.azkarList!.length}',
-              textDirection: TextDirection.rtl,
-            ),
-          ),
+          // Page number removed as requested
           const SizedBox(height: 12),
           // Fixed dots page indicator with smooth transitions
           AnimatedContainer(
@@ -904,6 +956,161 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // New method to build just the counter circle for overlapping positioning
+  Widget _buildCounterCircle(Azkar azkar, Color categoryColor) {
+    final progress = _currentCount / azkar.repeatCount;
+
+    return FadeInUp(
+      duration: const Duration(milliseconds: 600),
+      delay: const Duration(milliseconds: 400),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: _isCompleted
+                ? Colors.green.withValues(alpha: 0.1)
+                : Theme.of(context).colorScheme.surface,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: _isCompleted
+                    ? Colors.green.withValues(alpha: 0.2)
+                    : Theme.of(
+                        context,
+                      ).colorScheme.shadow.withValues(alpha: 0.1),
+                blurRadius: 15,
+                spreadRadius: 3,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 70,
+                height: 70,
+                child: CircularProgressIndicator(
+                  value: progress.clamp(0.0, 1.0),
+                  strokeWidth: 5,
+                  backgroundColor: _isCompleted
+                      ? Colors.green.withValues(alpha: 0.3)
+                      : categoryColor.withValues(alpha: 0.15),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    _isCompleted ? Colors.green : categoryColor,
+                  ),
+                  strokeCap: StrokeCap.round,
+                ),
+              ),
+              // Enhanced circular button
+              ScaleTransition(
+                scale: _pulseAnimation,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _isCompleted ? null : () => _incrementCounter(azkar),
+                    borderRadius: BorderRadius.circular(25),
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (_isCompleted) ...[
+                              Icon(
+                                Icons.check_circle_outline,
+                                color: _isCompleted
+                                    ? Colors.green
+                                    : categoryColor,
+                                size: 20,
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                'تم',
+                                style: GoogleFonts.playpenSans(
+                                  color: _isCompleted
+                                      ? Colors.green
+                                      : categoryColor,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.1,
+                                ),
+                                textDirection: TextDirection.rtl,
+                              ),
+                            ] else ...[
+                              Text(
+                                '$_currentCount',
+                                style: GoogleFonts.playpenSans(
+                                  color: categoryColor,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Container(
+                                width: 16,
+                                height: 1,
+                                color: categoryColor.withValues(alpha: 0.6),
+                                margin: const EdgeInsets.symmetric(vertical: 1),
+                              ),
+                              Text(
+                                '${azkar.repeatCount}',
+                                style: GoogleFonts.playpenSans(
+                                  color: categoryColor.withValues(alpha: 0.9),
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // New method to build just the repetition text
+  Widget _buildRepetitionText(Azkar azkar, Color categoryColor) {
+    return FadeInUp(
+      duration: const Duration(milliseconds: 600),
+      delay: const Duration(milliseconds: 500),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: (_isCompleted ? Colors.green : categoryColor).withValues(
+              alpha: 0.1,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: (_isCompleted ? Colors.green : categoryColor).withValues(
+                alpha: 0.3,
+              ),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            ' ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
+            style: GoogleFonts.playpenSans(
+              color: _isCompleted ? Colors.green.shade700 : categoryColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.rtl,
+          ),
+        ),
       ),
     );
   }

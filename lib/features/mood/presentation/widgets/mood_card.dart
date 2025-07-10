@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:sakinah_app/core/theme/app_typography.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sakinah_app/features/mood/domain/entities/mood.dart';
 
 /// A beautiful animated mood selection card with gradient backgrounds
@@ -190,7 +190,7 @@ class _MoodCardState extends State<MoodCard>
                         delay: const Duration(milliseconds: 200),
                         child: Text(
                           _getMoodNameArabic(),
-                          style: ArabicTextStyles.body.copyWith(
+                          style: GoogleFonts.playpenSans(
                             color: moodColor.withOpacity(0.9),
                             fontWeight: widget.isSelected
                                 ? FontWeight.bold
@@ -210,7 +210,7 @@ class _MoodCardState extends State<MoodCard>
                         delay: const Duration(milliseconds: 300),
                         child: Text(
                           _getMoodNameEnglish(),
-                          style: EnglishTextStyles.caption.copyWith(
+                          style: GoogleFonts.playpenSans(
                             color: Theme.of(
                               context,
                             ).colorScheme.onSurfaceVariant,

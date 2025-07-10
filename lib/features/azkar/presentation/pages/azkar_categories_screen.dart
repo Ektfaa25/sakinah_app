@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/azkar_new.dart';
 import '../../data/services/azkar_database_adapter.dart';
 import 'azkar_category_screen.dart';
@@ -144,17 +145,18 @@ class _AzkarScreenState extends State<AzkarScreen>
                     children: [
                       Text(
                         'الأذكار',
-                        style: Theme.of(context).textTheme.headlineLarge
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
+                        style: GoogleFonts.playpenSans(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         textDirection: TextDirection.rtl,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Islamic Remembrances',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: GoogleFonts.playpenSans(
+                          fontSize: 14,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),

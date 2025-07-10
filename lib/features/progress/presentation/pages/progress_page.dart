@@ -119,7 +119,9 @@ class _ProgressPageState extends State<ProgressPage>
           ),
           labelColor: theme.colorScheme.primary,
           unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.6),
-          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          labelStyle: theme.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
           onTap: (index) {
             switch (index) {
               case 0:
