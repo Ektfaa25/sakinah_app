@@ -329,7 +329,8 @@ class AppRouter {
       ],
 
       // Error handling
-      errorBuilder: (context, state) => _buildErrorPage(state.error.toString()),
+      errorBuilder: (context, state) =>
+          AppRouter._buildErrorPage(state.error.toString()),
 
       // Redirect logic
       redirect: (context, state) {
@@ -364,7 +365,12 @@ class AppRouter {
             ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () => _navigateToTestRoute(),
+              onPressed: () {
+                final context = _rootNavigatorKey.currentContext;
+                if (context != null) {
+                  context.push(AppRoutes.moodSelection);
+                }
+              },
               child: const Text('Navigate Test'),
             ),
           ],
@@ -375,55 +381,7 @@ class AppRouter {
 
   /// Build main app shell with bottom navigation
   static Widget _buildMainShell(Widget child) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: _buildBottomNavigationBar(),
-    );
-  }
-
-  /// Build bottom navigation bar
-  static Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.teal[50],
-      selectedItemColor: Colors.teal[700],
-      unselectedItemColor: Colors.grey[500],
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.trending_up),
-          label: 'Progress',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-      ],
-      onTap: (index) => _onBottomNavTap(index),
-    );
-  }
-
-  /// Handle bottom navigation tap
-  static void _onBottomNavTap(int index) {
-    final context = _shellNavigatorKey.currentContext;
-    if (context == null) return;
-
-    switch (index) {
-      case 0:
-        context.go(AppRoutes.home);
-        break;
-      case 1:
-        context.go(AppRoutes.progress);
-        break;
-      case 2:
-        context.go(AppRoutes.settings);
-        break;
-    }
-  }
-
-  /// Navigate to mood selection for testing
-  static void _navigateToTestRoute() {
-    final context = _rootNavigatorKey.currentContext;
-    if (context == null) return;
-
-    context.push(AppRoutes.moodSelection);
+    return _MainShell(child: child);
   }
 
   /// Build error page
@@ -463,6 +421,100 @@ class AppRouter {
         ),
       ),
     );
+  }
+}
+
+/// Main shell widget with bottom navigation
+class _MainShell extends StatefulWidget {
+  final Widget child;
+
+  const _MainShell({required this.child});
+
+  @override
+  State<_MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<_MainShell> {
+  int _currentIndex = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateCurrentIndex();
+  }
+
+  void _updateCurrentIndex() {
+    final location = GoRouterState.of(context).uri.path;
+    setState(() {
+      if (location == AppRoutes.home) {
+        _currentIndex = 0;
+      } else if (location == AppRoutes.azkarCategories) {
+        _currentIndex = 1;
+      } else if (location == AppRoutes.progress) {
+        _currentIndex = 3;
+      } else if (location == AppRoutes.settings) {
+        _currentIndex = 4;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: widget.child,
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.teal[50],
+        selectedItemColor: Colors.teal[700],
+        unselectedItemColor: Colors.grey[500],
+        currentIndex: _currentIndex,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
+          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'الفئات'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'المفضلة'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.show_chart),
+            label: 'التقدم',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'الإعدادات',
+          ),
+        ],
+        onTap: _onBottomNavTap,
+      ),
+    );
+  }
+
+  void _onBottomNavTap(int index) {
+    switch (index) {
+      case 0:
+        // Home
+        context.go(AppRoutes.home);
+        break;
+      case 1:
+        // All Categories (Azkar grid)
+        context.go(AppRoutes.azkarCategories);
+        break;
+      case 2:
+        // Favorites (placeholder for now)
+        _showComingSoonMessage('الأذكار المفضلة - قريباً');
+        break;
+      case 3:
+        // Progress
+        context.go(AppRoutes.progress);
+        break;
+      case 4:
+        // Settings (placeholder for now)
+        _showComingSoonMessage('الإعدادات - قريباً');
+        break;
+    }
+  }
+
+  void _showComingSoonMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

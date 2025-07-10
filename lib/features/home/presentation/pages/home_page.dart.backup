@@ -217,13 +217,20 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Add spacing at the beginning of the page
-              const SizedBox(height: 40),
+              // Content with horizontal padding (greeting and azkar sections)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [const SizedBox(height: 40)],
+                ),
+              ),
+
               // Quick mood selection section (no horizontal padding)
               Container(
                 padding: const EdgeInsets.all(20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'كيف تشعر الآن؟', // How do you feel now?
@@ -240,80 +247,88 @@ class HomePage extends StatelessWidget {
                       height: 80,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        reverse: true, // Enable RTL scrolling
                         itemCount: 6, // Show first 6 moods
                         itemBuilder: (context, index) {
-                          final moods = [
-                            {'name': 'happy', 'emoji': '😊', 'nameAr': 'سعيد'},
-                            {'name': 'sad', 'emoji': '😔', 'nameAr': 'حزين'},
-                            {'name': 'anxious', 'emoji': '😰', 'nameAr': 'قلق'},
-                            {
-                              'name': 'grateful',
-                              'emoji': '🙏',
-                              'nameAr': 'شاكر',
-                            },
-                            {
-                              'name': 'stressed',
-                              'emoji': '😤',
-                              'nameAr': 'متوتر',
-                            },
-                            {
-                              'name': 'peaceful',
-                              'emoji': '😌',
-                              'nameAr': 'مطمئن',
-                            },
-                          ];
+                            final moods = [
+                              {
+                                'name': 'happy',
+                                'emoji': '😊',
+                                'nameAr': 'سعيد',
+                              },
+                              {'name': 'sad', 'emoji': '😔', 'nameAr': 'حزين'},
+                              {
+                                'name': 'anxious',
+                                'emoji': '😰',
+                                'nameAr': 'قلق',
+                              },
+                              {
+                                'name': 'grateful',
+                                'emoji': '🙏',
+                                'nameAr': 'شاكر',
+                              },
+                              {
+                                'name': 'stressed',
+                                'emoji': '😤',
+                                'nameAr': 'متوتر',
+                              },
+                              {
+                                'name': 'peaceful',
+                                'emoji': '😌',
+                                'nameAr': 'مطمئن',
+                              },
+                            ];
 
-                          final mood = moods[index];
-                          return Container(
-                            width: 65,
-                            margin: const EdgeInsets.only(right: 12),
-                            child: GestureDetector(
-                              onTap: () => context.push(
-                                '${AppRoutes.azkarDisplay}?mood=${mood['name']}',
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: _getMoodColor(
-                                    mood['name'] as String,
-                                  ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
+                            final mood = moods[index];
+                            return Container(
+                              width: 65,
+                              margin: const EdgeInsets.only(right: 12),
+                              child: GestureDetector(
+                                onTap: () => context.push(
+                                  '${AppRoutes.azkarDisplay}?mood=${mood['name']}',
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
                                     color: _getMoodColor(
                                       mood['name'] as String,
-                                    ).withOpacity(0.3),
-                                    width: 1,
+                                    ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: _getMoodColor(
+                                        mood['name'] as String,
+                                      ).withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        mood['emoji'] as String,
+                                        style: const TextStyle(fontSize: 24),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        mood['nameAr'] as String,
+                                        style: GoogleFonts.playpenSans(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: _getMoodColor(
+                                            mood['name'] as String,
+                                          ),
+                                        ),
+                                        textDirection: TextDirection.rtl,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      mood['emoji'] as String,
-                                      style: const TextStyle(fontSize: 24),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      mood['nameAr'] as String,
-                                      style: GoogleFonts.playpenSans(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: _getMoodColor(
-                                          mood['name'] as String,
-                                        ),
-                                      ),
-                                      textDirection: TextDirection.rtl,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
@@ -325,73 +340,37 @@ class HomePage extends StatelessWidget {
                   children: [
                     const SizedBox(height: 32),
 
-                    // Azkar categories section with + and heart icons
+                    // Azkar categories section with + icon
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Group of icons (plus and heart)
-                        Row(
-                          children: [
-                            // Small + icon button to show all categories
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: IconButton(
-                                onPressed: () =>
-                                    context.push(AppRoutes.azkarCategories),
-                                icon: Icon(
-                                  Icons.add,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 16,
-                                ),
-                                padding: EdgeInsets.zero,
-                                tooltip: 'المزيد من الأذكار',
-                              ),
+                        // Small + icon button to show all categories
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.3),
+                              width: 1,
                             ),
-                            const SizedBox(width: 8),
-                            // Heart icon for favorite azkar
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: Colors.pink.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.pink.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: IconButton(
-                                onPressed: () {
-                                  // TODO: Navigate to favorite azkar
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('الأذكار المفضلة - قريباً'),
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.favorite,
-                                  color: Colors.pink,
-                                  size: 16,
-                                ),
-                                padding: EdgeInsets.zero,
-                                tooltip: 'الأذكار المفضلة',
-                              ),
+                          ),
+                          child: IconButton(
+                            onPressed: () =>
+                                context.push(AppRoutes.azkarCategories),
+                            icon: Icon(
+                              Icons.add,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 16,
                             ),
-                          ],
+                            padding: EdgeInsets.zero,
+                            tooltip: 'المزيد من الأذكار',
+                          ),
                         ),
                         // Azkar title
                         Text(

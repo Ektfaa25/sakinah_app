@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/azkar_new.dart';
 import '../../data/services/azkar_database_adapter.dart';
 import 'azkar_category_screen.dart';
 
 class AzkarScreen extends StatefulWidget {
-  const AzkarScreen({Key? key}) : super(key: key);
+  const AzkarScreen({super.key});
 
   @override
   State<AzkarScreen> createState() => _AzkarScreenState();
@@ -92,15 +94,48 @@ class _AzkarScreenState extends State<AzkarScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            children: [
-              _buildHeader(context),
-              Expanded(child: _buildBody()),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFF3B0), // Bright cream/yellow at top
+              Color(0xFFE8F8F5), // Light mint at bottom
             ],
+          ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black87),
+              onPressed: () => context.go(AppRoutes.home),
+              tooltip: 'رجوع',
+            ),
+            title: Text(
+              'جميع الأذكار',
+              style: GoogleFonts.playpenSans(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              textDirection: TextDirection.rtl,
+            ),
+            centerTitle: true,
+          ),
+          body: SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  _buildHeader(context),
+                  Expanded(child: _buildBody()),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -124,18 +159,23 @@ class _AzkarScreenState extends State<AzkarScreen>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        Theme.of(
-                          context,
-                        ).colorScheme.secondary.withOpacity(0.05),
+                        const Color(0xFFFFF3B0).withValues(alpha: 0.7),
+                        const Color(0xFFFFDBA4).withValues(alpha: 0.5),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFE6A23C).withValues(alpha: 0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Icon(
                     Icons.menu_book,
                     size: 32,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: const Color(0xFFD97706),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -227,7 +267,7 @@ class _AzkarScreenState extends State<AzkarScreen>
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
@@ -301,7 +341,7 @@ class _AzkarScreenState extends State<AzkarScreen>
                 decoration: BoxDecoration(
                   color: Theme.of(
                     context,
-                  ).colorScheme.surfaceVariant.withOpacity(0.3),
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
@@ -363,8 +403,14 @@ class _AzkarScreenState extends State<AzkarScreen>
   }
 
   Widget _buildCategoriesList() {
-    return ListView.builder(
+    return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.85,
+      ),
       itemCount: _categories.length,
       itemBuilder: (context, index) {
         final category = _categories[index];
@@ -378,95 +424,107 @@ class _AzkarScreenState extends State<AzkarScreen>
   }
 
   Widget _buildCategoryCard(AzkarCategory category, int index) {
-    final color = _parseColor(category.getColor());
+    final color = _getGradientColor(index);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Material(
-        elevation: 2,
+    return Material(
+      elevation: 4,
+      borderRadius: BorderRadius.circular(16),
+      shadowColor: color.withValues(alpha: 0.3),
+      child: InkWell(
+        onTap: () => _onCategoryTap(category),
         borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: () => _onCategoryTap(category),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
-              ),
-              border: Border.all(color: color.withOpacity(0.2), width: 1),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    _getIconData(category.getIconName()),
-                    color: color,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        category.nameAr,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                        textDirection: TextDirection.rtl,
-                      ),
-                      const SizedBox(height: 4),
-                      if (category.nameEn != null)
-                        Text(
-                          category.nameEn!,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      if (category.description != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          category.description!,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textDirection: TextDirection.rtl,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(Icons.arrow_forward_ios, size: 16, color: color),
-                ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withValues(alpha: 0.6),
+                color.withValues(alpha: 0.3),
               ],
             ),
+            border: Border.all(color: color.withValues(alpha: 0.7), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.2),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.8),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  _getIconData(category.getIconName()),
+                  color: color,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                category.nameAr,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              if (category.nameEn != null)
+                Text(
+                  category.nameEn!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.6),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Icon(Icons.arrow_forward_ios, size: 12, color: color),
+              ),
+            ],
           ),
         ),
       ),
@@ -486,17 +544,21 @@ class _AzkarScreenState extends State<AzkarScreen>
     );
   }
 
-  Color _parseColor(String colorString) {
-    try {
-      if (colorString.startsWith('#')) {
-        return Color(
-          int.parse(colorString.substring(1), radix: 16) + 0xFF000000,
-        );
-      }
-      return Theme.of(context).colorScheme.primary;
-    } catch (e) {
-      return Theme.of(context).colorScheme.primary;
-    }
+  // Get gradient colors that match the design in the image
+  Color _getGradientColor(int index) {
+    final colors = [
+      const Color(0xFFFFF3B0), // Bright cream/yellow
+      const Color(0xFFFFDBA4), // Bright peach
+      const Color(0xFFFFB3BA), // Bright pink
+      const Color(0xFFE4A5D1), // Bright purple
+      const Color(0xFFB8A9FF), // Bright lavender
+      const Color(0xFF89CDF1), // Bright blue
+      const Color(0xFF7DD3FC), // Bright cyan
+      const Color(0xFF67E8F9), // Bright turquoise
+      const Color(0xFF6EE7B7), // Bright mint
+      const Color(0xFF9AE6B4), // Bright green
+    ];
+    return colors[index % colors.length];
   }
 
   IconData _getIconData(String iconName) {
