@@ -94,48 +94,34 @@ class _AzkarScreenState extends State<AzkarScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFF3B0), // Bright cream/yellow at top
-              Color(0xFFE8F8F5), // Light mint at bottom
-            ],
-          ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => context.go(AppRoutes.home),
+          tooltip: 'رجوع',
         ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black87),
-              onPressed: () => context.go(AppRoutes.home),
-              tooltip: 'رجوع',
-            ),
-            title: Text(
-              'جميع الأذكار',
-              style: GoogleFonts.playpenSans(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              textDirection: TextDirection.rtl,
-            ),
-            centerTitle: true,
+        title: Text(
+          'جميع الأذكار',
+          style: GoogleFonts.playpenSans(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
-          body: SafeArea(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                children: [
-                  _buildHeader(context),
-                  Expanded(child: _buildBody()),
-                ],
-              ),
-            ),
+          textDirection: TextDirection.rtl,
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(child: _buildBody()),
+            ],
           ),
         ),
       ),
