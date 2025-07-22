@@ -23,11 +23,29 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Monthly Activity',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.secondary.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.calendar_month,
+                  color: theme.colorScheme.secondary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Monthly Activity',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           _buildHeatmapGrid(context),
@@ -54,7 +72,7 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.1),
+        color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -159,7 +177,7 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.1),
+        color: theme.colorScheme.surface.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -244,8 +262,8 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
       children: [
         Text(
           value,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: color,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -253,7 +271,6 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
           label,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurface.withOpacity(0.6),
-            fontSize: 10,
           ),
         ),
       ],
@@ -261,31 +278,24 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
   }
 
   Color _getHeatmapColor(BuildContext context, int azkarCount) {
-    final theme = Theme.of(context);
-
     if (azkarCount == 0) {
-      return theme.colorScheme.outline.withOpacity(0.1);
+      return _getGradientColor(
+        9,
+      ).withValues(alpha: 0.1); // Light turquoise, very light
     } else if (azkarCount <= 2) {
-      return theme.colorScheme.primary.withOpacity(0.3);
+      return _getGradientColor(4).withValues(alpha: 0.3); // Light mint
     } else if (azkarCount <= 5) {
-      return theme.colorScheme.primary.withOpacity(0.6);
+      return _getGradientColor(4).withValues(alpha: 0.6); // Light mint
     } else if (azkarCount <= 8) {
-      return theme.colorScheme.primary.withOpacity(0.8);
+      return _getGradientColor(4).withValues(alpha: 0.8); // Light mint
     } else {
-      return theme.colorScheme.primary;
+      return _getGradientColor(4); // Light mint
     }
   }
 
   Color _getTextColor(BuildContext context, int azkarCount) {
-    final theme = Theme.of(context);
-
-    if (azkarCount == 0) {
-      return theme.colorScheme.onSurface.withOpacity(0.6);
-    } else if (azkarCount <= 2) {
-      return theme.colorScheme.onSurface;
-    } else {
-      return theme.colorScheme.onPrimary;
-    }
+    // Use consistent navy blue text for all cases
+    return const Color(0xFF1A1A2E);
   }
 
   int _calculateLongestStreak() {
@@ -306,5 +316,31 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
     }
 
     return longestStreak;
+  }
+
+  // Get gradient colors that match the azkar categories design
+  Color _getGradientColor(int index) {
+    final colors = [
+      _getColorFromHex('#FBF8CC'), // Light yellow
+      _getColorFromHex('#A3C4F3'), // Light blue
+      _getColorFromHex('#FDE4CF'), // Light peach
+      _getColorFromHex('#90DBF4'), // Light cyan
+      _getColorFromHex('#98F5E1'), // Light mint
+      _getColorFromHex('#B9FBC0'), // Light green
+      _getColorFromHex('#FFCFD2'), // Light pink
+      _getColorFromHex('#F1C0E8'), // Light purple
+      _getColorFromHex('#CFBAF0'), // Light lavender
+      _getColorFromHex('#8EECF5'), // Light turquoise
+    ];
+    return colors[index % colors.length];
+  }
+
+  /// Helper method to convert hex color string to Color object
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor'; // Add alpha channel
+    }
+    return Color(int.parse(hexColor, radix: 16));
   }
 }

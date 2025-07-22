@@ -13,7 +13,6 @@ class AppRoutes {
   // Main app routes
   static const String moodSelection = '/mood-selection';
   static const String azkarDisplay = '/azkar-display';
-  static const String azkarDetail = '/azkar-detail';
   static const String progress = '/progress';
   static const String settings = '/settings';
 
@@ -21,6 +20,7 @@ class AppRoutes {
   static const String azkarCategories = '/azkar-categories';
   static const String azkarCategory = '/azkar-category';
   static const String azkarDetailNew = '/azkar-detail-new';
+  static const String azkarFavorites = '/azkar-favorites';
 
   // Secondary routes
   static const String customAzkar = '/custom-azkar';

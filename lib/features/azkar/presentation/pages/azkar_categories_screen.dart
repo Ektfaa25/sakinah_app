@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/azkar_new.dart';
 import '../../data/services/azkar_database_adapter.dart';
-import 'azkar_category_screen.dart';
 
 class AzkarScreen extends StatefulWidget {
   const AzkarScreen({super.key});
@@ -19,6 +17,7 @@ class _AzkarScreenState extends State<AzkarScreen>
     with TickerProviderStateMixin {
   List<AzkarCategory> _categories = [];
   bool _isLoading = true;
+  bool _isNavigating = false; // Add loading state for navigation
   String? _error;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -104,8 +103,8 @@ class _AzkarScreenState extends State<AzkarScreen>
           tooltip: 'رجوع',
         ),
         title: Text(
-          'جميع الأذكار',
-          style: GoogleFonts.playpenSans(
+          'الأذكار',
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -115,96 +114,30 @@ class _AzkarScreenState extends State<AzkarScreen>
         centerTitle: true,
       ),
       body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            children: [
-              _buildHeader(context),
-              Expanded(child: _buildBody()),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+        child: Stack(
+          children: [
+            FadeTransition(opacity: _fadeAnimation, child: _buildBody()),
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FadeInDown(
-            duration: const Duration(milliseconds: 600),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xFFFFF3B0).withValues(alpha: 0.7),
-                        const Color(0xFFFFDBA4).withValues(alpha: 0.5),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFE6A23C).withValues(alpha: 0.3),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.menu_book,
-                    size: 32,
-                    color: const Color(0xFFD97706),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
+            // Loading overlay when navigating
+            if (_isNavigating)
+              Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const Center(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      CircularProgressIndicator(color: Colors.white),
+                      SizedBox(height: 16),
                       Text(
-                        'الأذكار',
-                        style: GoogleFonts.playpenSans(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                        textDirection: TextDirection.rtl,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Islamic Remembrances',
-                        style: GoogleFonts.playpenSans(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                        'جاري تحميل الأذكار...',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          FadeInUp(
-            duration: const Duration(milliseconds: 600),
-            delay: const Duration(milliseconds: 200),
-            child: Text(
-              'اختر فئة الأذكار التي تريد قراءتها',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              textDirection: TextDirection.rtl,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -395,7 +328,7 @@ class _AzkarScreenState extends State<AzkarScreen>
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.85,
+        childAspectRatio: 1.1,
       ),
       itemCount: _categories.length,
       itemBuilder: (context, index) {
@@ -412,103 +345,58 @@ class _AzkarScreenState extends State<AzkarScreen>
   Widget _buildCategoryCard(AzkarCategory category, int index) {
     final color = _getGradientColor(index);
 
-    return Material(
-      elevation: 4,
-      borderRadius: BorderRadius.circular(16),
-      shadowColor: color.withValues(alpha: 0.3),
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () => _onCategoryTap(category),
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12), // Reduced padding
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                color.withValues(alpha: 0.6),
-                color.withValues(alpha: 0.3),
-              ],
+                color,
+                color.withValues(alpha: 0.8),
+              ], // Use the actual color for better readability
             ),
-            border: Border.all(color: color.withValues(alpha: 0.7), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.2),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 56,
-                height: 56,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white, // White background
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: color.withValues(alpha: 0.8),
-                    width: 2,
+                    color: color.withValues(
+                      alpha: 0.3,
+                    ), // Darker border using card color
+                    width: 4,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: Icon(
-                  _getIconData(category.getIconName()),
-                  color: color,
-                  size: 28,
+                  _getIconForCategory(category),
+                  size: 24,
+                  color: color, // Use the original card color for the icon
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8), // Reduced spacing
               Text(
                 category.nameAr,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: Color(0xFF1A1A2E), // Navy blue dark text
+                  fontSize: 12, // Smaller font size for card titles
                 ),
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              if (category.nameEn != null)
-                Text(
-                  category.nameEn!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: color.withValues(alpha: 0.6),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Icon(Icons.arrow_forward_ios, size: 12, color: color),
               ),
             ],
           ),
@@ -517,59 +405,244 @@ class _AzkarScreenState extends State<AzkarScreen>
     );
   }
 
-  void _onCategoryTap(AzkarCategory category) {
+  void _onCategoryTap(AzkarCategory category) async {
     // Haptic feedback
     HapticFeedback.mediumImpact();
 
-    // Navigate to category screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AzkarCategoryScreen(category: category),
-      ),
-    );
+    // Check if widget is still mounted and not already navigating
+    if (!mounted || _isNavigating) return;
+
+    setState(() {
+      _isNavigating = true;
+    });
+
+    try {
+      // Load azkar for this category
+      print(
+        '🔍 Loading azkar for category: ${category.nameAr} (ID: ${category.id})',
+      );
+      final azkarList = await AzkarDatabaseAdapter.getAzkarByCategory(
+        category.id,
+      );
+
+      // Check again if widget is still mounted after async operation
+      if (!mounted) return;
+
+      if (azkarList.isNotEmpty) {
+        print(
+          '✅ Successfully loaded ${azkarList.length} azkar for category: ${category.nameAr}',
+        );
+        print(
+          '🚀 Navigating to AzkarDetailScreen with first azkar: ${azkarList.first.textAr.substring(0, 50)}...',
+        );
+
+        // Reset loading state before navigation
+        setState(() {
+          _isNavigating = false;
+        });
+
+        // Navigate to detail screen with first azkar using GoRouter
+        context.push(
+          '${AppRoutes.azkarDetailNew}/${azkarList.first.id}',
+          extra: {
+            'azkar': azkarList.first,
+            'category': category,
+            'azkarIndex': 0,
+            'totalAzkar': azkarList.length,
+            'azkarList': azkarList,
+          },
+        );
+      } else {
+        // Show error if no azkar found
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('لا توجد أذكار متاحة في هذه الفئة'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ في تحميل الأذكار: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      print('❌ Error loading azkar for category: $e');
+    } finally {
+      // Always reset navigation state
+      if (mounted) {
+        setState(() {
+          _isNavigating = false;
+        });
+      }
+    }
   }
 
-  // Get gradient colors that match the design in the image
+  // Get gradient colors that match the home page design
   Color _getGradientColor(int index) {
     final colors = [
-      const Color(0xFFFFF3B0), // Bright cream/yellow
-      const Color(0xFFFFDBA4), // Bright peach
-      const Color(0xFFFFB3BA), // Bright pink
-      const Color(0xFFE4A5D1), // Bright purple
-      const Color(0xFFB8A9FF), // Bright lavender
-      const Color(0xFF89CDF1), // Bright blue
-      const Color(0xFF7DD3FC), // Bright cyan
-      const Color(0xFF67E8F9), // Bright turquoise
-      const Color(0xFF6EE7B7), // Bright mint
-      const Color(0xFF9AE6B4), // Bright green
+      _getColorFromHex('#FBF8CC'), // Light yellow
+      _getColorFromHex('#A3C4F3'), // Light blue
+      _getColorFromHex('#FDE4CF'), // Light peach
+      _getColorFromHex('#90DBF4'), // Light cyan
+      _getColorFromHex('#98F5E1'), // Light mint
+      _getColorFromHex('#B9FBC0'), // Light green
+      _getColorFromHex('#FFCFD2'), // Light pink
+      _getColorFromHex('#F1C0E8'), // Light purple
+      _getColorFromHex('#CFBAF0'), // Light lavender
+      _getColorFromHex('#8EECF5'), // Light turquoise
     ];
     return colors[index % colors.length];
+  }
+
+  /// Helper method to convert hex color string to Color object
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor'; // Add alpha channel
+    }
+    return Color(int.parse(hexColor, radix: 16));
   }
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
       case 'wb_sunny':
-        return Icons.wb_sunny;
+        return Icons.wb_sunny; // Morning sun
       case 'nights_stay':
-        return Icons.nights_stay;
+        return Icons.nights_stay; // Evening/night
       case 'bedtime':
-        return Icons.bedtime;
+        return Icons.bedtime; // Sleep
+      case 'light_mode':
+        return Icons.light_mode; // Waking up
       case 'mosque':
-        return Icons.mosque;
+        return Icons.mosque; // Prayer/mosque
+      case 'check_circle':
+        return Icons.check_circle; // After prayer completion
       case 'flight':
-        return Icons.flight;
+        return Icons.flight; // Travel
       case 'restaurant':
-        return Icons.restaurant;
+        return Icons.restaurant; // Eating/meals
       case 'favorite':
-        return Icons.favorite;
+        return Icons
+            .auto_awesome; // Love/gratitude (changed from heart to star)
       case 'spa':
-        return Icons.spa;
+        return Icons.spa; // Relaxation/dhikr
       case 'shield':
-        return Icons.shield;
+        return Icons.shield; // Protection
+      case 'auto_awesome':
+        return Icons.auto_awesome; // Beautiful names of Allah
+      case 'self_improvement':
+        return Icons.self_improvement; // Personal development/dhikr
+      case 'nature':
+        return Icons.nature; // Nature/creation
+      case 'psychology':
+        return Icons.psychology; // Reflection/contemplation
+      case 'healing':
+        return Icons.healing; // Healing/ruqyah
+      case 'star':
+        return Icons.star; // Special/blessed
+      case 'book':
+        return Icons.book; // Quran/reading
+      case 'home':
+        return Icons.home; // Home/family
+      case 'work':
+        return Icons.work; // Work/business
+      case 'school':
+        return Icons.school; // Learning/knowledge
+      case 'celebration':
+        return Icons.celebration; // Celebration/joy
+      case 'handshake':
+        return Icons.handshake; // Community/brotherhood
+      case 'volunteer_activism':
+        return Icons.volunteer_activism; // Charity/helping others
+      case 'security':
+        return Icons.security; // Safety/protection
+      case 'health_and_safety':
+        return Icons.health_and_safety; // Health/wellbeing
+      case 'elderly':
+        return Icons.elderly; // Elderly/respect
+      case 'child_care':
+        return Icons.child_care; // Children/family
+      case 'directions_walk':
+        return Icons.directions_walk; // Walking/journey
+      case 'directions_car':
+        return Icons.directions_car; // Vehicle/transportation
+      case 'weather_sunny':
+        return Icons.wb_sunny; // Weather/sun
+      case 'cloudy_snowing':
+        return Icons.cloudy_snowing; // Weather/rain
+      case 'water_drop':
+        return Icons.water_drop; // Water/purity
+      case 'local_florist':
+        return Icons.local_florist; // Nature/flowers
+      case 'agriculture':
+        return Icons.agriculture; // Agriculture/farming
       case 'menu_book':
       default:
-        return Icons.menu_book;
+        return Icons.menu_book; // Default book icon
+    }
+  }
+
+  /// Get appropriate icon based on category name
+  IconData _getIconForCategory(AzkarCategory category) {
+    // First try to get icon from the category's icon name
+    final iconFromName = _getIconData(category.getIconName());
+    if (iconFromName != Icons.menu_book) {
+      return iconFromName;
+    }
+
+    // If no specific icon found, determine based on Arabic name
+    final nameAr = category.nameAr.toLowerCase();
+
+    if (nameAr.contains('صباح')) {
+      return Icons.wb_sunny; // Morning azkar
+    } else if (nameAr.contains('مساء')) {
+      return Icons.nights_stay; // Evening azkar
+    } else if (nameAr.contains('نوم') || nameAr.contains('منام')) {
+      return Icons.bedtime; // Sleep azkar
+    } else if (nameAr.contains('استيقاظ') || nameAr.contains('يقظة')) {
+      return Icons.light_mode; // Waking up azkar
+    } else if (nameAr.contains('صلاة') || nameAr.contains('صلوات')) {
+      return Icons.mosque; // Prayer azkar
+    } else if (nameAr.contains('بعد الصلاة')) {
+      return Icons.check_circle; // After prayer azkar
+    } else if (nameAr.contains('سفر') || nameAr.contains('طريق')) {
+      return Icons.flight; // Travel azkar
+    } else if (nameAr.contains('طعام') || nameAr.contains('أكل')) {
+      return Icons.restaurant; // Eating azkar
+    } else if (nameAr.contains('حب') || nameAr.contains('محبة')) {
+      return Icons
+          .auto_awesome; // Love/gratitude azkar (changed from heart to star)
+    } else if (nameAr.contains('رقية') || nameAr.contains('شفاء')) {
+      return Icons.healing; // Ruqyah/healing azkar
+    } else if (nameAr.contains('حماية') || nameAr.contains('حفظ')) {
+      return Icons.shield; // Protection azkar
+    } else if (nameAr.contains('أسماء') || nameAr.contains('حسنى')) {
+      return Icons.auto_awesome; // Beautiful names of Allah
+    } else if (nameAr.contains('تسبيح') || nameAr.contains('ذكر')) {
+      return Icons.self_improvement; // Dhikr/tasbih
+    } else if (nameAr.contains('استغفار')) {
+      return Icons.volunteer_activism; // Istighfar
+    } else if (nameAr.contains('دعاء')) {
+      return Icons.volunteer_activism; // Dua
+    } else if (nameAr.contains('قرآن')) {
+      return Icons.book; // Quran
+    } else if (nameAr.contains('بيت') || nameAr.contains('منزل')) {
+      return Icons.home; // Home azkar
+    } else if (nameAr.contains('عمل')) {
+      return Icons.work; // Work azkar
+    } else if (nameAr.contains('مطر')) {
+      return Icons.cloudy_snowing; // Rain azkar
+    } else if (nameAr.contains('ريح') || nameAr.contains('عاصفة')) {
+      return Icons.air; // Wind azkar
+    } else {
+      return Icons.menu_book; // Default icon
     }
   }
 }

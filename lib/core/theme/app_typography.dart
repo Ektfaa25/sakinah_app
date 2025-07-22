@@ -1,228 +1,280 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Typography configuration for the entire app using Playpen Sans Arabic
 class AppTypography {
-  static const String fontFamily = 'PlaypenSans';
+  static const String fontFamily = 'PlaypenSansArabic';
+
+  /// Helper method to create TextStyle with PlaypenSansArabic font
+  /// This replaces GoogleFonts.playpenSans() calls throughout the app
+  static TextStyle playpenSans({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? height,
+    double? letterSpacing,
+  }) {
+    return TextStyle(
+      fontFamily: 'PlaypenSansArabic',
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      height: height,
+      letterSpacing: letterSpacing,
+    );
+  }
 
   /// Specialized Arabic text styles for optimal readability
-  static TextStyle arabicDisplayLarge = GoogleFonts.playpenSans(
+  static const TextStyle arabicDisplayLarge = TextStyle(
+    fontFamily: 'PlaypenSansArabic',
     fontSize: 28,
     fontWeight: FontWeight.w700,
     height: 2.0,
     letterSpacing: 1.0,
-    color: const Color(0xFF1A1A1A),
+    color: Color(0xFF1A1A1A),
   );
 
-  static TextStyle arabicHeadline = GoogleFonts.playpenSans(
+  static const TextStyle arabicHeadline = TextStyle(
+    fontFamily: 'PlaypenSansArabic',
     fontSize: 22,
     fontWeight: FontWeight.w600,
     height: 1.8,
     letterSpacing: 0.8,
-    color: const Color(0xFF1A1A1A),
+    color: Color(0xFF1A1A1A),
   );
 
-  static TextStyle arabicBody = GoogleFonts.playpenSans(
+  static const TextStyle arabicBody = TextStyle(
+    fontFamily: 'PlaypenSansArabic',
     fontSize: 18,
     fontWeight: FontWeight.w500,
     height: 2.2,
     letterSpacing: 0.6,
-    color: const Color(0xFF1A1A1A),
+    color: Color(0xFF1A1A1A),
   );
 
-  static TextStyle arabicCaption = GoogleFonts.playpenSans(
+  static const TextStyle arabicCaption = TextStyle(
+    fontFamily: 'PlaypenSansArabic',
     fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.6,
     letterSpacing: 0.4,
-    color: const Color(0xFF1A1A1A),
+    color: Color(0xFF1A1A1A),
   );
 
   /// Light theme text theme using Playpen Sans Arabic
-  static TextTheme lightTextTheme = TextTheme(
-    displayLarge: GoogleFonts.playpenSans(
+  static const TextTheme lightTextTheme = TextTheme(
+    displayLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 32,
       fontWeight: FontWeight.w300,
       letterSpacing: -1.5,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    displayMedium: GoogleFonts.playpenSans(
+    displayMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 28,
       fontWeight: FontWeight.w300,
       letterSpacing: -0.5,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    displaySmall: GoogleFonts.playpenSans(
+    displaySmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 24,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.0,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    headlineLarge: GoogleFonts.playpenSans(
+    headlineLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 22,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.0,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    headlineMedium: GoogleFonts.playpenSans(
+    headlineMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 20,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.15,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    headlineSmall: GoogleFonts.playpenSans(
+    headlineSmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 18,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.15,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    titleLarge: GoogleFonts.playpenSans(
+    titleLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 16,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.15,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    titleMedium: GoogleFonts.playpenSans(
+    titleMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 14,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.1,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    titleSmall: GoogleFonts.playpenSans(
+    titleSmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 12,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.1,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    bodyLarge: GoogleFonts.playpenSans(
+    bodyLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 16,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.5,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    bodyMedium: GoogleFonts.playpenSans(
+    bodyMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 14,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.25,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    bodySmall: GoogleFonts.playpenSans(
+    bodySmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 12,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.4,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    labelLarge: GoogleFonts.playpenSans(
+    labelLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 14,
       fontWeight: FontWeight.w500,
       letterSpacing: 1.25,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    labelMedium: GoogleFonts.playpenSans(
+    labelMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 12,
       fontWeight: FontWeight.w400,
       letterSpacing: 1.5,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
-    labelSmall: GoogleFonts.playpenSans(
+    labelSmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 10,
       fontWeight: FontWeight.w400,
       letterSpacing: 1.5,
-      color: const Color(0xFF1A1A1A),
+      color: Color(0xFF1A1A1A),
     ),
   );
 
   /// Dark theme text theme using Playpen Sans Arabic
-  static TextTheme darkTextTheme = TextTheme(
-    displayLarge: GoogleFonts.playpenSans(
+  static const TextTheme darkTextTheme = TextTheme(
+    displayLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 32,
       fontWeight: FontWeight.w300,
       letterSpacing: -1.5,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    displayMedium: GoogleFonts.playpenSans(
+    displayMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 28,
       fontWeight: FontWeight.w300,
       letterSpacing: -0.5,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    displaySmall: GoogleFonts.playpenSans(
+    displaySmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 24,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.0,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    headlineLarge: GoogleFonts.playpenSans(
+    headlineLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 22,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.0,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    headlineMedium: GoogleFonts.playpenSans(
+    headlineMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 20,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.15,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    headlineSmall: GoogleFonts.playpenSans(
+    headlineSmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 18,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.15,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    titleLarge: GoogleFonts.playpenSans(
+    titleLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 16,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.15,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    titleMedium: GoogleFonts.playpenSans(
+    titleMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 14,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.1,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    titleSmall: GoogleFonts.playpenSans(
+    titleSmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 12,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.1,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    bodyLarge: GoogleFonts.playpenSans(
+    bodyLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 16,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.5,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    bodyMedium: GoogleFonts.playpenSans(
+    bodyMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 14,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.25,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    bodySmall: GoogleFonts.playpenSans(
+    bodySmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 12,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.4,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    labelLarge: GoogleFonts.playpenSans(
+    labelLarge: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 14,
       fontWeight: FontWeight.w500,
       letterSpacing: 1.25,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    labelMedium: GoogleFonts.playpenSans(
+    labelMedium: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 12,
       fontWeight: FontWeight.w400,
       letterSpacing: 1.5,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
-    labelSmall: GoogleFonts.playpenSans(
+    labelSmall: TextStyle(
+      fontFamily: 'PlaypenSansArabic',
       fontSize: 10,
       fontWeight: FontWeight.w400,
       letterSpacing: 1.5,
-      color: const Color(0xFFFFFFFF),
+      color: Color(0xFFFFFFFF),
     ),
   );
 }

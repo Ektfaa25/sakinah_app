@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:sakinah_app/features/progress/domain/entities/user_progress.dart';
-import 'package:sakinah_app/shared/widgets/glassy_container.dart';
 
 class WeeklyProgressChart extends StatefulWidget {
   final List<UserProgress> weeklyProgress;
@@ -19,16 +18,45 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return GlassyContainer(
+    return Container(
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Weekly Progress',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _getGradientColor(1).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.trending_up,
+                  color: _getGradientColor(1),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Weekly Progress',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -42,7 +70,7 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                   horizontalInterval: 2,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: theme.colorScheme.outline.withOpacity(0.2),
+                      color: Colors.white.withOpacity(0.3),
                       strokeWidth: 1,
                     );
                   },
@@ -69,9 +97,7 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                             child: Text(
                               weekdays[value.toInt()],
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(
-                                  0.6,
-                                ),
+                                color: Colors.white.withOpacity(0.8),
                               ),
                             ),
                           );
@@ -88,7 +114,7 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                         return Text(
                           value.toInt().toString(),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            color: Colors.white.withOpacity(0.8),
                           ),
                         );
                       },
@@ -104,7 +130,7 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                 borderData: FlBorderData(
                   show: true,
                   border: Border.all(
-                    color: theme.colorScheme.outline.withOpacity(0.2),
+                    color: Colors.white.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -118,8 +144,8 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                     isCurved: true,
                     gradient: LinearGradient(
                       colors: [
-                        theme.colorScheme.primary,
-                        theme.colorScheme.secondary,
+                        _getGradientColor(1), // Light blue
+                        _getGradientColor(3), // Light cyan
                       ],
                     ),
                     barWidth: 3,
@@ -128,8 +154,12 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          theme.colorScheme.primary.withOpacity(0.3),
-                          theme.colorScheme.secondary.withOpacity(0.1),
+                          _getGradientColor(
+                            1,
+                          ).withValues(alpha: 0.3), // Light blue
+                          _getGradientColor(
+                            3,
+                          ).withValues(alpha: 0.1), // Light cyan
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -140,9 +170,9 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                       getDotPainter: (spot, percent, barData, index) =>
                           FlDotCirclePainter(
                             radius: 4,
-                            color: theme.colorScheme.primary,
+                            color: _getGradientColor(1), // Light blue
                             strokeWidth: 2,
-                            strokeColor: theme.colorScheme.surface,
+                            strokeColor: Colors.white,
                           ),
                     ),
                   ),
@@ -165,15 +195,15 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                         final count = spot.y.toInt();
                         return LineTooltipItem(
                           '$day\n$count azkar',
-                          TextStyle(
-                            color: theme.colorScheme.onInverseSurface,
+                          const TextStyle(
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                         );
                       }).toList();
                     },
                     getTooltipColor: (touchedSpot) =>
-                        theme.colorScheme.inverseSurface,
+                        _getGradientColor(1).withValues(alpha: 0.9),
                   ),
                 ),
               ),
@@ -257,17 +287,43 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
         Text(
           value,
           style: theme.textTheme.titleMedium?.copyWith(
-            color: color,
+            color: const Color(0xFF1A1A2E), // Navy blue dark text
             fontWeight: FontWeight.bold,
           ),
         ),
         Text(
           label,
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: const Color(0xFF1A1A2E), // Navy blue dark text
           ),
         ),
       ],
     );
+  }
+
+  // Get gradient colors that match the azkar categories design
+  Color _getGradientColor(int index) {
+    final colors = [
+      _getColorFromHex('#FBF8CC'), // Light yellow
+      _getColorFromHex('#A3C4F3'), // Light blue
+      _getColorFromHex('#FDE4CF'), // Light peach
+      _getColorFromHex('#90DBF4'), // Light cyan
+      _getColorFromHex('#98F5E1'), // Light mint
+      _getColorFromHex('#B9FBC0'), // Light green
+      _getColorFromHex('#FFCFD2'), // Light pink
+      _getColorFromHex('#F1C0E8'), // Light purple
+      _getColorFromHex('#CFBAF0'), // Light lavender
+      _getColorFromHex('#8EECF5'), // Light turquoise
+    ];
+    return colors[index % colors.length];
+  }
+
+  /// Helper method to convert hex color string to Color object
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor'; // Add alpha channel
+    }
+    return Color(int.parse(hexColor, radix: 16));
   }
 }

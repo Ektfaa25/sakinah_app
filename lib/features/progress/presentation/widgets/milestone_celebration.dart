@@ -121,8 +121,8 @@ class MilestoneCelebration extends StatelessWidget {
       return MilestoneData(
         title: 'First 50 Azkar!',
         description: 'Your journey of remembrance is flourishing.',
-        icon: Icons.favorite,
-        color: Colors.pink,
+        icon: Icons.auto_awesome,
+        color: Colors.amber,
       );
     } else if (totalAzkar == 100) {
       return MilestoneData(

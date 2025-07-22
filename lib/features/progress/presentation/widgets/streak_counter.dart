@@ -119,8 +119,6 @@ class _StreakCounterState extends State<StreakCounter>
             return Transform.scale(
               scale: _pulseAnimation.value,
               child: GlassyContainer(
-                padding: const EdgeInsets.all(20),
-                borderRadius: BorderRadius.circular(20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -128,13 +126,24 @@ class _StreakCounterState extends State<StreakCounter>
                     if (widget.showFire && widget.streakCount > 0) ...[
                       FadeIn(
                         duration: const Duration(milliseconds: 500),
-                        child: Icon(
-                          Icons.local_fire_department,
-                          size: 32,
-                          color: Colors.orange.withOpacity(0.9),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.orange.withOpacity(0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.local_fire_department,
+                            size: 24,
+                            color: Colors.orange,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                     ],
 
                     // Animated streak count

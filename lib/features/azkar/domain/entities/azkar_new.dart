@@ -176,23 +176,42 @@ class Azkar extends Equatable {
   });
 
   factory Azkar.fromJson(Map<String, dynamic> json) {
+    // Add null checks and better error handling
+    final id = json['id']?.toString();
+    final categoryId = json['category_id']?.toString();
+    final textAr = json['text_ar']?.toString();
+    final createdAtStr = json['created_at']?.toString();
+
+    if (id == null || id.isEmpty) {
+      throw Exception('Azkar ID is required but was null or empty');
+    }
+    if (categoryId == null || categoryId.isEmpty) {
+      throw Exception('Azkar category_id is required but was null or empty');
+    }
+    if (textAr == null || textAr.isEmpty) {
+      throw Exception('Azkar text_ar is required but was null or empty');
+    }
+    if (createdAtStr == null || createdAtStr.isEmpty) {
+      throw Exception('Azkar created_at is required but was null or empty');
+    }
+
     return Azkar(
-      id: json['id'] as String,
-      categoryId: json['category_id'] as String,
-      textAr: json['text_ar'] as String,
-      textEn: json['text_en'] as String?,
-      transliteration: json['transliteration'] as String?,
-      translation: json['translation'] as String?,
-      reference: json['reference'] as String?,
-      description: json['description'] as String?,
+      id: id,
+      categoryId: categoryId,
+      textAr: textAr,
+      textEn: json['text_en']?.toString(),
+      transliteration: json['transliteration']?.toString(),
+      translation: json['translation']?.toString(),
+      reference: json['reference']?.toString(),
+      description: json['description']?.toString(),
       repeatCount: json['repeat_count'] as int? ?? 1,
       orderIndex: json['order_index'] as int? ?? 0,
       associatedMoods: json['associated_moods'] != null
           ? List<String>.from(json['associated_moods'] as List)
           : <String>[],
-      searchTags: json['search_tags'] as String?,
+      searchTags: json['search_tags']?.toString(),
       isActive: json['is_active'] as bool? ?? true,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(createdAtStr),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,

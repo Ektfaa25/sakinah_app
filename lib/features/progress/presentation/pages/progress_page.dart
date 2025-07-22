@@ -41,7 +41,11 @@ class _ProgressPageState extends State<ProgressPage>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
+
+    if (l10n == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -109,37 +113,56 @@ class _ProgressPageState extends State<ProgressPage>
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: GlassyContainer(
-        padding: const EdgeInsets.all(4),
-        child: TabBar(
-          controller: _tabController,
-          indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: theme.colorScheme.primary.withOpacity(0.2),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: theme.colorScheme.primary.withOpacity(0.1),
+              width: 1,
+            ),
           ),
-          labelColor: theme.colorScheme.primary,
-          unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.6),
-          labelStyle: theme.textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+          child: TabBar(
+            controller: _tabController,
+            indicator: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.15),
+                  theme.colorScheme.primary.withOpacity(0.08),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            labelColor: theme.colorScheme.primary,
+            unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.6),
+            labelStyle: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+            onTap: (index) {
+              switch (index) {
+                case 0:
+                  context.read<ProgressBloc>().add(const LoadTodayProgress());
+                  break;
+                case 1:
+                  context.read<ProgressBloc>().add(const LoadWeeklyProgress());
+                  break;
+                case 2:
+                  context.read<ProgressBloc>().add(const LoadMonthlyProgress());
+                  break;
+              }
+            },
+            tabs: const [
+              Tab(text: 'Today'),
+              Tab(text: 'Week'),
+              Tab(text: 'Month'),
+            ],
           ),
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                context.read<ProgressBloc>().add(const LoadTodayProgress());
-                break;
-              case 1:
-                context.read<ProgressBloc>().add(const LoadWeeklyProgress());
-                break;
-              case 2:
-                context.read<ProgressBloc>().add(const LoadMonthlyProgress());
-                break;
-            }
-          },
-          tabs: const [
-            Tab(text: 'Today'),
-            Tab(text: 'Week'),
-            Tab(text: 'Month'),
-          ],
         ),
       ),
     );
@@ -561,6 +584,23 @@ class _ProgressPageState extends State<ProgressPage>
                     ),
                   ],
                 ],
+                if (progress.moodBefore == null && progress.moodAfter != null)
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          'Current',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          progress.moodAfter!,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ],

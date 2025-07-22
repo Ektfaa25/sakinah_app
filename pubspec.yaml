@@ -121,9 +121,7 @@ flutter:
 
   # Fonts
   fonts:
-    - family: Amiri
+    - family: PlaypenSansArabic
       fonts:
-        - asset: assets/fonts/Amiri-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Amiri-Bold.ttf
-          weight: 700
+        - asset: assets/fonts/PlaypenSansArabic-VariableFont_wght.ttf
+       

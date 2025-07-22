@@ -9,6 +9,7 @@ class AppTheme {
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
+    fontFamily: 'PlaypenSansArabic',
     colorScheme: const ColorScheme.light(
       primary: AppColors.lightPrimary,
       primaryContainer: AppColors.lightPrimaryContainer,
@@ -48,6 +49,7 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
+    fontFamily: 'PlaypenSansArabic',
     colorScheme: const ColorScheme.dark(
       primary: AppColors.darkPrimary,
       primaryContainer: AppColors.darkPrimaryContainer,
@@ -127,14 +129,16 @@ class AppTheme {
     ),
   );
 
-  static const BottomNavigationBarThemeData _lightBottomNavigationBarTheme =
-      BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFFE3F1F1), // Updated to use #E3F1F1
-        selectedItemColor: AppColors.lightPrimary,
-        unselectedItemColor: AppColors.lightOnSurface,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-      );
+  static const BottomNavigationBarThemeData
+  _lightBottomNavigationBarTheme = BottomNavigationBarThemeData(
+    backgroundColor: Colors.transparent,
+    selectedItemColor: Color(0xFF1A1A2E), // Navy blue dark text
+    unselectedItemColor: Color(0xFF1A1A2E), // Navy blue dark text with opacity
+    type: BottomNavigationBarType.fixed,
+    elevation: 0,
+    selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+    unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 11),
+  );
 
   static final InputDecorationTheme _lightInputDecorationTheme =
       InputDecorationTheme(

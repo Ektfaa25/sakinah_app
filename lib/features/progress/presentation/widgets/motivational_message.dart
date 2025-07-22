@@ -6,12 +6,14 @@ class MotivationalMessage extends StatefulWidget {
   final int completedCount;
   final int goalCount;
   final int currentStreak;
+  final Color? primaryColor;
 
   const MotivationalMessage({
     super.key,
     required this.completedCount,
     required this.goalCount,
     required this.currentStreak,
+    this.primaryColor,
   });
 
   @override
@@ -81,19 +83,19 @@ class _MotivationalMessageState extends State<MotivationalMessage> {
     final theme = Theme.of(context);
     final message = _getMessage();
     final icon = _getMessageIcon();
-    final color = _getMessageColor(context);
+    final color = widget.primaryColor ?? _getMessageColor(context);
 
     return FadeInUp(
       duration: const Duration(milliseconds: 600),
       child: GlassyContainer(
-        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withOpacity(0.3), width: 2),
               ),
               child: Icon(icon, color: color, size: 24),
             ),
@@ -105,6 +107,7 @@ class _MotivationalMessageState extends State<MotivationalMessage> {
                   Text(
                     message,
                     style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                       fontStyle: FontStyle.italic,
                     ),
@@ -122,7 +125,7 @@ class _MotivationalMessageState extends State<MotivationalMessage> {
                         Text(
                           '${widget.currentStreak} day streak!',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.orange,
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
                             fontWeight: FontWeight.w600,
                           ),
                         ),

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '../../domain/entities/azkar_new.dart';
+import '../../data/services/azkar_database_adapter.dart';
+import '../../../../core/router/app_routes.dart';
 
 class AzkarDetailScreen extends StatefulWidget {
   final Azkar azkar;
@@ -40,6 +43,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
   late ScrollController _scrollController;
   bool _showPageIndicator = false;
   Timer? _hideIndicatorTimer;
+  bool _isFavorite = false;
 
   @override
   void initState() {
@@ -83,6 +87,9 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     // Set current state
     _currentCount = _azkarCounts[_currentAzkarIndex] ?? 0;
     _isCompleted = _azkarCompleted[_currentAzkarIndex] ?? false;
+
+    // Load favorite status
+    _loadFavoriteStatus();
   }
 
   void _initAnimations() {
@@ -178,6 +185,9 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     print(
       '📄 Updated state via swipe - count: $_currentCount, completed: $_isCompleted',
     );
+
+    // Load favorite status for the new azkar
+    _loadFavoriteStatus();
 
     // Hide indicator after 2.5 seconds with smooth transition
     _hideIndicatorTimer?.cancel();
@@ -400,167 +410,39 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                 ),
               ),
             ),
-            // Empty space to balance the back button
-            const SizedBox(width: 48),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressSection(Azkar azkar, Color categoryColor) {
-    final progress = _currentCount / azkar.repeatCount;
-
-    return FadeInUp(
-      duration: const Duration(milliseconds: 600),
-      delay: const Duration(milliseconds: 400),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Enhanced progress circle with modern design
+            // Favorite heart icon in top right
             Container(
-              padding: const EdgeInsets.all(12), // Reduced from 20 to 12
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: _isCompleted
-                    ? Colors.green.withValues(alpha: 0.1)
-                    : Theme.of(context).colorScheme.surface,
-                shape: BoxShape.circle,
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: _isCompleted
-                        ? Colors.green.withValues(alpha: 0.2)
-                        : Theme.of(
-                            context,
-                          ).colorScheme.shadow.withValues(alpha: 0.1),
-                    blurRadius: 15, // Reduced from 20 to 15
-                    spreadRadius: 3, // Reduced from 5 to 3
-                    offset: const Offset(0, 4), // Reduced from 6 to 4
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.shadow.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 2),
                   ),
                 ],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 70, // Reduced from 90 to 70
-                    height: 70, // Reduced from 90 to 70
-                    child: CircularProgressIndicator(
-                      value: progress.clamp(0.0, 1.0),
-                      strokeWidth: 5, // Reduced from 6 to 5
-                      backgroundColor: _isCompleted
-                          ? Colors.green.withValues(alpha: 0.3)
-                          : categoryColor.withValues(alpha: 0.15),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        _isCompleted ? Colors.green : categoryColor,
-                      ),
-                      strokeCap: StrokeCap.round,
-                    ),
-                  ),
-                  // Enhanced circular button
-                  ScaleTransition(
-                    scale: _pulseAnimation,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _isCompleted
-                            ? null
-                            : () => _incrementCounter(azkar),
-                        borderRadius: BorderRadius.circular(
-                          25,
-                        ), // Reduced from 32 to 25
-                        child: Container(
-                          width: 50, // Reduced from 64 to 50
-                          height: 50, // Reduced from 64 to 50
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (_isCompleted) ...[
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    color: _isCompleted
-                                        ? Colors.green
-                                        : categoryColor,
-                                    size: 20, // Reduced from 24 to 20
-                                  ),
-                                  const SizedBox(
-                                    height: 1,
-                                  ), // Reduced from 2 to 1
-                                  Text(
-                                    'تم',
-                                    style: GoogleFonts.playpenSans(
-                                      color: _isCompleted
-                                          ? Colors.green
-                                          : categoryColor,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.1,
-                                    ),
-                                    textDirection: TextDirection.rtl,
-                                  ),
-                                ] else ...[
-                                  Text(
-                                    '$_currentCount',
-                                    style: GoogleFonts.playpenSans(
-                                      color: categoryColor,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 16, // Reduced from 20 to 16
-                                    height: 1,
-                                    color: categoryColor.withValues(alpha: 0.6),
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 1, // Reduced from 2 to 1
-                                    ),
-                                  ),
-                                  Text(
-                                    '${azkar.repeatCount}',
-                                    style: GoogleFonts.playpenSans(
-                                      color: categoryColor.withValues(
-                                        alpha: 0.9,
-                                      ),
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Enhanced repetition text with container
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: (_isCompleted ? Colors.green : categoryColor).withValues(
-                  alpha: 0.1,
-                ),
-                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: (_isCompleted ? Colors.green : categoryColor)
-                      .withValues(alpha: 0.3),
+                  color: categoryColor.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
-              child: Text(
-                ' ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
-                style: GoogleFonts.playpenSans(
-                  color: _isCompleted ? Colors.green.shade700 : categoryColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
+              child: IconButton(
+                onPressed: _toggleFavorite,
+                icon: Icon(
+                  _isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: _isFavorite ? Colors.red : categoryColor,
+                  size: 20,
                 ),
-                textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
+                style: IconButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(48, 48),
+                ),
               ),
             ),
           ],
@@ -1191,6 +1073,99 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     }
 
     HapticFeedback.mediumImpact();
+  }
+
+  Future<void> _loadFavoriteStatus() async {
+    try {
+      // Load favorite status from database
+      final isFavorite = await AzkarDatabaseAdapter.isAzkarFavorite(
+        azkarId: _getCurrentAzkar().id,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isFavorite = isFavorite;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading favorite status: $e');
+      // Default to false on error
+      if (mounted) {
+        setState(() {
+          _isFavorite = false;
+        });
+      }
+    }
+  }
+
+  void _toggleFavorite() async {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+
+    // Haptic feedback
+    HapticFeedback.lightImpact();
+
+    try {
+      // Add or remove from favorites in database
+      if (_isFavorite) {
+        await AzkarDatabaseAdapter.addToFavorites(
+          azkarId: _getCurrentAzkar().id,
+        );
+      } else {
+        await AzkarDatabaseAdapter.removeFromFavorites(
+          azkarId: _getCurrentAzkar().id,
+        );
+      }
+
+      // Show feedback message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isFavorite ? 'تم إضافة الذكر للمفضلة' : 'تم حذف الذكر من المفضلة',
+            textDirection: TextDirection.rtl,
+          ),
+          backgroundColor: _isFavorite ? Colors.green : Colors.orange,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate to favorites screen when adding to favorites
+      if (_isFavorite) {
+        // Small delay to show the snackbar message first
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        if (mounted) {
+          // Navigate to favorites screen using GoRouter
+          context.go(AppRoutes.azkarFavorites);
+        }
+      }
+    } catch (e) {
+      // Revert state on error
+      setState(() {
+        _isFavorite = !_isFavorite;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'حدث خطأ، يرجى المحاولة مرة أخرى',
+            textDirection: TextDirection.rtl,
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+
+      debugPrint('Error toggling favorite: $e');
+    }
   }
 
   void _copyToClipboard(Azkar azkar) {

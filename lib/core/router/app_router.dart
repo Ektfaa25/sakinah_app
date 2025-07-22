@@ -10,6 +10,7 @@ import 'package:sakinah_app/features/azkar/presentation/pages/azkar_display_page
 import 'package:sakinah_app/features/azkar/presentation/pages/azkar_categories_screen.dart';
 import 'package:sakinah_app/features/azkar/presentation/pages/azkar_category_screen.dart';
 import 'package:sakinah_app/features/azkar/presentation/pages/azkar_detail_screen.dart';
+import 'package:sakinah_app/features/azkar/presentation/pages/azkar_favorites_screen.dart';
 import 'package:sakinah_app/features/azkar/domain/entities/azkar_new.dart';
 import 'package:sakinah_app/features/progress/presentation/pages/progress_page.dart';
 import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
@@ -167,6 +168,20 @@ class AppRouter {
               builder: (context, state) => const HomePage(),
             ),
 
+            // Azkar Categories route
+            GoRoute(
+              path: AppRoutes.azkarCategories,
+              name: 'azkar-categories',
+              builder: (context, state) => const AzkarScreen(),
+            ),
+
+            // Azkar Favorites route
+            GoRoute(
+              path: AppRoutes.azkarFavorites,
+              name: 'azkar-favorites',
+              builder: (context, state) => const AzkarFavoritesScreen(),
+            ),
+
             // Progress route
             GoRoute(
               path: AppRoutes.progress,
@@ -208,13 +223,6 @@ class AppRouter {
           },
         ),
 
-        // New azkar categories route
-        GoRoute(
-          path: AppRoutes.azkarCategories,
-          name: 'azkar-categories',
-          builder: (context, state) => const AzkarScreen(),
-        ),
-
         // Azkar category route with category parameter
         GoRoute(
           path: '${AppRoutes.azkarCategory}/:${RouteParams.categoryId}',
@@ -240,11 +248,42 @@ class AppRouter {
           name: 'azkar-detail-new',
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>?;
-            final azkar = extra?['azkar'] as Azkar?;
-            final category = extra?['category'] as AzkarCategory?;
+
+            // Handle both Azkar object and JSON map cases
+            Azkar? azkar;
+            final azkarData = extra?['azkar'];
+            if (azkarData is Azkar) {
+              azkar = azkarData;
+            } else if (azkarData is Map<String, dynamic>) {
+              azkar = Azkar.fromJson(azkarData);
+            }
+
+            // Handle both AzkarCategory object and JSON map cases
+            AzkarCategory? category;
+            final categoryData = extra?['category'];
+            if (categoryData is AzkarCategory) {
+              category = categoryData;
+            } else if (categoryData is Map<String, dynamic>) {
+              category = AzkarCategory.fromJson(categoryData);
+            }
+
             final azkarIndex = extra?['azkarIndex'] as int? ?? 0;
             final totalAzkar = extra?['totalAzkar'] as int? ?? 1;
-            final azkarList = extra?['azkarList'] as List<Azkar>?;
+
+            // Handle azkarList which might be a list of maps
+            List<Azkar>? azkarList;
+            final azkarListData = extra?['azkarList'];
+            if (azkarListData is List<Azkar>) {
+              azkarList = azkarListData;
+            } else if (azkarListData is List) {
+              azkarList = azkarListData
+                  .map(
+                    (item) => item is Azkar
+                        ? item
+                        : Azkar.fromJson(item as Map<String, dynamic>),
+                  )
+                  .toList();
+            }
 
             if (azkar == null || category == null) {
               return _buildPlaceholderPage('Error', 'Azkar not found');
@@ -257,15 +296,6 @@ class AppRouter {
               totalAzkar: totalAzkar,
               azkarList: azkarList,
             );
-          },
-        ),
-
-        GoRoute(
-          path: '${AppRoutes.azkarDetail}/:${RouteParams.azkarId}',
-          name: 'azkar-detail',
-          builder: (context, state) {
-            final azkarId = state.pathParameters[RouteParams.azkarId] ?? '0';
-            return _buildPlaceholderPage('Azkar Detail', 'Azkar ID: $azkarId');
           },
         ),
 
@@ -450,6 +480,8 @@ class _MainShellState extends State<_MainShell> {
         _currentIndex = 0;
       } else if (location == AppRoutes.azkarCategories) {
         _currentIndex = 1;
+      } else if (location == AppRoutes.azkarFavorites) {
+        _currentIndex = 2;
       } else if (location == AppRoutes.progress) {
         _currentIndex = 3;
       } else if (location == AppRoutes.settings) {
@@ -462,27 +494,92 @@ class _MainShellState extends State<_MainShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.teal[50],
-        selectedItemColor: Colors.teal[700],
-        unselectedItemColor: Colors.grey[500],
-        currentIndex: _currentIndex,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'الفئات'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'المفضلة'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart),
-            label: 'التقدم',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'الإعدادات',
+      bottomNavigationBar: _buildStyledBottomNavBar(context),
+    );
+  }
+
+  Widget _buildStyledBottomNavBar(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _getGradientColor(0).withOpacity(0.3),
+            _getGradientColor(1).withOpacity(0.3),
+          ],
+        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
         ],
-        onTap: _onBottomNavTap,
       ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.transparent,
+          selectedItemColor: const Color(0xFF1A1A2E), // Navy blue dark text
+          unselectedItemColor: const Color(0xFF1A1A2E).withOpacity(0.6),
+          currentIndex: _currentIndex,
+          elevation: 0,
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 11,
+          ),
+          items: [
+            _buildStyledNavItem(Icons.home, 'الرئيسية', 0),
+            _buildStyledNavItem(Icons.grid_view, 'الفئات', 1),
+            _buildStyledNavItem(Icons.favorite, 'المفضلة', 2),
+            _buildStyledNavItem(Icons.show_chart, 'التقدم', 3),
+            _buildStyledNavItem(Icons.settings, 'الإعدادات', 4),
+          ],
+          onTap: _onBottomNavTap,
+        ),
+      ),
+    );
+  }
+
+  BottomNavigationBarItem _buildStyledNavItem(
+    IconData iconData,
+    String label,
+    int index,
+  ) {
+    final isSelected = _currentIndex == index;
+
+    return BottomNavigationBarItem(
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          shape: BoxShape.circle,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Icon(
+          iconData,
+          color: isSelected
+              ? _getGradientColor(index)
+              : const Color(0xFF1A1A2E).withOpacity(0.6),
+          size: 22,
+        ),
+      ),
+      label: label,
     );
   }
 
@@ -497,8 +594,8 @@ class _MainShellState extends State<_MainShell> {
         context.go(AppRoutes.azkarCategories);
         break;
       case 2:
-        // Favorites (placeholder for now)
-        _showComingSoonMessage('الأذكار المفضلة - قريباً');
+        // Favorites
+        context.go(AppRoutes.azkarFavorites);
         break;
       case 3:
         // Progress
@@ -515,6 +612,32 @@ class _MainShellState extends State<_MainShell> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  // Get gradient colors that match the azkar categories design
+  Color _getGradientColor(int index) {
+    final colors = [
+      _getColorFromHex('#FBF8CC'), // Light yellow
+      _getColorFromHex('#A3C4F3'), // Light blue
+      _getColorFromHex('#FDE4CF'), // Light peach
+      _getColorFromHex('#90DBF4'), // Light cyan
+      _getColorFromHex('#98F5E1'), // Light mint
+      _getColorFromHex('#B9FBC0'), // Light green
+      _getColorFromHex('#FFCFD2'), // Light pink
+      _getColorFromHex('#F1C0E8'), // Light purple
+      _getColorFromHex('#CFBAF0'), // Light lavender
+      _getColorFromHex('#8EECF5'), // Light turquoise
+    ];
+    return colors[index % colors.length];
+  }
+
+  /// Helper method to convert hex color string to Color object
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor'; // Add alpha channel
+    }
+    return Color(int.parse(hexColor, radix: 16));
   }
 }
 
@@ -536,7 +659,7 @@ extension AppNavigation on BuildContext {
 
   /// Navigate to azkar detail with ID
   void goToAzkarDetail(int azkarId) {
-    go('${AppRoutes.azkarDetail}/$azkarId');
+    go('${AppRoutes.azkarDetailNew}/$azkarId');
   }
 
   /// Navigate to reflection with optional mood

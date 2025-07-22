@@ -554,6 +554,18 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
     // Haptic feedback
     HapticFeedback.mediumImpact();
 
+    print('🔍 Navigating to AzkarDetailScreen with:');
+    print('  - Azkar: ${azkar.textAr.substring(0, 50)}...');
+    print('  - Category: ${widget.category.nameAr}');
+    print('  - Index: $index');
+    print('  - Total: ${_azkarList.length}');
+
+    // Check if widget is still mounted before navigation
+    if (!mounted) {
+      print('⚠️ Widget is not mounted, canceling navigation');
+      return;
+    }
+
     // Navigate to detail screen
     Navigator.push(
       context,
@@ -563,12 +575,16 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
           category: widget.category,
           azkarIndex: index,
           totalAzkar: _azkarList.length,
+          azkarList: _azkarList, // Make sure to pass the full list
         ),
       ),
     );
   }
 
   void _shareAzkar(Azkar azkar) {
+    // Check if widget is still mounted before showing snackbar
+    if (!mounted) return;
+
     // TODO: Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -588,6 +604,9 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
     }
 
     Clipboard.setData(ClipboardData(text: textToCopy));
+
+    // Check if widget is still mounted before showing snackbar
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -625,7 +644,7 @@ class _AzkarCategoryScreenState extends State<AzkarCategoryScreen>
       case 'restaurant':
         return Icons.restaurant;
       case 'favorite':
-        return Icons.favorite;
+        return Icons.auto_awesome; // Changed from heart to star icon
       case 'spa':
         return Icons.spa;
       case 'shield':
