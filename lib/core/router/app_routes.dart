@@ -18,7 +18,6 @@ class AppRoutes {
 
   // New azkar routes
   static const String azkarCategories = '/azkar-categories';
-  static const String azkarCategory = '/azkar-category';
   static const String azkarDetailNew = '/azkar-detail-new';
   static const String azkarFavorites = '/azkar-favorites';
 

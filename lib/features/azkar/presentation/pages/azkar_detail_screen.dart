@@ -41,6 +41,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
   Map<int, bool> _azkarCompleted = {};
   late PageController _pageController;
   late ScrollController _scrollController;
+  late ScrollController _indicatorScrollController;
   bool _showPageIndicator = false;
   Timer? _hideIndicatorTimer;
   bool _isFavorite = false;
@@ -53,6 +54,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     _loadUserProgress();
     _pageController = PageController(initialPage: widget.azkarIndex);
     _scrollController = ScrollController();
+    _indicatorScrollController = ScrollController();
     _scrollController.addListener(_onScroll);
   }
 
@@ -62,6 +64,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     _pulseController.dispose();
     _pageController.dispose();
     _scrollController.dispose();
+    _indicatorScrollController.dispose();
     _hideIndicatorTimer?.cancel();
     super.dispose();
   }
@@ -186,6 +189,11 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       '📄 Updated state via swipe - count: $_currentCount, completed: $_isCompleted',
     );
 
+    // Auto-scroll the page indicator if there are more than 10 pages
+    if (widget.azkarList != null && widget.azkarList!.length > 10) {
+      _scrollToCurrentIndicator();
+    }
+
     // Load favorite status for the new azkar
     _loadFavoriteStatus();
 
@@ -217,7 +225,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     final categoryColor = _parseColor(widget.category.getColor());
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -230,14 +238,17 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                   Expanded(
                     child:
                         widget.azkarList != null && widget.azkarList!.length > 1
-                        ? PageView.builder(
-                            controller: _pageController,
-                            onPageChanged: _onPageChanged,
-                            itemCount: widget.azkarList!.length,
-                            itemBuilder: (context, index) {
-                              final azkar = widget.azkarList![index];
-                              return _buildAzkarPage(azkar, categoryColor);
-                            },
+                        ? Directionality(
+                            textDirection: TextDirection.rtl,
+                            child: PageView.builder(
+                              controller: _pageController,
+                              onPageChanged: _onPageChanged,
+                              itemCount: widget.azkarList!.length,
+                              itemBuilder: (context, index) {
+                                final azkar = widget.azkarList![index];
+                                return _buildAzkarPage(azkar, categoryColor);
+                              },
+                            ),
                           )
                         : _buildAzkarPage(_getCurrentAzkar(), categoryColor),
                   ),
@@ -311,26 +322,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
   Widget _buildHeader(BuildContext context, Color categoryColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            categoryColor.withValues(alpha: 0.15),
-            categoryColor.withValues(alpha: 0.08),
-            categoryColor.withValues(alpha: 0.03),
-            Colors.transparent,
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: categoryColor.withValues(alpha: 0.1),
-            blurRadius: 8,
-            spreadRadius: 0,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: FadeInDown(
         duration: const Duration(milliseconds: 600),
         child: Row(
@@ -340,7 +332,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -383,9 +375,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surface.withValues(alpha: 0.8),
+                        color: Colors.white.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: categoryColor.withValues(alpha: 0.3),
@@ -415,7 +405,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -752,6 +742,8 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     required String label,
     required VoidCallback onPressed,
   }) {
+    const darkNavyColor = Color(0xFF1B2951); // Dark navy color
+
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(12),
@@ -760,12 +752,12 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
+            Icon(icon, color: darkNavyColor, size: 20),
             const SizedBox(height: 4),
             Text(
               label,
               style: GoogleFonts.playpenSans(
-                color: Theme.of(context).colorScheme.primary,
+                color: darkNavyColor,
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.1,
@@ -798,44 +790,81 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         children: [
           // Page number removed as requested
           const SizedBox(height: 12),
-          // Fixed dots page indicator with smooth transitions
+          // Fixed dots page indicator with smooth transitions and scrolling support
+          // Reversed for RTL swiping - first azkar (index 0) appears on right
           AnimatedContainer(
             duration: const Duration(milliseconds: 400),
             curve: Curves.easeInOutCubic,
             key: const ValueKey('page_indicator'),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                widget.azkarList!.length > 10 ? 10 : widget.azkarList!.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOutCubic,
-                  key: ValueKey('dot_$index'),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: index == _currentAzkarIndex
-                      ? 16
-                      : 12, // Active dot slightly larger
-                  height: index == _currentAzkarIndex ? 16 : 12,
-                  decoration: BoxDecoration(
-                    color: index == _currentAzkarIndex
-                        ? categoryColor // Active dot - full color
-                        : categoryColor.withOpacity(
-                            0.3,
-                          ), // Inactive dots - faded
-                    shape: BoxShape.circle,
-                    boxShadow: index == _currentAzkarIndex
-                        ? [
-                            BoxShadow(
-                              color: categoryColor.withOpacity(0.3),
-                              blurRadius: 4,
-                              spreadRadius: 1,
-                            ),
-                          ]
-                        : null,
+            child: widget.azkarList!.length <= 10
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(widget.azkarList!.length, (index) {
+                      // Reverse the index for RTL feel - when swiping right (next), indicator moves right
+                      final reversedIndex =
+                          widget.azkarList!.length - 1 - index;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOutCubic,
+                        key: ValueKey('dot_$reversedIndex'),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: reversedIndex == _currentAzkarIndex ? 16 : 12,
+                        height: reversedIndex == _currentAzkarIndex ? 16 : 12,
+                        decoration: BoxDecoration(
+                          color: reversedIndex == _currentAzkarIndex
+                              ? categoryColor
+                              : categoryColor.withOpacity(0.3),
+                          shape: BoxShape.circle,
+                          boxShadow: reversedIndex == _currentAzkarIndex
+                              ? [
+                                  BoxShadow(
+                                    color: categoryColor.withOpacity(0.3),
+                                    blurRadius: 4,
+                                    spreadRadius: 1,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      );
+                    }),
+                  )
+                : Container(
+                    height: 20,
+                    child: ListView.builder(
+                      controller: _indicatorScrollController,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: widget.azkarList!.length,
+                      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        // Reverse the index for RTL feel - when swiping right (next), indicator moves right
+                        final reversedIndex =
+                            widget.azkarList!.length - 1 - index;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOutCubic,
+                          key: ValueKey('dot_$reversedIndex'),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: reversedIndex == _currentAzkarIndex ? 16 : 12,
+                          height: reversedIndex == _currentAzkarIndex ? 16 : 12,
+                          decoration: BoxDecoration(
+                            color: reversedIndex == _currentAzkarIndex
+                                ? categoryColor
+                                : categoryColor.withOpacity(0.3),
+                            shape: BoxShape.circle,
+                            boxShadow: reversedIndex == _currentAzkarIndex
+                                ? [
+                                    BoxShadow(
+                                      color: categoryColor.withOpacity(0.3),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ),
-            ),
           ),
         ],
       ),
@@ -853,9 +882,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: _isCompleted
-                ? Colors.green.withValues(alpha: 0.1)
-                : Theme.of(context).colorScheme.surface,
+            color: Colors.white,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -1215,5 +1242,34 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     } catch (e) {
       return Theme.of(context).colorScheme.primary;
     }
+  }
+
+  void _scrollToCurrentIndicator() {
+    if (widget.azkarList == null || widget.azkarList!.length <= 10) return;
+
+    // Calculate the position to scroll to
+    // Since we're using reversed index for RTL, we need to calculate based on the reversed position
+    final reversedIndex = widget.azkarList!.length - 1 - _currentAzkarIndex;
+
+    // Each dot is approximately 16px width + 8px margin = 24px total
+    const double dotWidth = 24.0;
+    final double scrollPosition = reversedIndex * dotWidth;
+
+    // Get the viewport width to center the current dot
+    final double viewportWidth = MediaQuery.of(context).size.width;
+    final double centeredPosition =
+        scrollPosition - (viewportWidth / 2) + (dotWidth / 2);
+
+    // Ensure we don't scroll beyond the limits
+    final double maxScroll =
+        (_indicatorScrollController.position.maxScrollExtent);
+    final double targetPosition = centeredPosition.clamp(0.0, maxScroll);
+
+    // Animate to the target position
+    _indicatorScrollController.animateTo(
+      targetPosition,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 }

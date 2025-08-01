@@ -107,69 +107,6 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
     }
   }
 
-  Future<void> _debugFavoritesIssue() async {
-    try {
-      print('🧪 [Debug] Starting favorites debugging...');
-
-      // Check database connection
-      print('🧪 [Debug] Step 1: Testing database connection...');
-      final connected = await AzkarDatabaseAdapter.testConnection();
-      print('🧪 [Debug] Connection result: $connected');
-
-      if (!connected) {
-        throw Exception('Database connection failed');
-      }
-
-      // Get some azkar to test with
-      print('🧪 [Debug] Step 2: Getting test azkar...');
-      final categories = await AzkarDatabaseAdapter.getAzkarCategories();
-
-      if (categories.isNotEmpty) {
-        final azkarList = await AzkarDatabaseAdapter.getAzkarByCategory(
-          categories.first.id,
-        );
-
-        if (azkarList.isNotEmpty) {
-          final testAzkar = azkarList.first;
-          print('🧪 [Debug] Using test azkar: ${testAzkar.id}');
-
-          // Add to favorites for testing
-          print('🧪 [Debug] Step 3: Adding test azkar to favorites...');
-          await AzkarDatabaseAdapter.addToFavorites(azkarId: testAzkar.id);
-          print('🧪 [Debug] Added to favorites');
-
-          // Test the adapter method
-          final adapterResult = await AzkarDatabaseAdapter.getFavoriteAzkar();
-          print('🧪 [Debug] Adapter result count: ${adapterResult.length}');
-
-          // Refresh UI
-          await _loadFavoriteAzkar();
-        }
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Debug completed - check console'),
-            backgroundColor: Colors.blue,
-          ),
-        );
-      }
-    } catch (e, stackTrace) {
-      print('🧪 [Debug] Error: $e');
-      print('🧪 [Debug] Stack trace: $stackTrace');
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Debug error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -178,7 +115,7 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_forward, color: Colors.black87),
           onPressed: () => context.go(AppRoutes.home),
           tooltip: 'رجوع',
         ),
@@ -192,18 +129,6 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
           textDirection: TextDirection.rtl,
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.bug_report, color: Colors.black87),
-            onPressed: _debugFavoritesIssue,
-            tooltip: 'Debug Test',
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black87),
-            onPressed: _loadFavoriteAzkar,
-            tooltip: 'تحديث',
-          ),
-        ],
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
@@ -219,17 +144,37 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Container(
+      padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A1A2E)),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A1A2E)),
+              strokeWidth: 3,
+            ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
             'جاري تحميل الأذكار المفضلة...',
-            style: TextStyle(fontSize: 16, color: Color(0xFF1A1A2E)),
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xFF6B7280),
+              fontWeight: FontWeight.w500,
+            ),
             textDirection: TextDirection.rtl,
           ),
         ],
@@ -238,264 +183,431 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FadeInUp(
-              duration: const Duration(milliseconds: 600),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
+    return Container(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 60),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.red.withOpacity(0.1),
+                    Colors.orange.withOpacity(0.1),
+                  ],
                 ),
-                child: Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.red[300],
-                ),
+                borderRadius: BorderRadius.circular(60),
+              ),
+              child: const Icon(
+                Icons.error_outline,
+                size: 50,
+                color: Colors.red,
               ),
             ),
-            const SizedBox(height: 24),
-            FadeInUp(
-              duration: const Duration(milliseconds: 600),
-              delay: const Duration(milliseconds: 200),
-              child: Text(
-                'حدث خطأ في تحميل الأذكار المفضلة',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1A1A2E),
-                ),
-                textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
+          ),
+          const SizedBox(height: 32),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 200),
+            child: Text(
+              'حدث خطأ في تحميل الأذكار',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1A1A2E),
               ),
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
             ),
-            const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 16),
+          if (_error != null)
             FadeInUp(
               duration: const Duration(milliseconds: 600),
               delay: const Duration(milliseconds: 300),
               child: Text(
                 _error!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF1A1A2E),
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6B7280),
+                  height: 1.6,
                 ),
                 textAlign: TextAlign.center,
+                textDirection: TextDirection.rtl,
               ),
             ),
-            const SizedBox(height: 24),
-            FadeInUp(
-              duration: const Duration(milliseconds: 600),
-              delay: const Duration(milliseconds: 400),
+          const SizedBox(height: 40),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 400),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1A1A2E), Color(0xFF2D2D42)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1A1A2E).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
               child: ElevatedButton.icon(
                 onPressed: _loadFavoriteAzkar,
-                icon: const Icon(Icons.refresh),
-                label: const Text('إعادة المحاولة'),
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                label: const Text(
+                  'إعادة المحاولة',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A1A2E),
-                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+                    horizontal: 32,
+                    vertical: 16,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FadeInUp(
-              duration: const Duration(milliseconds: 600),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
+    return Container(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 60),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFFFF6B9D).withOpacity(0.1),
+                    const Color(0xFFFF8E9B).withOpacity(0.1),
+                  ],
                 ),
-                child: Icon(
-                  Icons.favorite_border,
-                  size: 64,
-                  color: Colors.amber[700],
-                ),
+                borderRadius: BorderRadius.circular(60),
+              ),
+              child: const Icon(
+                Icons.favorite_border,
+                size: 50,
+                color: Color(0xFFFF6B9D),
               ),
             ),
-            const SizedBox(height: 24),
-            FadeInUp(
-              duration: const Duration(milliseconds: 600),
-              delay: const Duration(milliseconds: 200),
-              child: Text(
-                'لا توجد أذكار مفضلة',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1A1A2E),
-                ),
-                textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
+          ),
+          const SizedBox(height: 32),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 200),
+            child: Text(
+              'لا توجد أذكار مفضلة بعد',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1A1A2E),
               ),
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
             ),
-            const SizedBox(height: 12),
-            FadeInUp(
-              duration: const Duration(milliseconds: 600),
-              delay: const Duration(milliseconds: 300),
-              child: Text(
-                'اضغط على أيقونة القلب في صفحة الذكر لإضافته للمفضلة',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF1A1A2E).withOpacity(0.7),
-                ),
-                textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
+          ),
+          const SizedBox(height: 16),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 300),
+            child: Text(
+              'اضغط على أيقونة القلب في أي ذكر لإضافته إلى المفضلة\nوستجده هنا ليسهل الوصول إليه',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF6B7280),
+                height: 1.6,
               ),
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
             ),
-            const SizedBox(height: 24),
-            FadeInUp(
-              duration: const Duration(milliseconds: 600),
-              delay: const Duration(milliseconds: 400),
+          ),
+          const SizedBox(height: 40),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 400),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1A1A2E), Color(0xFF2D2D42)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1A1A2E).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
               child: ElevatedButton.icon(
                 onPressed: () => context.go(AppRoutes.azkarCategories),
-                icon: const Icon(Icons.explore),
+                icon: const Icon(Icons.explore, color: Colors.white),
                 label: const Text(
                   'تصفح الأذكار',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A1A2E),
-                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+                    horizontal: 32,
+                    vertical: 16,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFavoritesList() {
-    return RefreshIndicator(
-      onRefresh: _loadFavoriteAzkar,
-      color: const Color(0xFF1A1A2E),
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: _favoriteAzkar.length,
-        itemBuilder: (context, index) {
-          final azkar = _favoriteAzkar[index];
-          return FadeInUp(
-            duration: Duration(milliseconds: 600 + (index * 100)),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: _buildAzkarCard(azkar, index),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with count
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    'لديك ${_favoriteAzkar.length} من الأذكار المفضلة',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textDirection: TextDirection.rtl,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF6B9D).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_favoriteAzkar.length}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFFFF6B9D),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          );
-        },
+          ),
+
+          // Favorites list
+          ...List.generate(_favoriteAzkar.length, (index) {
+            final azkar = _favoriteAzkar[index];
+            return FadeInUp(
+              duration: Duration(milliseconds: 500 + (index * 100)),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: _buildAzkarCard(azkar, index),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
 
   Widget _buildAzkarCard(Azkar azkar, int index) {
-    // Use the category color for this azkar as the border color
-    Color borderColor = const Color(0xFFE91E63); // Default pink fallback
+    // Use elegant color scheme
+    Color primaryColor = const Color(0xFF1A1A2E);
+    Color accentColor = const Color(0xFFFF6B9D);
 
-    // Try to get the actual category color
-    try {
-      // Parse the category color if available
-      if (azkar.categoryId.isNotEmpty) {
-        // We'll get the color from the category lookup in a FutureBuilder approach
-        // For now, use a method to get category color synchronously if possible
-        borderColor = _getCategoryColorForAzkar(azkar);
+    // Get category information
+    final category = _categoriesCache[azkar.categoryId];
+    final categoryName = category?.nameAr ?? 'غير محدد';
+
+    // Get category color or use default
+    Color categoryColor = accentColor; // Default color
+    if (category != null &&
+        category.color != null &&
+        category.color!.isNotEmpty) {
+      try {
+        // Parse the hex color from category
+        final colorHex = category.color!.replaceAll('#', '');
+        categoryColor = Color(int.parse('FF$colorHex', radix: 16));
+      } catch (e) {
+        // Use default color if parsing fails
+        categoryColor = accentColor;
       }
-    } catch (e) {
-      print('⚠️ Error getting category color for azkar ${azkar.id}: $e');
-      // Keep the default pink color
     }
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-      elevation: 1,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: borderColor, width: 2),
-      ),
-      child: ListTile(
-        onTap: () => _navigateToAzkarDetail(azkar, index),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: borderColor, width: 2),
-          ),
-          child: Icon(Icons.favorite, color: borderColor, size: 20),
+    return GestureDetector(
+      onTap: () => _navigateToAzkarDetail(azkar, index),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border(right: BorderSide(color: categoryColor, width: 4)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        title: Text(
-          azkar.textAr,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A2E),
-            height: 1.6,
-          ),
-          textDirection: TextDirection.rtl,
-          textAlign: TextAlign.right,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (azkar.translation != null) ...[
-              const SizedBox(height: 4),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Header with heart icon and category title in same row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Heart icon on the left
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: accentColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.favorite, color: accentColor, size: 20),
+                  ),
+                  // Category chip on the right
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: categoryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: categoryColor.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      categoryName,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: categoryColor.withOpacity(0.8),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textDirection: TextDirection.rtl,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Arabic text
               Text(
-                azkar.translation!,
+                azkar.textAr,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: const Color(0xFF1A1A2E).withOpacity(0.6),
-                  fontStyle: FontStyle.italic,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: primaryColor,
+                  height: 1.8,
                 ),
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.right,
-                maxLines: 1,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
-            ],
-            if (azkar.repeatCount > 1) ...[
-              const SizedBox(height: 4),
-              Text(
-                'يُكرر ${azkar.repeatCount} مرات',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: borderColor,
-                  fontWeight: FontWeight.w500,
+
+              if (azkar.translation != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  azkar.translation!,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                    fontStyle: FontStyle.italic,
+                    height: 1.5,
+                  ),
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.right,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textDirection: TextDirection.rtl,
-              ),
+              ],
+
+              // Repeat count if applicable
+              if (azkar.repeatCount > 1) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'يُكرر ${azkar.repeatCount} مرات',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: accentColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textDirection: TextDirection.rtl,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
-        trailing: Icon(Icons.arrow_forward_ios, color: borderColor, size: 16),
       ),
     );
   }
@@ -589,26 +701,6 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
     }
   }
 
-  // Helper method to get category color for an azkar
-  Color _getCategoryColorForAzkar(Azkar azkar) {
-    try {
-      final category = _categoriesCache[azkar.categoryId];
-      if (category != null && category.color != null) {
-        // Parse hex color string to Color
-        final colorString = category.color!.replaceAll('#', '');
-        final colorValue = int.tryParse('FF$colorString', radix: 16);
-        if (colorValue != null) {
-          return Color(colorValue);
-        }
-      }
-    } catch (e) {
-      print('⚠️ Error parsing category color: $e');
-    }
-
-    // Fallback to pink color
-    return const Color(0xFFE91E63);
-  }
-
   // Create a fallback category with default properties that match the design
   AzkarCategory _createFallbackCategory() {
     return AzkarCategory(
@@ -617,7 +709,7 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
       nameEn: 'Favorites',
       description: 'Your favorite azkar',
       icon: 'favorite',
-      color: '#E91E63', // Pink color to match favorites theme
+      color: '#FF6B9D', // Pink color to match favorites theme
       orderIndex: 0,
       isActive: true,
       createdAt: DateTime.now(),
