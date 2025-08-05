@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '../../domain/entities/azkar_new.dart';
@@ -189,8 +188,10 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       '📄 Updated state via swipe - count: $_currentCount, completed: $_isCompleted',
     );
 
-    // Auto-scroll the page indicator if there are more than 10 pages
-    if (widget.azkarList != null && widget.azkarList!.length > 10) {
+    // Auto-scroll the page indicator only if there are more than 10 pages and controller is attached
+    if (widget.azkarList != null &&
+        widget.azkarList!.length > 10 &&
+        _indicatorScrollController.hasClients) {
       _scrollToCurrentIndicator();
     }
 
@@ -321,118 +322,38 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
 
   Widget _buildHeader(BuildContext context, Color categoryColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: const BoxDecoration(color: Colors.white),
       child: FadeInDown(
         duration: const Duration(milliseconds: 600),
         child: Row(
           children: [
-            // Enhanced back button
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.shadow.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    spreadRadius: 0,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-                border: Border.all(
-                  color: categoryColor.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: categoryColor,
-                  size: 20,
-                ),
-                style: IconButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(48, 48),
-                ),
-              ),
+            // Clean back button
+            IconButton(
+              icon: const Icon(Icons.arrow_forward, color: Colors.black87),
+              onPressed: () => Navigator.pop(context),
+              tooltip: 'رجوع',
             ),
-            // Enhanced centered title
+            // Centered title
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: categoryColor.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        widget.category.nameAr,
-                        style: GoogleFonts.playpenSans(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                          color: Theme.of(context).colorScheme.onSurface,
-                          letterSpacing: 0.5,
-                        ),
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
-                      ),
-                    ),
-                    // Enhanced page info
-                    // Page number removed as requested
-                  ],
+              child: Text(
+                widget.category.nameAr,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A2E),
                 ),
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.center,
               ),
             ),
-            // Favorite heart icon in top right
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.shadow.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    spreadRadius: 0,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-                border: Border.all(
-                  color: categoryColor.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: IconButton(
-                onPressed: _toggleFavorite,
-                icon: Icon(
-                  _isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: _isFavorite ? Colors.red : categoryColor,
-                  size: 20,
-                ),
-                style: IconButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(48, 48),
-                ),
+            // Favorite heart icon
+            IconButton(
+              onPressed: _toggleFavorite,
+              icon: Icon(
+                _isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: _isFavorite ? Colors.red : Colors.grey[600],
+                size: 24,
               ),
             ),
           ],
@@ -448,122 +369,68 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       duration: const Duration(milliseconds: 600),
       delay: const Duration(milliseconds: 300),
       child: Container(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: categoryColor.withValues(
-            alpha: 0.15,
-          ), // Light category color background
-          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              categoryColor.withOpacity(0.25),
+              categoryColor.withOpacity(0.15),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: categoryColor.withOpacity(0.4), width: 3.0),
           boxShadow: [
             BoxShadow(
-              color: categoryColor.withValues(
-                alpha: 0.25,
-              ), // Enhanced shadow with category color
-              blurRadius: 25, // Increased blur radius
-              spreadRadius: 4, // Increased spread
-              offset: const Offset(0, 8), // Increased offset
-            ),
-            BoxShadow(
-              color: categoryColor.withValues(
-                alpha: 0.15,
-              ), // Additional glow effect
-              blurRadius: 15,
-              spreadRadius: 2,
-              offset: const Offset(0, 4),
-            ),
-            BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withValues(
-                alpha: 0.08,
-              ), // Subtle depth shadow
-              blurRadius: 10,
-              spreadRadius: 1,
-              offset: const Offset(0, 3),
+              color: categoryColor.withOpacity(0.2),
+              blurRadius: 25,
+              offset: const Offset(0, 10),
             ),
           ],
-          border: Border.all(
-            color: categoryColor.withValues(
-              alpha: 0.4,
-            ), // More visible border with category color
-            width: 2, // Thicker border
-          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Main Arabic text with enhanced styling
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-              child: Text(
-                azkar.textAr,
-                style: GoogleFonts.playpenSans(
-                  fontSize:
-                      22, // Increased from 20 to 22 for better readability
-                  fontWeight: FontWeight.w700,
-                  height: 2.4, // Increased line height for Arabic text
-                  letterSpacing: 1.0, // Better spacing for Arabic characters
-                  color: const Color(
-                    0xFF2C1810,
-                  ), // Darker brown color for better contrast against cream background
-                  shadows: [
-                    Shadow(
-                      color: categoryColor.withValues(alpha: 0.15),
-                      offset: const Offset(0, 1),
-                      blurRadius: 3,
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
+            // Main Arabic text
+            Text(
+              azkar.textAr,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                height: 2.2,
+                color: Color(0xFF1A1A2E), // Dark color for better contrast
               ),
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
             ),
 
-            // Transliteration section with improved styling
+            // Transliteration section
             if (azkar.transliteration != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: categoryColor.withValues(
-                    alpha: 0.15,
-                  ), // Enhanced with category color and higher opacity
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: categoryColor.withValues(
-                      alpha: 0.35,
-                    ), // Category color border with higher opacity
-                    width: 1.5,
+                    color: categoryColor.withOpacity(0.3),
+                    width: 1,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: categoryColor.withValues(
-                        alpha: 0.2,
-                      ), // Enhanced shadow
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.hearing,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                        Icon(Icons.hearing, size: 16, color: categoryColor),
                         const SizedBox(width: 8),
                         Text(
                           'النطق',
-                          style: GoogleFonts.playpenSans(
-                            color: const Color(
-                              0xFF2C1810,
-                            ), // Dark brown for better contrast
+                          style: TextStyle(
+                            color: const Color(0xFF1A1A2E),
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
-                            letterSpacing: 0.2,
                           ),
                           textDirection: TextDirection.rtl,
                         ),
@@ -572,16 +439,14 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                     const SizedBox(height: 12),
                     Text(
                       azkar.transliteration!,
-                      style: GoogleFonts.playpenSans(
-                        color: const Color(
-                          0xFF2C1810,
-                        ), // Dark brown for better contrast
+                      style: const TextStyle(
+                        color: Color(
+                          0xFF4B5563,
+                        ), // Darker gray for better readability
                         fontStyle: FontStyle.italic,
                         fontSize: 16,
-                        height: 1.9, // Improved line height
-                        letterSpacing:
-                            0.4, // Better spacing for transliteration
-                        fontWeight: FontWeight.w400,
+                        height: 1.8,
+                        fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -590,69 +455,45 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               ),
             ],
 
-            // Translation section with improved styling
+            // Translation section
             if (azkar.translation != null) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: categoryColor.withValues(
-                    alpha: 0.18,
-                  ), // Enhanced with category color and higher opacity
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: categoryColor.withValues(
-                      alpha: 0.4,
-                    ), // Category color border with higher opacity
-                    width: 1.5,
+                    color: const Color(0xFF6B7280).withOpacity(0.3),
+                    width: 1,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: categoryColor.withValues(
-                        alpha: 0.25,
-                      ), // Enhanced shadow
-                      blurRadius: 15,
-                      spreadRadius: 3,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      azkar.translation!,
-                      style: GoogleFonts.playpenSans(
-                        color: const Color(
-                          0xFF2C1810,
-                        ), // Dark brown for better contrast
-                        fontSize: 16,
-                        height: 1.9, // Improved line height for readability
-                        fontWeight: FontWeight.w500,
-                        letterSpacing:
-                            0.3, // Added letter spacing for better readability
-                      ),
-                      textAlign: TextAlign.center,
-                      textDirection: TextDirection.rtl,
-                    ),
-                  ],
+                child: Text(
+                  azkar.translation!,
+                  style: const TextStyle(
+                    color: Color(
+                      0xFF374151,
+                    ), // Darker color for better contrast
+                    fontSize: 16,
+                    height: 1.8,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  textDirection: TextDirection.rtl,
                 ),
               ),
             ],
 
-            // Reference section with improved styling
+            // Reference section
             if (azkar.reference != null) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.tertiaryContainer.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.tertiary.withOpacity(0.2),
+                    color: Colors.grey.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -662,20 +503,18 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                     Icon(
                       Icons.menu_book,
                       size: 14,
-                      color: Theme.of(context).colorScheme.tertiary,
+                      color: const Color(0xFF4B5563),
                     ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         azkar.formattedReference,
-                        style: GoogleFonts.playpenSans(
-                          color: const Color(
-                            0xFF2C1810,
-                          ), // Dark brown for better contrast
+                        style: const TextStyle(
+                          color: Color(
+                            0xFF4B5563,
+                          ), // Darker for better readability
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          letterSpacing: 0.2,
-                          height: 1.4,
                         ),
                         textAlign: TextAlign.center,
                         textDirection: TextDirection.rtl,
@@ -686,15 +525,17 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               ),
             ],
 
-            // Action icons with enhanced styling
-            const SizedBox(height: 28),
+            // Action buttons
+            const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceVariant.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
+                color: Colors.white.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: categoryColor.withOpacity(0.2),
+                  width: 1,
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -707,9 +548,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                   Container(
                     width: 1,
                     height: 24,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withOpacity(0.2),
+                    color: categoryColor.withOpacity(0.3),
                   ),
                   _buildActionButton(
                     icon: Icons.copy_rounded,
@@ -719,9 +558,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                   Container(
                     width: 1,
                     height: 24,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withOpacity(0.2),
+                    color: categoryColor.withOpacity(0.3),
                   ),
                   _buildActionButton(
                     icon: Icons.refresh_rounded,
@@ -742,8 +579,6 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     required String label,
     required VoidCallback onPressed,
   }) {
-    const darkNavyColor = Color(0xFF1B2951); // Dark navy color
-
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(12),
@@ -752,15 +587,14 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: darkNavyColor, size: 20),
+            Icon(icon, color: const Color(0xFF1A1A2E), size: 20),
             const SizedBox(height: 4),
             Text(
               label,
-              style: GoogleFonts.playpenSans(
-                color: darkNavyColor,
+              style: const TextStyle(
+                color: Color(0xFF1A1A2E),
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                letterSpacing: 0.1,
               ),
               textDirection: TextDirection.rtl,
             ),
@@ -775,98 +609,46 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       return const SizedBox.shrink();
     }
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutBack, // Spring-like curve for smooth appearance
+    return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surface.withOpacity(0.95), // Slightly more opaque
+        color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Page number removed as requested
-          const SizedBox(height: 12),
-          // Fixed dots page indicator with smooth transitions and scrolling support
-          // Reversed for RTL swiping - first azkar (index 0) appears on right
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeInOutCubic,
-            key: const ValueKey('page_indicator'),
-            child: widget.azkarList!.length <= 10
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(widget.azkarList!.length, (index) {
-                      // Reverse the index for RTL feel - when swiping right (next), indicator moves right
-                      final reversedIndex =
-                          widget.azkarList!.length - 1 - index;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOutCubic,
-                        key: ValueKey('dot_$reversedIndex'),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: reversedIndex == _currentAzkarIndex ? 16 : 12,
-                        height: reversedIndex == _currentAzkarIndex ? 16 : 12,
-                        decoration: BoxDecoration(
-                          color: reversedIndex == _currentAzkarIndex
-                              ? categoryColor
-                              : categoryColor.withOpacity(0.3),
-                          shape: BoxShape.circle,
-                          boxShadow: reversedIndex == _currentAzkarIndex
-                              ? [
-                                  BoxShadow(
-                                    color: categoryColor.withOpacity(0.3),
-                                    blurRadius: 4,
-                                    spreadRadius: 1,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                      );
-                    }),
-                  )
-                : Container(
-                    height: 20,
-                    child: ListView.builder(
-                      controller: _indicatorScrollController,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: widget.azkarList!.length,
-                      physics: const BouncingScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        // Reverse the index for RTL feel - when swiping right (next), indicator moves right
-                        final reversedIndex =
-                            widget.azkarList!.length - 1 - index;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOutCubic,
-                          key: ValueKey('dot_$reversedIndex'),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: reversedIndex == _currentAzkarIndex ? 16 : 12,
-                          height: reversedIndex == _currentAzkarIndex ? 16 : 12,
-                          decoration: BoxDecoration(
-                            color: reversedIndex == _currentAzkarIndex
-                                ? categoryColor
-                                : categoryColor.withOpacity(0.3),
-                            shape: BoxShape.circle,
-                            boxShadow: reversedIndex == _currentAzkarIndex
-                                ? [
-                                    BoxShadow(
-                                      color: categoryColor.withOpacity(0.3),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
         ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          widget.azkarList!.length > 10 ? 10 : widget.azkarList!.length,
+          (index) {
+            // Show current position relative to total
+            final actualIndex = widget.azkarList!.length > 10
+                ? (_currentAzkarIndex - 5 + index).clamp(
+                    0,
+                    widget.azkarList!.length - 1,
+                  )
+                : index;
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: actualIndex == _currentAzkarIndex ? 16 : 8,
+              height: actualIndex == _currentAzkarIndex ? 16 : 8,
+              decoration: BoxDecoration(
+                color: actualIndex == _currentAzkarIndex
+                    ? categoryColor
+                    : categoryColor.withOpacity(0.3),
+                shape: BoxShape.circle,
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -880,19 +662,15 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
       delay: const Duration(milliseconds: 400),
       child: Center(
         child: Container(
-          padding: const EdgeInsets.all(12),
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: _isCompleted
-                    ? Colors.green.withValues(alpha: 0.2)
-                    : Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
+                color: categoryColor.withOpacity(0.2),
                 blurRadius: 15,
-                spreadRadius: 3,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -900,83 +678,82 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
           child: Stack(
             alignment: Alignment.center,
             children: [
+              // Progress indicator
               SizedBox(
                 width: 70,
                 height: 70,
                 child: CircularProgressIndicator(
                   value: progress.clamp(0.0, 1.0),
-                  strokeWidth: 5,
-                  backgroundColor: _isCompleted
-                      ? Colors.green.withValues(alpha: 0.3)
-                      : categoryColor.withValues(alpha: 0.15),
+                  strokeWidth: 4,
+                  backgroundColor: categoryColor.withOpacity(0.2),
                   valueColor: AlwaysStoppedAnimation<Color>(
                     _isCompleted ? Colors.green : categoryColor,
                   ),
                   strokeCap: StrokeCap.round,
                 ),
               ),
-              // Enhanced circular button
+              // Counter button
               ScaleTransition(
                 scale: _pulseAnimation,
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: _isCompleted ? null : () => _incrementCounter(azkar),
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(30),
                     child: Container(
-                      width: 50,
-                      height: 50,
+                      width: 60,
+                      height: 60,
                       child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (_isCompleted) ...[
-                              Icon(
-                                Icons.check_circle_outline,
-                                color: _isCompleted
-                                    ? Colors.green
-                                    : categoryColor,
-                                size: 20,
+                        child: _isCompleted
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: Colors.green,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'تم',
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textDirection: TextDirection.rtl,
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '$_currentCount',
+                                    style: TextStyle(
+                                      color: categoryColor,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 20,
+                                    height: 1,
+                                    color: categoryColor.withOpacity(0.6),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 2,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${azkar.repeatCount}',
+                                    style: TextStyle(
+                                      color: categoryColor.withOpacity(0.8),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 1),
-                              Text(
-                                'تم',
-                                style: GoogleFonts.playpenSans(
-                                  color: _isCompleted
-                                      ? Colors.green
-                                      : categoryColor,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.1,
-                                ),
-                                textDirection: TextDirection.rtl,
-                              ),
-                            ] else ...[
-                              Text(
-                                '$_currentCount',
-                                style: GoogleFonts.playpenSans(
-                                  color: categoryColor,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Container(
-                                width: 16,
-                                height: 1,
-                                color: categoryColor.withValues(alpha: 0.6),
-                                margin: const EdgeInsets.symmetric(vertical: 1),
-                              ),
-                              Text(
-                                '${azkar.repeatCount}',
-                                style: GoogleFonts.playpenSans(
-                                  color: categoryColor.withValues(alpha: 0.9),
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
                       ),
                     ),
                   ),
@@ -998,22 +775,22 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: (_isCompleted ? Colors.green : categoryColor).withValues(
-              alpha: 0.1,
+            color: (_isCompleted ? Colors.green : categoryColor).withOpacity(
+              0.1,
             ),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: (_isCompleted ? Colors.green : categoryColor).withValues(
-                alpha: 0.3,
+              color: (_isCompleted ? Colors.green : categoryColor).withOpacity(
+                0.3,
               ),
               width: 1,
             ),
           ),
           child: Text(
-            ' ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
-            style: GoogleFonts.playpenSans(
+            'يُكرر ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
+            style: TextStyle(
               color: _isCompleted ? Colors.green.shade700 : categoryColor,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
             textAlign: TextAlign.center,
@@ -1245,7 +1022,12 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
   }
 
   void _scrollToCurrentIndicator() {
-    if (widget.azkarList == null || widget.azkarList!.length <= 10) return;
+    // Only scroll if we have more than 10 items and the controller is attached
+    if (widget.azkarList == null ||
+        widget.azkarList!.length <= 10 ||
+        !_indicatorScrollController.hasClients) {
+      return;
+    }
 
     // Calculate the position to scroll to
     // Since we're using reversed index for RTL, we need to calculate based on the reversed position

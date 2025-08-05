@@ -23,45 +23,74 @@ class AppColors {
   static const Color lightWarning = Color(0xFFFF9800);
   static const Color lightInfo = Color(0xFF2196F3);
 
-  // Dark theme colors
-  static const Color darkPrimary = Color(0xFF7A8A6E); // Darker sage green
-  static const Color darkPrimaryContainer = Color(0xFF2A3D2A);
-  static const Color darkSecondary = Color(0xFFB8908B); // Darker dusty rose
-  static const Color darkSecondaryContainer = Color(0xFF3D2A2A);
-  static const Color darkTertiary = Color(0xFF9B7FA8); // Darker lavender
-  static const Color darkTertiaryContainer = Color(0xFF3A2A3D);
-  static const Color darkSurface = Color(0xFF1C1C1C);
-  static const Color darkSurfaceContainer = Color(0xFF242424);
-  static const Color darkBackground = Color(0xFF121212);
-  static const Color darkOnPrimary = Color(0xFF000000);
-  static const Color darkOnSecondary = Color(0xFF000000);
-  static const Color darkOnTertiary = Color(0xFF000000);
-  static const Color darkOnSurface = Color(0xFFE0E0E0);
-  static const Color darkOnBackground = Color(0xFFE8E8E8);
-  static const Color darkOutline = Color(0xFF484848);
+  // Dark theme colors - Updated to match home page dark theme
+  static const Color darkPrimary = Color(
+    0xFF9BB3D9,
+  ); // Muted soft blue (matching category colors)
+  static const Color darkPrimaryContainer = Color(
+    0xFF252645,
+  ); // Slightly lighter than background
+  static const Color darkSecondary = Color(0xFFE8E2B8); // Muted warm yellow
+  static const Color darkSecondaryContainer = Color(0xFF3A3B5C); // Medium dark
+  static const Color darkTertiary = Color(0xFF94D9CC); // Muted mint green
+  static const Color darkTertiaryContainer = Color(
+    0xFF2A2B3E,
+  ); // Dark container
+  static const Color darkSurface = Color(0xFF252645); // Progress section color
+  static const Color darkSurfaceContainer = Color(
+    0xFF2A2B3E,
+  ); // Slightly lighter
+  static const Color darkBackground = Color(
+    0xFF1A1B2E,
+  ); // Main dark navy background
+  static const Color darkOnPrimary = Color(
+    0xFF1A1A2E,
+  ); // Dark text on bright elements
+  static const Color darkOnSecondary = Color(
+    0xFF1A1A2E,
+  ); // Dark text on bright elements
+  static const Color darkOnTertiary = Color(
+    0xFF1A1A2E,
+  ); // Dark text on bright elements
+  static const Color darkOnSurface = Color(
+    0xFFFFFFFF,
+  ); // White text on dark surfaces
+  static const Color darkOnBackground = Color(
+    0xFFFFFFFF,
+  ); // White text on dark background
+  static const Color darkOutline = Color(0xFF3A3B5C); // Border color
   static const Color darkError = Color(0xFFCF6679);
-  static const Color darkSuccess = Color(0xFF81C784);
-  static const Color darkWarning = Color(0xFFFFB74D);
-  static const Color darkInfo = Color(0xFF64B5F6);
+  static const Color darkSuccess = Color(0xFFB0D9B8); // Muted green
+  static const Color darkWarning = Color(0xFFE8CDB8); // Muted peach
+  static const Color darkInfo = Color(0xFF89C5D9); // Muted cyan
 
-  // Glassy effect colors
+  // Glassy effect colors - Updated for dark theme consistency
   static const Color glassOverlay = Color(0x0FFFFFFF);
-  static const Color glassOverlayDark = Color(0x1FFFFFFF);
+  static const Color glassOverlayDark = Color(
+    0x1A252645,
+  ); // Using dark surface with opacity
   static const Color glassBorder = Color(0x3FFFFFFF);
-  static const Color glassBorderDark = Color(0x2FFFFFFF);
+  static const Color glassBorderDark = Color(
+    0x2F3A3B5C,
+  ); // Using dark outline with opacity
   static const Color glassBackground = Color(0x0DFFFFFF);
-  static const Color glassBackgroundDark = Color(0x1AFFFFFF);
+  static const Color glassBackgroundDark = Color(
+    0x1A1A1B2E,
+  ); // Using dark background with opacity
 
-  // Gradient colors
+  // Gradient colors - Updated for dark theme
   static const List<Color> primaryGradient = [lightPrimary, lightSecondary];
 
-  static const List<Color> primaryGradientDark = [darkPrimary, darkSecondary];
+  static const List<Color> primaryGradientDark = [
+    Color(0xFF9BB3D9), // Muted soft blue
+    Color(0xFFE8E2B8), // Muted warm yellow
+  ];
 
   static const List<Color> secondaryGradient = [lightSecondary, lightTertiary];
 
   static const List<Color> secondaryGradientDark = [
-    darkSecondary,
-    darkTertiary,
+    Color(0xFFE8CDB8), // Muted warm peach
+    Color(0xFF94D9CC), // Muted mint green
   ];
 
   static const List<Color> surfaceGradient = [
@@ -70,8 +99,8 @@ class AppColors {
   ];
 
   static const List<Color> surfaceGradientDark = [
-    darkSurface,
-    darkSurfaceContainer,
+    Color(0xFF252645), // Dark surface
+    Color(0xFF2A2B3E), // Dark surface container
   ];
 
   // Mood colors

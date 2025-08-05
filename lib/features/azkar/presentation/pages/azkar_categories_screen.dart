@@ -93,21 +93,26 @@ class _AzkarScreenState extends State<AzkarScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(
+        context,
+      ).colorScheme.background, // Use theme background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onBackground,
+          ),
           onPressed: () => context.go(AppRoutes.home),
           tooltip: 'رجوع',
         ),
         title: Text(
           'الأذكار',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Theme.of(context).colorScheme.onBackground,
           ),
           textDirection: TextDirection.rtl,
         ),
@@ -121,16 +126,23 @@ class _AzkarScreenState extends State<AzkarScreen>
             // Loading overlay when navigating
             if (_isNavigating)
               Container(
-                color: Colors.black.withOpacity(0.3),
-                child: const Center(
+                color: Theme.of(
+                  context,
+                ).colorScheme.background.withOpacity(0.8),
+                child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(color: Colors.white),
-                      SizedBox(height: 16),
+                      CircularProgressIndicator(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(height: 16),
                       Text(
                         'جاري تحميل الأذكار...',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onBackground,
+                          fontSize: 16,
+                        ),
                       ),
                     ],
                   ),
@@ -157,18 +169,26 @@ class _AzkarScreenState extends State<AzkarScreen>
 
     return RefreshIndicator(
       onRefresh: _loadCategories,
+      color: const Color(0xFF1A1A2E), // Dark blue icon
+      backgroundColor: Colors.grey[50], // Off-white background
+      strokeWidth: 3.0,
       child: _buildCategoriesList(),
     );
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('جاري تحميل الأذكار...'),
+          CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'جاري تحميل الأذكار...',
+            style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
+          ),
         ],
       ),
     );
@@ -227,9 +247,14 @@ class _AzkarScreenState extends State<AzkarScreen>
               delay: const Duration(milliseconds: 400),
               child: ElevatedButton.icon(
                 onPressed: _loadCategories,
-                icon: const Icon(Icons.refresh),
-                label: const Text('إعادة المحاولة'),
+                icon: const Icon(Icons.refresh, color: Color(0xFF1A1A2E)),
+                label: const Text(
+                  'إعادة المحاولة',
+                  style: TextStyle(color: Color(0xFF1A1A2E)),
+                ),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[50],
+                  foregroundColor: const Color(0xFF1A1A2E),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
@@ -302,9 +327,14 @@ class _AzkarScreenState extends State<AzkarScreen>
               delay: const Duration(milliseconds: 400),
               child: ElevatedButton.icon(
                 onPressed: _loadCategories,
-                icon: const Icon(Icons.refresh),
-                label: const Text('تحديث'),
+                icon: const Icon(Icons.refresh, color: Color(0xFF1A1A2E)),
+                label: const Text(
+                  'تحديث',
+                  style: TextStyle(color: Color(0xFF1A1A2E)),
+                ),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[50],
+                  foregroundColor: const Color(0xFF1A1A2E),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
@@ -352,20 +382,21 @@ class _AzkarScreenState extends State<AzkarScreen>
         onTap: () => _onCategoryTap(category),
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(12), // Reduced padding
+          padding: const EdgeInsets.all(20), // Reduced padding from 24 to 20
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(
+              16,
+            ), // Increased border radius to match homepage
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                color,
-                color.withValues(alpha: 0.8),
-              ], // Use the actual color for better readability
+              colors: [color.withOpacity(0.4), color.withOpacity(0.25)],
             ),
+            border: Border.all(color: color.withOpacity(0.6), width: 1),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min, // Add this to prevent overflow
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
@@ -381,22 +412,29 @@ class _AzkarScreenState extends State<AzkarScreen>
                 ),
                 child: Icon(
                   _getIconForCategory(category),
-                  size: 24,
-                  color: color, // Use the original card color for the icon
+                  size: 22, // Slightly smaller icon
+                  color: Color.lerp(
+                    color,
+                    Colors.black,
+                    0.4,
+                  ), // Darker shade of the same color
                 ),
               ),
-              const SizedBox(height: 8), // Reduced spacing
-              Text(
-                category.nameAr,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A2E), // Navy blue dark text
-                  fontSize: 12, // Smaller font size for card titles
+              const SizedBox(height: 6), // Reduced spacing from 8 to 6
+              Flexible(
+                // Wrap text in Flexible to prevent overflow
+                child: Text(
+                  category.nameAr,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A2E), // Navy blue dark text
+                    fontSize: 11, // Slightly smaller font size
+                  ),
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -486,7 +524,22 @@ class _AzkarScreenState extends State<AzkarScreen>
 
   // Get gradient colors that match the home page design
   Color _getGradientColor(int index) {
-    final colors = [
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    final darkColors = [
+      _getColorFromHex('#E8E2B8'), // Muted warm yellow
+      _getColorFromHex('#9BB3D9'), // Muted soft blue
+      _getColorFromHex('#E8CDB8'), // Muted warm peach
+      _getColorFromHex('#89C5D9'), // Muted cyan
+      _getColorFromHex('#94D9CC'), // Muted mint green
+      _getColorFromHex('#B0D9B8'), // Muted light green
+      _getColorFromHex('#D9B8BC'), // Muted light pink
+      _getColorFromHex('#D4B8D1'), // Muted light purple
+      _getColorFromHex('#C2A8D4'), // Muted light lavender
+      _getColorFromHex('#7FC4D9'), // Muted light turquoise
+    ];
+
+    final lightColors = [
       _getColorFromHex('#FBF8CC'), // Light yellow
       _getColorFromHex('#A3C4F3'), // Light blue
       _getColorFromHex('#FDE4CF'), // Light peach
@@ -498,6 +551,8 @@ class _AzkarScreenState extends State<AzkarScreen>
       _getColorFromHex('#CFBAF0'), // Light lavender
       _getColorFromHex('#8EECF5'), // Light turquoise
     ];
+
+    final colors = isDarkTheme ? darkColors : lightColors;
     return colors[index % colors.length];
   }
 

@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
-import 'package:sakinah_app/features/progress/presentation/widgets/streak_counter.dart';
 import 'package:sakinah_app/features/progress/presentation/widgets/animated_progress_ring.dart';
 import 'package:sakinah_app/features/progress/presentation/widgets/weekly_progress_chart.dart';
 import 'package:sakinah_app/features/progress/presentation/widgets/monthly_heatmap.dart';
 import 'package:sakinah_app/features/progress/presentation/widgets/daily_goal_dialog.dart';
-import 'package:sakinah_app/features/progress/presentation/widgets/motivational_message.dart';
-import 'package:sakinah_app/features/progress/presentation/widgets/progress_sharing_widget.dart';
-import 'package:sakinah_app/shared/widgets/glassy_container.dart';
 import 'package:sakinah_app/l10n/app_localizations.dart';
 
 class ProgressPage extends StatefulWidget {
@@ -40,7 +36,6 @@ class _ProgressPageState extends State<ProgressPage>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
     if (l10n == null) {
@@ -48,7 +43,7 @@ class _ProgressPageState extends State<ProgressPage>
     }
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -71,98 +66,196 @@ class _ProgressPageState extends State<ProgressPage>
   }
 
   Widget _buildAppBar(BuildContext context, AppLocalizations l10n) {
-    final theme = Theme.of(context);
-
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          Icon(Icons.trending_up, color: theme.colorScheme.primary, size: 28),
-          const SizedBox(width: 12),
-          Text(
-            l10n.myProgress,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontWeight: FontWeight.bold,
+          // Progress icon with background
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              Icons.insights,
+              color: const Color(0xFF6366F1),
+              size: 24,
             ),
           ),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              context.read<ProgressBloc>().add(const RefreshProgress());
-            },
-            tooltip: 'Refresh Progress',
+          const SizedBox(width: 16),
+
+          // Title section
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.myProgress,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A2E),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Track your spiritual journey',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.flag),
-            onPressed: () => _showGoalDialog(context),
-            tooltip: 'Set Daily Goal',
-          ),
-          QuickShareButton(
-            shareTitle: 'My Progress in Sakinah',
-            shareText: _getShareText(),
+
+          // Action buttons
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHeaderActionButton(
+                icon: Icons.refresh,
+                onPressed: () {
+                  context.read<ProgressBloc>().add(const RefreshProgress());
+                },
+                tooltip: 'Refresh Progress',
+              ),
+              const SizedBox(width: 8),
+              _buildHeaderActionButton(
+                icon: Icons.flag_outlined,
+                onPressed: () => _showGoalDialog(context),
+                tooltip: 'Set Daily Goal',
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTabBar(BuildContext context, AppLocalizations l10n) {
-    final theme = Theme.of(context);
-
+  Widget _buildHeaderActionButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required String tooltip,
+  }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              width: 1,
-            ),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.grey[700], size: 20),
+        onPressed: onPressed,
+        tooltip: tooltip,
+        padding: const EdgeInsets.all(8),
+        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+      ),
+    );
+  }
+
+  Widget _buildTabBar(BuildContext context, AppLocalizations l10n) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: const Color(0xFF6366F1).withOpacity(0.06),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFF6366F1).withOpacity(0.1),
+            width: 1,
           ),
-          child: TabBar(
-            controller: _tabController,
-            indicator: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: LinearGradient(
-                colors: [
-                  theme.colorScheme.primary.withOpacity(0.15),
-                  theme.colorScheme.primary.withOpacity(0.08),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        ),
+        child: TabBar(
+          controller: _tabController,
+          indicator: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6366F1).withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-            ),
-            labelColor: theme.colorScheme.primary,
-            unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.6),
-            labelStyle: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-            onTap: (index) {
-              switch (index) {
-                case 0:
-                  context.read<ProgressBloc>().add(const LoadTodayProgress());
-                  break;
-                case 1:
-                  context.read<ProgressBloc>().add(const LoadWeeklyProgress());
-                  break;
-                case 2:
-                  context.read<ProgressBloc>().add(const LoadMonthlyProgress());
-                  break;
-              }
-            },
-            tabs: const [
-              Tab(text: 'Today'),
-              Tab(text: 'Week'),
-              Tab(text: 'Month'),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
             ],
           ),
+          indicatorPadding: const EdgeInsets.all(2),
+          labelColor: const Color(0xFF6366F1),
+          unselectedLabelColor: Colors.grey[600],
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            letterSpacing: 0.5,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            letterSpacing: 0.3,
+          ),
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: MaterialStateProperty.all(Colors.transparent),
+          onTap: (index) {
+            switch (index) {
+              case 0:
+                context.read<ProgressBloc>().add(const LoadTodayProgress());
+                break;
+              case 1:
+                context.read<ProgressBloc>().add(const LoadWeeklyProgress());
+                break;
+              case 2:
+                context.read<ProgressBloc>().add(const LoadMonthlyProgress());
+                break;
+            }
+          },
+          tabs: const [
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.today, size: 16),
+                  SizedBox(width: 6),
+                  Text('Today'),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.calendar_view_week, size: 16),
+                  SizedBox(width: 6),
+                  Text('Week'),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.calendar_month, size: 16),
+                  SizedBox(width: 6),
+                  Text('Month'),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -198,45 +291,166 @@ class _ProgressPageState extends State<ProgressPage>
     TodayProgressLoaded state,
     AppLocalizations l10n,
   ) {
-    final theme = Theme.of(context);
     final progress = state.progress;
     final dailyGoal = 5; // TODO: Get from settings
     final completionRate = progress.azkarCompleted / dailyGoal;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
-          // Main progress ring
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            child: AnimatedProgressRing(
-              progress: completionRate.clamp(0.0, 1.0),
-              size: 200,
-              strokeWidth: 12,
-              centerWidget: Column(
-                mainAxisSize: MainAxisSize.min,
+          // Welcome Message
+          FadeInDown(
+            duration: const Duration(milliseconds: 600),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF6366F1).withOpacity(0.4),
+                    const Color(0xFF8B5CF6).withOpacity(0.25),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF6366F1).withOpacity(0.6),
+                  width: 1,
+                ),
+              ),
+              child: Column(
                 children: [
                   Text(
-                    '${progress.azkarCompleted}',
-                    style: theme.textTheme.headlineLarge?.copyWith(
-                      color: theme.colorScheme.primary,
+                    completionRate >= 1.0
+                        ? '🎉 Excellent Work!'
+                        : completionRate >= 0.8
+                        ? '⭐ Almost There!'
+                        : completionRate >= 0.5
+                        ? '💪 Great Progress!'
+                        : completionRate > 0
+                        ? '🌱 Good Start!'
+                        : '🕌 Begin Your Journey',
+                    style: const TextStyle(
+                      color: Color(0xFF1A1A2E),
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      fontSize: 48,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    completionRate >= 1.0
+                        ? 'You\'ve completed your daily goal! Keep up the amazing work.'
+                        : 'Every dhikr brings you closer to Allah. Continue your spiritual journey.',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Main Progress Section
+          FadeInUp(
+            duration: const Duration(milliseconds: 800),
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withOpacity(0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+                border: Border.all(
+                  color: const Color(0xFF6366F1).withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  // Progress Ring
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AnimatedProgressRing(
+                        progress: completionRate.clamp(0.0, 1.0),
+                        size: 160,
+                        strokeWidth: 8,
+                        centerWidget: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${progress.azkarCompleted}',
+                              style: const TextStyle(
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 36,
+                              ),
+                            ),
+                            Container(
+                              width: 24,
+                              height: 2,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6366F1).withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$dailyGoal',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Progress Label
+                  Text(
+                    'Daily Azkar Progress',
+                    style: const TextStyle(
+                      color: Color(0xFF1A1A2E),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
+
+                  const SizedBox(height: 8),
+
+                  // Percentage
                   Text(
-                    'of $dailyGoal',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    'Azkar',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    '${(completionRate * 100).toInt()}% Complete',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -244,32 +458,130 @@ class _ProgressPageState extends State<ProgressPage>
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 32),
 
-          // Motivational message
-          MotivationalMessage(
-            completedCount: progress.azkarCompleted,
-            goalCount: dailyGoal,
-            currentStreak: state.currentStreak,
+          // Streak and Stats Row
+          Row(
+            children: [
+              // Streak Card
+              Expanded(
+                child: FadeInLeft(
+                  duration: const Duration(milliseconds: 600),
+                  delay: const Duration(milliseconds: 200),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.local_fire_department,
+                            color: const Color(0xFFF59E0B),
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '${state.currentStreak}',
+                          style: const TextStyle(
+                            color: Color(0xFF1A1A2E),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Day Streak',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              // Today's Count Card
+              Expanded(
+                child: FadeInRight(
+                  duration: const Duration(milliseconds: 600),
+                  delay: const Duration(milliseconds: 200),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF10B981).withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.check_circle_outline,
+                            color: const Color(0xFF10B981),
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '${progress.azkarCompleted}',
+                          style: const TextStyle(
+                            color: Color(0xFF1A1A2E),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Today',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 32),
 
-          // Streak counter
-          StreakCounter(streakCount: state.currentStreak, label: l10n.streak),
-
-          const SizedBox(height: 30),
-
-          // Stats grid
-          _buildStatsGrid(context, progress, l10n),
-
+          // Additional Cards
           if (progress.reflection != null) ...[
-            const SizedBox(height: 24),
             _buildReflectionCard(context, progress.reflection!, l10n),
+            const SizedBox(height: 24),
           ],
 
           if (progress.moodBefore != null || progress.moodAfter != null) ...[
-            const SizedBox(height: 24),
             _buildMoodCard(context, progress, l10n),
           ],
         ],
@@ -298,32 +610,177 @@ class _ProgressPageState extends State<ProgressPage>
     WeeklyProgressLoaded state,
     AppLocalizations l10n,
   ) {
+    final activeDays = state.weeklyProgress
+        .where((p) => p.azkarCompleted > 0)
+        .length;
+    final totalAzkar = state.weeklyProgress.fold<int>(
+      0,
+      (sum, p) => sum + p.azkarCompleted,
+    );
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Weekly summary cards
-          Row(
-            children: [
-              // Removed Total Azkar count display as requested
-              Expanded(
-                child: _buildSummaryCard(
-                  context,
-                  'Active Days',
-                  state.weeklyProgress
-                      .where((p) => p.azkarCompleted > 0)
-                      .length
-                      .toString(),
-                  Icons.calendar_today,
+          const SizedBox(height: 12),
+
+          // Weekly Overview Card
+          FadeInDown(
+            duration: const Duration(milliseconds: 600),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF6366F1).withOpacity(0.4),
+                    const Color(0xFF8B5CF6).withOpacity(0.25),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF6366F1).withOpacity(0.6),
+                  width: 1,
                 ),
               ),
-            ],
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_view_week,
+                        color: const Color(0xFF6366F1),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'This Week\'s Journey',
+                        style: const TextStyle(
+                          color: Color(0xFF1A1A2E),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildWeeklyStatItem(
+                          'Active Days',
+                          '$activeDays/7',
+                          Icons.event_available,
+                          const Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildWeeklyStatItem(
+                          'Total Azkar',
+                          '$totalAzkar',
+                          Icons.auto_awesome,
+                          const Color(0xFFF59E0B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
-          // Weekly chart
-          WeeklyProgressChart(weeklyProgress: state.weeklyProgress),
+          // Weekly Chart Card
+          FadeInUp(
+            duration: const Duration(milliseconds: 800),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.bar_chart,
+                        color: const Color(0xFF6366F1),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Daily Progress',
+                        style: const TextStyle(
+                          color: Color(0xFF1A1A2E),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  WeeklyProgressChart(weeklyProgress: state.weeklyProgress),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeeklyStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Color(0xFF1A1A2E),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -350,127 +807,238 @@ class _ProgressPageState extends State<ProgressPage>
     MonthlyProgressLoaded state,
     AppLocalizations l10n,
   ) {
+    final activeDays = state.monthlyProgress
+        .where((p) => p.azkarCompleted > 0)
+        .length;
+    final totalAzkar = state.monthlyProgress.fold<int>(
+      0,
+      (sum, p) => sum + p.azkarCompleted,
+    );
+    final daysInMonth = DateTime(
+      DateTime.now().year,
+      DateTime.now().month + 1,
+      0,
+    ).day;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Monthly summary
-          Row(
-            children: [
-              // Removed Total Azkar count display as requested
-              Expanded(
-                child: _buildSummaryCard(
-                  context,
-                  'Active Days',
-                  state.monthlyProgress
-                      .where((p) => p.azkarCompleted > 0)
-                      .length
-                      .toString(),
-                  Icons.calendar_month,
+          const SizedBox(height: 12),
+
+          // Monthly Overview Card
+          FadeInDown(
+            duration: const Duration(milliseconds: 600),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF10B981).withOpacity(0.4),
+                    const Color(0xFF059669).withOpacity(0.25),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withOpacity(0.6),
+                  width: 1,
                 ),
               ),
-            ],
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_month,
+                        color: const Color(0xFF10B981),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'This Month\'s Achievements',
+                        style: const TextStyle(
+                          color: Color(0xFF1A1A2E),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMonthlyStatItem(
+                          'Active Days',
+                          '$activeDays/$daysInMonth',
+                          Icons.event_available,
+                          const Color(0xFF6366F1),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildMonthlyStatItem(
+                          'Total Azkar',
+                          '$totalAzkar',
+                          Icons.auto_awesome,
+                          const Color(0xFFF59E0B),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildMonthlyStatItem(
+                          'Consistency',
+                          '${((activeDays / daysInMonth) * 100).toInt()}%',
+                          Icons.trending_up,
+                          const Color(0xFF10B981),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
-          // Monthly calendar heatmap
-          MonthlyHeatmap(monthlyProgress: state.monthlyProgress),
+          // Monthly Heatmap Card
+          FadeInUp(
+            duration: const Duration(milliseconds: 800),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.grid_view,
+                        color: const Color(0xFF10B981),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Monthly Activity',
+                        style: const TextStyle(
+                          color: Color(0xFF1A1A2E),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        'Less',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                      ),
+                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'More',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  MonthlyHeatmap(monthlyProgress: state.monthlyProgress),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatsGrid(
-    BuildContext context,
-    progress,
-    AppLocalizations l10n,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            context,
-            'Completed',
-            progress.azkarCompleted.toString(),
-            Icons.check_circle,
-            Colors.green,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildStatCard(
-            context,
-            'This Week',
-            '12', // TODO: Calculate actual weekly count
-            Icons.calendar_view_week,
-            Colors.blue,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(
-    BuildContext context,
+  Widget _buildMonthlyStatItem(
     String label,
     String value,
     IconData icon,
     Color color,
   ) {
-    return FadeInUp(
-      duration: const Duration(milliseconds: 600),
-      child: GlassyContainer(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard(
-    BuildContext context,
-    String title,
-    String value,
-    IconData icon,
-  ) {
-    final theme = Theme.of(context);
-
-    return GlassyContainer(
+    return Container(
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
+      ),
       child: Column(
         children: [
-          Icon(icon, color: theme.colorScheme.primary, size: 24),
+          Icon(icon, color: color, size: 20),
           const SizedBox(height: 8),
           Text(
             value,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: theme.colorScheme.primary,
+            style: const TextStyle(
+              color: Color(0xFF1A1A2E),
               fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
-            title,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            label,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
           ),
@@ -486,33 +1054,71 @@ class _ProgressPageState extends State<ProgressPage>
   ) {
     return FadeInUp(
       duration: const Duration(milliseconds: 700),
-      child: GlassyContainer(
-        padding: const EdgeInsets.all(16),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF10B981).withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+          border: Border.all(
+            color: const Color(0xFF10B981).withOpacity(0.2),
+            width: 1,
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.auto_awesome,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 20,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: const Color(0xFF10B981),
+                    size: 20,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   'Today\'s Reflection',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: const TextStyle(
+                    color: Color(0xFF1A1A2E),
                     fontWeight: FontWeight.w600,
+                    fontSize: 16,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              reflection,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.04),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                reflection,
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14,
+                  height: 1.6,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
             ),
           ],
         ),
@@ -523,85 +1129,178 @@ class _ProgressPageState extends State<ProgressPage>
   Widget _buildMoodCard(BuildContext context, progress, AppLocalizations l10n) {
     return FadeInUp(
       duration: const Duration(milliseconds: 800),
-      child: GlassyContainer(
-        padding: const EdgeInsets.all(16),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFF59E0B).withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+          border: Border.all(
+            color: const Color(0xFFF59E0B).withOpacity(0.2),
+            width: 1,
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.mood,
-                  color: Theme.of(context).colorScheme.secondary,
-                  size: 20,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.mood,
+                    color: const Color(0xFFF59E0B),
+                    size: 20,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   'Mood Journey',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: const TextStyle(
+                    color: Color(0xFF1A1A2E),
                     fontWeight: FontWeight.w600,
+                    fontSize: 16,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                if (progress.moodBefore != null) ...[
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          'Before',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          progress.moodBefore!,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (progress.moodAfter != null) ...[
-                    const Icon(Icons.arrow_forward, size: 16),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withOpacity(0.04),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFF59E0B).withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  if (progress.moodBefore != null) ...[
                     Expanded(
                       child: Column(
                         children: [
-                          Text(
-                            'After',
-                            style: Theme.of(context).textTheme.bodySmall,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Before',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 12),
                           Text(
-                            progress.moodAfter!,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(fontWeight: FontWeight.w600),
+                            progress.moodBefore!,
+                            style: const TextStyle(
+                              color: Color(0xFF1A1A2E),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
                           ),
                         ],
                       ),
                     ),
+                    if (progress.moodAfter != null) ...[
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Icon(
+                          Icons.arrow_forward,
+                          size: 18,
+                          color: const Color(0xFFF59E0B),
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF59E0B).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'After',
+                                style: TextStyle(
+                                  color: const Color(0xFFF59E0B),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              progress.moodAfter!,
+                              style: const TextStyle(
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
-                ],
-                if (progress.moodBefore == null && progress.moodAfter != null)
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          'Current',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          progress.moodAfter!,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
+                  if (progress.moodBefore == null && progress.moodAfter != null)
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF59E0B).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Current',
+                              style: TextStyle(
+                                color: const Color(0xFFF59E0B),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            progress.moodAfter!,
+                            style: const TextStyle(
+                              color: Color(0xFF1A1A2E),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -661,20 +1360,5 @@ class _ProgressPageState extends State<ProgressPage>
         },
       ),
     );
-  }
-
-  String _getShareText() {
-    return '''
-🕌 My Progress in Sakinah App 🕌
-
-Today's Journey:
-• Made spiritual progress
-• Engaged in dhikr and azkar
-• Continuing my path of remembrance
-
-Join me in this beautiful journey of Islamic spirituality!
-
-#IslamicApp #Dhikr #Azkar #Spirituality #Islam
-''';
   }
 }

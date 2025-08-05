@@ -143,17 +143,17 @@ class _MoodCardState extends State<MoodCard>
                     end: Alignment.bottomRight,
                     colors: widget.isSelected
                         ? [
-                            moodColor.withOpacity(0.3),
-                            moodColor.withOpacity(0.1),
+                            moodColor.withOpacity(0.6),
+                            moodColor.withOpacity(0.4),
                           ]
                         : [
-                            moodColor.withOpacity(0.15),
-                            moodColor.withOpacity(0.05),
+                            moodColor.withOpacity(0.4),
+                            moodColor.withOpacity(0.25),
                           ],
                   ),
                   border: widget.isSelected
                       ? Border.all(color: moodColor, width: 2)
-                      : Border.all(color: moodColor.withOpacity(0.2), width: 1),
+                      : Border.all(color: moodColor.withOpacity(0.6), width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: moodColor.withOpacity(

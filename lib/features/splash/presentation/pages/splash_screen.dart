@@ -67,13 +67,11 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              _getColorFromHex('#FFF4B3'), // More saturated yellow
               _getColorFromHex('#FBF8CC'), // Light yellow (same as bottom nav)
-              _getColorFromHex('#F0E68C'), // Khaki yellow
               _getColorFromHex('#A3C4F3'), // Light blue (same as bottom nav)
               Colors.white, // Fade to white for elegance
             ],
-            stops: const [0.0, 0.3, 0.5, 0.8, 1.0],
+            stops: const [0.0, 0.6, 1.0],
           ),
         ),
         child: Stack(

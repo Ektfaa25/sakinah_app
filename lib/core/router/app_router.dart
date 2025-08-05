@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sakinah_app/core/router/app_routes.dart';
 import 'package:sakinah_app/core/di/service_locator.dart';
+import 'package:sakinah_app/core/theme/app_colors.dart';
 import 'package:sakinah_app/features/mood/presentation/pages/mood_selection_page.dart';
 import 'package:sakinah_app/features/mood/presentation/bloc/mood_bloc.dart';
 import 'package:sakinah_app/features/home/presentation/pages/home_page.dart';
@@ -13,6 +14,7 @@ import 'package:sakinah_app/features/azkar/presentation/pages/azkar_favorites_sc
 import 'package:sakinah_app/features/azkar/domain/entities/azkar_new.dart';
 import 'package:sakinah_app/features/progress/presentation/pages/progress_page.dart';
 import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
+import 'package:sakinah_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:sakinah_app/features/splash/presentation/pages/splash_screen.dart';
 
 // Import pages (will be created later)
@@ -125,8 +127,7 @@ class AppRouter {
             GoRoute(
               path: AppRoutes.settings,
               name: 'settings',
-              builder: (context, state) =>
-                  _buildPlaceholderPage('Settings', 'App preferences'),
+              builder: (context, state) => const SettingsPage(),
             ),
           ],
         ),
@@ -409,20 +410,29 @@ class _MainShellState extends State<_MainShell> {
   }
 
   Widget _buildStyledBottomNavBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            _getGradientColor(0).withOpacity(0.3),
-            _getGradientColor(1).withOpacity(0.3),
-          ],
+          colors: isDark
+              ? [
+                  AppColors.darkBackground.withOpacity(0.9),
+                  AppColors.darkSurface.withOpacity(0.9),
+                ]
+              : [
+                  _getGradientColor(0).withOpacity(0.6),
+                  _getGradientColor(1).withOpacity(0.4),
+                ],
         ),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: isDark
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -433,8 +443,13 @@ class _MainShellState extends State<_MainShell> {
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.transparent,
-          selectedItemColor: const Color(0xFF1A1A2E), // Navy blue dark text
-          unselectedItemColor: const Color(0xFF1A1A2E).withOpacity(0.6),
+          selectedItemColor: isDark
+              ? AppColors.darkOnBackground
+              : const Color(0xFF1A1A2E), // Navy blue dark text
+          unselectedItemColor: isDark
+              ? AppColors
+                    .darkOnBackground // Full white for dark mode
+              : const Color(0xFF1A1A2E).withOpacity(0.6),
           currentIndex: _currentIndex,
           elevation: 0,
           selectedLabelStyle: const TextStyle(
@@ -446,11 +461,11 @@ class _MainShellState extends State<_MainShell> {
             fontSize: 11,
           ),
           items: [
-            _buildStyledNavItem(Icons.home, 'الرئيسية', 0),
-            _buildStyledNavItem(Icons.grid_view, 'الفئات', 1),
-            _buildStyledNavItem(Icons.favorite, 'المفضلة', 2),
-            _buildStyledNavItem(Icons.show_chart, 'التقدم', 3),
-            _buildStyledNavItem(Icons.settings, 'الإعدادات', 4),
+            _buildStyledNavItem(Icons.home, 'الرئيسية', 0, context),
+            _buildStyledNavItem(Icons.grid_view, 'الفئات', 1, context),
+            _buildStyledNavItem(Icons.favorite, 'المفضلة', 2, context),
+            _buildStyledNavItem(Icons.show_chart, 'التقدم', 3, context),
+            _buildStyledNavItem(Icons.settings, 'الإعدادات', 4, context),
           ],
           onTap: _onBottomNavTap,
         ),
@@ -462,8 +477,10 @@ class _MainShellState extends State<_MainShell> {
     IconData iconData,
     String label,
     int index,
+    BuildContext context,
   ) {
     final isSelected = _currentIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BottomNavigationBarItem(
       icon: Container(
@@ -484,8 +501,16 @@ class _MainShellState extends State<_MainShell> {
         child: Icon(
           iconData,
           color: isSelected
-              ? _getGradientColor(index)
-              : const Color(0xFF1A1A2E).withOpacity(0.6),
+              ? _getCategoryColorForTab(
+                  index,
+                ) // Category colors for active items in both modes
+              : (isDark
+                    ? Colors.white.withOpacity(
+                        0.6,
+                      ) // Muted white for inactive in dark mode
+                    : const Color(0xFF1A1A2E).withOpacity(
+                        0.6,
+                      )), // Muted dark for inactive in light mode
           size: 22,
         ),
       ),
@@ -512,16 +537,10 @@ class _MainShellState extends State<_MainShell> {
         context.go(AppRoutes.progress);
         break;
       case 4:
-        // Settings (placeholder for now)
-        _showComingSoonMessage('الإعدادات - قريباً');
+        // Settings
+        context.go(AppRoutes.settings);
         break;
     }
-  }
-
-  void _showComingSoonMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   // Get gradient colors that match the azkar categories design
@@ -539,6 +558,27 @@ class _MainShellState extends State<_MainShell> {
       _getColorFromHex('#8EECF5'), // Light turquoise
     ];
     return colors[index % colors.length];
+  }
+
+  Color _getCategoryColorForTab(int index) {
+    switch (index) {
+      case 0: // Home
+        return _getColorFromHex(
+          '#FFD93D',
+        ); // Bright warm yellow like morning azkar
+      case 1: // Categories
+        return _getColorFromHex(
+          '#6FB3FF',
+        ); // Vibrant soft blue like evening azkar
+      case 2: // Favorites
+        return _getColorFromHex('#FF6B9D'); // Pink for favorites
+      case 3: // Progress
+        return _getColorFromHex('#4ECDC4'); // Vibrant mint green for progress
+      case 4: // Settings
+        return _getColorFromHex('#95E1A3'); // Bright light green for settings
+      default:
+        return _getGradientColor(index);
+    }
   }
 
   /// Helper method to convert hex color string to Color object

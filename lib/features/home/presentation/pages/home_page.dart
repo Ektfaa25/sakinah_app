@@ -255,8 +255,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(
+        context,
+      ).colorScheme.background, // Use theme background
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -275,10 +279,12 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text(
                       'كيف تشعر الآن؟', // How do you feel now?
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onBackground, // Use theme text color
                       ),
                       textDirection: TextDirection.rtl,
                     ),
@@ -382,43 +388,34 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           children: [
                             // Small + icon button to show all categories
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
+                            Text(
+                              'المزيد',
+
+                              // Azkar
+                              style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                height: 1.5,
+
+                                fontSize: 14,
+                                fontWeight: FontWeight.normal,
+
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withOpacity(0.3),
-                                  width: 1,
-                                ),
+                                ).colorScheme.onSurface, // Use theme text color
                               ),
-                              child: IconButton(
-                                onPressed: () =>
-                                    context.push(AppRoutes.azkarCategories),
-                                icon: Icon(
-                                  Icons.add,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 16,
-                                ),
-                                padding: EdgeInsets.zero,
-                                tooltip: 'المزيد من الأذكار',
-                              ),
+                              textDirection: TextDirection.rtl,
                             ),
                           ],
                         ),
                         // Azkar title
                         Text(
                           'الاذكار', // Azkar
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors
-                                .black87, // Changed to black87 for better visibility
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onBackground, // Use theme text color
                           ),
                           textDirection: TextDirection.rtl,
                         ),
@@ -441,11 +438,15 @@ class _HomePageState extends State<HomePage> {
                           _AzkarCategoryCard(
                             key: const ValueKey('morning'),
                             title: 'أذكار الصباح',
-                            subtitle: 'Morning',
+                            subtitle: '',
                             icon: Icons.wb_sunny,
-                            color: _getColorFromHex(
-                              '#FBF8CC',
-                            ), // Back to original light yellow
+                            color: isDarkTheme
+                                ? _getColorFromHex(
+                                    '#E8E2B8',
+                                  ) // Muted warm yellow for dark background
+                                : _getColorFromHex(
+                                    '#FBF8CC',
+                                  ), // Original bright yellow for light background
                             categoryId: 'morning',
                             onTap: () =>
                                 _navigateToAzkarDetail(context, 'morning'),
@@ -453,11 +454,15 @@ class _HomePageState extends State<HomePage> {
                           _AzkarCategoryCard(
                             key: const ValueKey('evening'),
                             title: 'أذكار المساء',
-                            subtitle: 'Evening',
+                            subtitle: '',
                             icon: Icons.nights_stay,
-                            color: _getColorFromHex(
-                              '#A3C4F3',
-                            ), // From image - light blue
+                            color: isDarkTheme
+                                ? _getColorFromHex(
+                                    '#9BB3D9',
+                                  ) // Muted soft blue for dark background
+                                : _getColorFromHex(
+                                    '#A3C4F3',
+                                  ), // Original bright blue for light background
                             categoryId: 'evening',
                             onTap: () =>
                                 _navigateToAzkarDetail(context, 'evening'),
@@ -465,11 +470,15 @@ class _HomePageState extends State<HomePage> {
                           _AzkarCategoryCard(
                             key: const ValueKey('waking_up'),
                             title: 'أذكار الاستيقاظ',
-                            subtitle: 'Waking Up',
+                            subtitle: '',
                             icon: Icons.light_mode,
-                            color: _getColorFromHex(
-                              '#FDE4CF',
-                            ), // From image - light peach
+                            color: isDarkTheme
+                                ? _getColorFromHex(
+                                    '#E8CDB8',
+                                  ) // Muted warm peach for dark background
+                                : _getColorFromHex(
+                                    '#FDE4CF',
+                                  ), // Original bright peach for light background
                             categoryId: 'waking_up',
                             onTap: () =>
                                 _navigateToAzkarDetail(context, 'waking_up'),
@@ -477,11 +486,15 @@ class _HomePageState extends State<HomePage> {
                           _AzkarCategoryCard(
                             key: const ValueKey('sleep'),
                             title: 'أذكار النوم',
-                            subtitle: 'Sleep',
+                            subtitle: '',
                             icon: Icons.bedtime,
-                            color: _getColorFromHex(
-                              '#90DBF4',
-                            ), // From image - light cyan
+                            color: isDarkTheme
+                                ? _getColorFromHex(
+                                    '#89C5D9',
+                                  ) // Muted cyan for dark background
+                                : _getColorFromHex(
+                                    '#90DBF4',
+                                  ), // Original bright cyan for light background
                             categoryId: 'sleep',
                             onTap: () =>
                                 _navigateToAzkarDetail(context, 'sleep'),
@@ -489,11 +502,15 @@ class _HomePageState extends State<HomePage> {
                           _AzkarCategoryCard(
                             key: const ValueKey('prayer_before_salam'),
                             title: 'أذكار الصلاة',
-                            subtitle: 'During Prayer',
+                            subtitle: '',
                             icon: Icons.mosque,
-                            color: _getColorFromHex(
-                              '#98F5E1',
-                            ), // From image - light mint
+                            color: isDarkTheme
+                                ? _getColorFromHex(
+                                    '#94D9CC',
+                                  ) // Muted mint green for dark background
+                                : _getColorFromHex(
+                                    '#98F5E1',
+                                  ), // Original bright mint for light background
                             categoryId: 'prayer_before_salam',
                             onTap: () => _navigateToAzkarDetail(
                               context,
@@ -503,11 +520,15 @@ class _HomePageState extends State<HomePage> {
                           _AzkarCategoryCard(
                             key: const ValueKey('after_prayer'),
                             title: 'أذكار بعد الصلاة',
-                            subtitle: 'After Prayer',
+                            subtitle: '',
                             icon: Icons.check_circle,
-                            color: _getColorFromHex(
-                              '#B9FBC0',
-                            ), // From image - light green
+                            color: isDarkTheme
+                                ? _getColorFromHex(
+                                    '#B0D9B8',
+                                  ) // Muted light green for dark background
+                                : _getColorFromHex(
+                                    '#B9FBC0',
+                                  ), // Original bright green for light background
                             categoryId: 'after_prayer',
                             onTap: () =>
                                 _navigateToAzkarDetail(context, 'after_prayer'),
@@ -547,9 +568,12 @@ class _HomePageState extends State<HomePage> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        // Use theme surface color
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
+            width: 1,
+          ), // Use theme outline color
         ),
       ),
       child: Column(
@@ -564,10 +588,12 @@ class _HomePageState extends State<HomePage> {
             children: [
               Text(
                 'التقدم الأسبوعي', // Weekly Progress in Arabic
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A2E),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface, // Use theme text color
                 ),
                 textDirection: TextDirection.rtl,
               ),
@@ -590,7 +616,7 @@ class _HomePageState extends State<HomePage> {
 
           // Scrollable week view
           SizedBox(
-            height: 80, // Fixed height for the week indicators
+            height: 60, // Fixed height for the week indicators
             child: PageView.builder(
               controller: _weekPageController,
               onPageChanged: (index) {
@@ -627,7 +653,9 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     textDirection: TextDirection.rtl, // RTL for the entire row
                     children: weekDays.map((date) {
-                      return _buildDayIndicator(context, date, state);
+                      return Flexible(
+                        child: _buildDayIndicator(context, date, state),
+                      );
                     }).toList(),
                   ),
                 );
@@ -659,7 +687,10 @@ class _HomePageState extends State<HomePage> {
                       'الأسبوع القادم',
                       style: TextStyle(
                         fontSize: 12,
-                        color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
+                        color: Theme.of(context).colorScheme.onSurface
+                            .withValues(
+                              alpha: 0.6,
+                            ), // Use theme text color with opacity
                         fontWeight: FontWeight.w500,
                       ),
                       textDirection: TextDirection.rtl,
@@ -679,7 +710,10 @@ class _HomePageState extends State<HomePage> {
                       'الأسبوع الماضي',
                       style: TextStyle(
                         fontSize: 12,
-                        color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
+                        color: Theme.of(context).colorScheme.onSurface
+                            .withValues(
+                              alpha: 0.6,
+                            ), // Use theme text color with opacity
                         fontWeight: FontWeight.w500,
                       ),
                       textDirection: TextDirection.rtl,
@@ -788,7 +822,9 @@ class _HomePageState extends State<HomePage> {
             fontWeight: FontWeight.w500,
             color: isToday
                 ? _getGradientColor(4)
-                : const Color(0xFF1A1A2E).withValues(alpha: 0.6),
+                : Theme.of(context).colorScheme.onSurface.withValues(
+                    alpha: 0.7,
+                  ), // Use theme text color with opacity
           ),
           textDirection: TextDirection.rtl, // RTL for Arabic text
         ),
@@ -842,7 +878,9 @@ class _HomePageState extends State<HomePage> {
           label,
           style: TextStyle(
             fontSize: 10,
-            color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
+            color: Theme.of(context).colorScheme.onSurface.withValues(
+              alpha: 0.7,
+            ), // Use theme text color with opacity
             fontWeight: FontWeight.w500,
           ),
           textDirection: TextDirection.rtl, // RTL for Arabic text
@@ -904,18 +942,35 @@ class _HomePageState extends State<HomePage> {
 
   // Get gradient colors that match the azkar categories design
   Color _getGradientColor(int index) {
-    final colors = [
-      _getColorFromHex('#FBF8CC'), // Light yellow
-      _getColorFromHex('#A3C4F3'), // Light blue
-      _getColorFromHex('#FDE4CF'), // Light peach
-      _getColorFromHex('#90DBF4'), // Light cyan
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    final darkColors = [
+      _getColorFromHex('#E8E2B8'), // Muted warm yellow
+      _getColorFromHex('#9BB3D9'), // Muted soft blue
+      _getColorFromHex('#E8CDB8'), // Muted warm peach
+      _getColorFromHex('#89C5D9'), // Muted cyan
       const Color(0xFFE91E63), // Slightly lighter pink for today's highlight
-      _getColorFromHex('#B9FBC0'), // Light green
-      _getColorFromHex('#FFCFD2'), // Light pink
-      _getColorFromHex('#F1C0E8'), // Light purple
-      _getColorFromHex('#CFBAF0'), // Light lavender
-      _getColorFromHex('#8EECF5'), // Light turquoise
+      _getColorFromHex('#B0D9B8'), // Muted light green
+      _getColorFromHex('#D9B8BC'), // Muted light pink
+      _getColorFromHex('#D4B8D1'), // Muted light purple
+      _getColorFromHex('#C2A8D4'), // Muted light lavender
+      _getColorFromHex('#7FC4D9'), // Muted light turquoise
     ];
+
+    final lightColors = [
+      _getColorFromHex('#FBF8CC'), // Bright warm yellow
+      _getColorFromHex('#A3C4F3'), // Bright soft blue
+      _getColorFromHex('#FDE4CF'), // Bright warm peach
+      _getColorFromHex('#90DBF4'), // Bright cyan
+      const Color(0xFFE91E63), // Pink for today's highlight
+      _getColorFromHex('#B9FBC0'), // Bright light green
+      _getColorFromHex('#FFCFD2'), // Bright light pink
+      _getColorFromHex('#F1C0E8'), // Bright light purple
+      _getColorFromHex('#CFBAF0'), // Bright light lavender
+      _getColorFromHex('#8EECF5'), // Bright light turquoise
+    ];
+
+    final colors = isDarkTheme ? darkColors : lightColors;
     return colors[index % colors.length];
   }
 }
@@ -947,20 +1002,19 @@ class _AzkarCategoryCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(12), // Reduced padding
+          padding: const EdgeInsets.all(20), // Reduced from 24 to 20
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                color,
-                color.withOpacity(0.8),
-              ], // Use the actual color for better readability
+              colors: [color.withOpacity(0.4), color.withOpacity(0.25)],
             ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withOpacity(0.6), width: 1),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min, // Add this to prevent overflow
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
@@ -968,40 +1022,55 @@ class _AzkarCategoryCard extends StatelessWidget {
                   color: Colors.white, // White background
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: color.withOpacity(
-                      0.3,
-                    ), // Darker border using card color
+                    color: color.withOpacity(0.3), // Border using card color
                     width: 4,
                   ),
                 ),
                 child: Icon(
                   icon,
-                  size: 24,
-                  color: color, // Use the original card color for the icon
+                  size: 22, // Slightly smaller icon
+                  color: Color.lerp(
+                    color,
+                    Colors.black,
+                    0.4,
+                  ), // Darker shade of the same color
                 ),
               ),
-              const SizedBox(height: 8), // Reduced spacing
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A2E), // Navy blue dark text
-                  fontSize: 12, // Smaller font size for card titles
+              const SizedBox(height: 6), // Reduced spacing from 8 to 6
+              Flexible(
+                // Wrap title text in Flexible to prevent overflow
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : const Color(
+                            0xFF1A1A2E,
+                          ), // White text for dark theme, dark text for light theme
+                    fontSize: 11, // Slightly smaller font size
+                  ),
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 2), // Reduced spacing
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Color(0xFF1A1A2E), // Navy blue dark text for subtitle
-                  fontSize: 10, // Smaller font size for subtitles
+              if (subtitle.isNotEmpty) ...[
+                const SizedBox(height: 2), // Keep reduced spacing
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withOpacity(0.8)
+                        : const Color(
+                            0xFF1A1A2E,
+                          ), // White text with opacity for dark theme, dark text for light theme
+                    fontSize: 9, // Smaller font size for subtitles
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
+              ],
             ],
           ),
         ),

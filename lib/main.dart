@@ -41,7 +41,7 @@ class SakinahApp extends StatelessWidget {
       locale: const Locale('en', ''), // Default to English
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.system, // Follow system theme mode (dark/light)
       debugShowCheckedModeBanner: false,
     );
   }

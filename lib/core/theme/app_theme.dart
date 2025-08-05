@@ -249,14 +249,16 @@ class AppTheme {
     ),
   );
 
-  static const BottomNavigationBarThemeData _darkBottomNavigationBarTheme =
-      BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFFE3F1F1), // Updated to use #E3F1F1
-        selectedItemColor: AppColors.darkPrimary,
-        unselectedItemColor: AppColors.darkOnSurface,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-      );
+  static const BottomNavigationBarThemeData
+  _darkBottomNavigationBarTheme = BottomNavigationBarThemeData(
+    backgroundColor: Color(0xFF252645), // Matching dark surface color
+    selectedItemColor: Color(0xFF9BB3D9), // Muted blue for selected items
+    unselectedItemColor: Color(0xFFFFFFFF), // White for unselected items
+    type: BottomNavigationBarType.fixed,
+    elevation: 8,
+    selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+    unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 11),
+  );
 
   static final InputDecorationTheme _darkInputDecorationTheme =
       InputDecorationTheme(

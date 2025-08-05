@@ -156,10 +156,10 @@ class _WeeklyProgressChartState extends State<WeeklyProgressChart> {
                         colors: [
                           _getGradientColor(
                             1,
-                          ).withValues(alpha: 0.3), // Light blue
+                          ).withValues(alpha: 0.6), // Light blue
                           _getGradientColor(
                             3,
-                          ).withValues(alpha: 0.1), // Light cyan
+                          ).withValues(alpha: 0.4), // Light cyan
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
