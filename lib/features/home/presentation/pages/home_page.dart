@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sakinah_app/core/router/app_routes.dart';
+import 'package:sakinah_app/core/theme/app_colors.dart';
 import 'package:sakinah_app/features/azkar/domain/entities/azkar_new.dart';
 import 'package:sakinah_app/features/azkar/data/services/azkar_database_adapter.dart';
 import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
@@ -258,23 +259,44 @@ class _HomePageState extends State<HomePage> {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(
-        context,
-      ).colorScheme.background, // Use theme background
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Weekly progress tracker at the top (no spacing)
-              _buildDateTracker(context),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isDarkTheme
+                    ? [
+                        AppColors.darkBackground.withOpacity(0.9),
+                        AppColors.darkSurface.withOpacity(0.9),
+                      ]
+                    : [
+                        _getGradientColor(0).withOpacity(0.6),
+                        _getGradientColor(1).withOpacity(0.4),
+                      ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDarkTheme
+                      ? Colors.black.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Weekly progress tracker at the top (no spacing)
+                _buildDateTracker(context),
 
-              // Add spacing after progress tracker
-              const SizedBox(height: 24),
-              // Quick mood selection section (no horizontal padding)
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: Column(
+                // Add spacing after progress tracker
+                const SizedBox(height: 24),
+                // Quick mood selection section (no horizontal padding)
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
@@ -298,9 +320,17 @@ class _HomePageState extends State<HomePage> {
                         itemCount: 6, // Show first 6 moods
                         itemBuilder: (context, index) {
                           final moods = [
-                            {'name': 'happy', 'emoji': '😊', 'nameAr': 'سعيد'},
+                            {
+                              'name': 'happy',
+                              'emoji': '😊',
+                              'nameAr': 'سعيد',
+                            },
                             {'name': 'sad', 'emoji': '😔', 'nameAr': 'حزين'},
-                            {'name': 'anxious', 'emoji': '😰', 'nameAr': 'قلق'},
+                            {
+                              'name': 'anxious',
+                              'emoji': '😰',
+                              'nameAr': 'قلق',
+                            },
                             {
                               'name': 'grateful',
                               'emoji': '🙏',
@@ -317,7 +347,7 @@ class _HomePageState extends State<HomePage> {
                               'nameAr': 'مطمئن',
                             },
                           ];
-
+                
                           final mood = moods[index];
                           return Container(
                             key: ValueKey('mood_${mood['name']}'),
@@ -370,176 +400,178 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-              ),
 
-              // Rest of content with horizontal padding
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 32),
+                // Rest of content with horizontal padding
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 32),
 
-                    // Azkar categories section with + and heart icons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Group of icons (plus and heart)
-                        Row(
-                          children: [
-                            // Small + icon button to show all categories
-                            Text(
-                              'المزيد',
-
-                              // Azkar
-                              style: TextStyle(
-                                decoration: TextDecoration.underline,
-                                height: 1.5,
-
-                                fontSize: 14,
-                                fontWeight: FontWeight.normal,
-
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface, // Use theme text color
-                              ),
-                              textDirection: TextDirection.rtl,
-                            ),
-                          ],
-                        ),
-                        // Azkar title
-                        Text(
-                          'الاذكار', // Azkar
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onBackground, // Use theme text color
-                          ),
-                          textDirection: TextDirection.rtl,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Azkar category cards - now using a fixed height container
-                    SizedBox(
-                      height:
-                          600, // Increased height to show all 6 cards (3 rows)
-                      child: GridView.count(
-                        physics:
-                            const NeverScrollableScrollPhysics(), // Disable internal scrolling
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.1,
+                      // Azkar categories section with + and heart icons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _AzkarCategoryCard(
-                            key: const ValueKey('morning'),
-                            title: 'أذكار الصباح',
-                            subtitle: '',
-                            icon: Icons.wb_sunny,
-                            color: isDarkTheme
-                                ? _getColorFromHex(
-                                    '#E8E2B8',
-                                  ) // Muted warm yellow for dark background
-                                : _getColorFromHex(
-                                    '#FBF8CC',
-                                  ), // Original bright yellow for light background
-                            categoryId: 'morning',
-                            onTap: () =>
-                                _navigateToAzkarDetail(context, 'morning'),
+                          // Group of icons (plus and heart)
+                          Row(
+                            children: [
+                              // Small + icon button to show all categories
+                              Text(
+                                'المزيد',
+
+                                // Azkar
+                                style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  height: 1.5,
+
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.normal,
+
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface, // Use theme text color
+                                ),
+                                textDirection: TextDirection.rtl,
+                              ),
+                            ],
                           ),
-                          _AzkarCategoryCard(
-                            key: const ValueKey('evening'),
-                            title: 'أذكار المساء',
-                            subtitle: '',
-                            icon: Icons.nights_stay,
-                            color: isDarkTheme
-                                ? _getColorFromHex(
-                                    '#9BB3D9',
-                                  ) // Muted soft blue for dark background
-                                : _getColorFromHex(
-                                    '#A3C4F3',
-                                  ), // Original bright blue for light background
-                            categoryId: 'evening',
-                            onTap: () =>
-                                _navigateToAzkarDetail(context, 'evening'),
-                          ),
-                          _AzkarCategoryCard(
-                            key: const ValueKey('waking_up'),
-                            title: 'أذكار الاستيقاظ',
-                            subtitle: '',
-                            icon: Icons.light_mode,
-                            color: isDarkTheme
-                                ? _getColorFromHex(
-                                    '#E8CDB8',
-                                  ) // Muted warm peach for dark background
-                                : _getColorFromHex(
-                                    '#FDE4CF',
-                                  ), // Original bright peach for light background
-                            categoryId: 'waking_up',
-                            onTap: () =>
-                                _navigateToAzkarDetail(context, 'waking_up'),
-                          ),
-                          _AzkarCategoryCard(
-                            key: const ValueKey('sleep'),
-                            title: 'أذكار النوم',
-                            subtitle: '',
-                            icon: Icons.bedtime,
-                            color: isDarkTheme
-                                ? _getColorFromHex(
-                                    '#89C5D9',
-                                  ) // Muted cyan for dark background
-                                : _getColorFromHex(
-                                    '#90DBF4',
-                                  ), // Original bright cyan for light background
-                            categoryId: 'sleep',
-                            onTap: () =>
-                                _navigateToAzkarDetail(context, 'sleep'),
-                          ),
-                          _AzkarCategoryCard(
-                            key: const ValueKey('prayer_before_salam'),
-                            title: 'أذكار الصلاة',
-                            subtitle: '',
-                            icon: Icons.mosque,
-                            color: isDarkTheme
-                                ? _getColorFromHex(
-                                    '#94D9CC',
-                                  ) // Muted mint green for dark background
-                                : _getColorFromHex(
-                                    '#98F5E1',
-                                  ), // Original bright mint for light background
-                            categoryId: 'prayer_before_salam',
-                            onTap: () => _navigateToAzkarDetail(
-                              context,
-                              'prayer_before_salam',
+                          // Azkar title
+                          Text(
+                            'الاذكار', // Azkar
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onBackground, // Use theme text color
                             ),
-                          ),
-                          _AzkarCategoryCard(
-                            key: const ValueKey('after_prayer'),
-                            title: 'أذكار بعد الصلاة',
-                            subtitle: '',
-                            icon: Icons.check_circle,
-                            color: isDarkTheme
-                                ? _getColorFromHex(
-                                    '#B0D9B8',
-                                  ) // Muted light green for dark background
-                                : _getColorFromHex(
-                                    '#B9FBC0',
-                                  ), // Original bright green for light background
-                            categoryId: 'after_prayer',
-                            onTap: () =>
-                                _navigateToAzkarDetail(context, 'after_prayer'),
+                            textDirection: TextDirection.rtl,
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+
+                      // Azkar category cards - now using a fixed height container
+                      SizedBox(
+                        height:
+                            600, // Increased height to show all 6 cards (3 rows)
+                        child: GridView.count(
+                          physics:
+                              const NeverScrollableScrollPhysics(), // Disable internal scrolling
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.1,
+                          children: [
+                            _AzkarCategoryCard(
+                              key: const ValueKey('morning'),
+                              title: 'أذكار الصباح',
+                              subtitle: '',
+                              icon: Icons.wb_sunny,
+                              color: isDarkTheme
+                                  ? _getColorFromHex(
+                                      '#E8E2B8',
+                                    ) // Muted warm yellow for dark background
+                                  : _getColorFromHex(
+                                      '#FBF8CC',
+                                    ), // Original bright yellow for light background
+                              categoryId: 'morning',
+                              onTap: () =>
+                                  _navigateToAzkarDetail(context, 'morning'),
+                            ),
+                            _AzkarCategoryCard(
+                              key: const ValueKey('evening'),
+                              title: 'أذكار المساء',
+                              subtitle: '',
+                              icon: Icons.nights_stay,
+                              color: isDarkTheme
+                                  ? _getColorFromHex(
+                                      '#9BB3D9',
+                                    ) // Muted soft blue for dark background
+                                  : _getColorFromHex(
+                                      '#A3C4F3',
+                                    ), // Original bright blue for light background
+                              categoryId: 'evening',
+                              onTap: () =>
+                                  _navigateToAzkarDetail(context, 'evening'),
+                            ),
+                            _AzkarCategoryCard(
+                              key: const ValueKey('waking_up'),
+                              title: 'أذكار الاستيقاظ',
+                              subtitle: '',
+                              icon: Icons.light_mode,
+                              color: isDarkTheme
+                                  ? _getColorFromHex(
+                                      '#E8CDB8',
+                                    ) // Muted warm peach for dark background
+                                  : _getColorFromHex(
+                                      '#FDE4CF',
+                                    ), // Original bright peach for light background
+                              categoryId: 'waking_up',
+                              onTap: () =>
+                                  _navigateToAzkarDetail(context, 'waking_up'),
+                            ),
+                            _AzkarCategoryCard(
+                              key: const ValueKey('sleep'),
+                              title: 'أذكار النوم',
+                              subtitle: '',
+                              icon: Icons.bedtime,
+                              color: isDarkTheme
+                                  ? _getColorFromHex(
+                                      '#89C5D9',
+                                    ) // Muted cyan for dark background
+                                  : _getColorFromHex(
+                                      '#90DBF4',
+                                    ), // Original bright cyan for light background
+                              categoryId: 'sleep',
+                              onTap: () =>
+                                  _navigateToAzkarDetail(context, 'sleep'),
+                            ),
+                            _AzkarCategoryCard(
+                              key: const ValueKey('prayer_before_salam'),
+                              title: 'أذكار الصلاة',
+                              subtitle: '',
+                              icon: Icons.mosque,
+                              color: isDarkTheme
+                                  ? _getColorFromHex(
+                                      '#94D9CC',
+                                    ) // Muted mint green for dark background
+                                  : _getColorFromHex(
+                                      '#98F5E1',
+                                    ), // Original bright mint for light background
+                              categoryId: 'prayer_before_salam',
+                              onTap: () => _navigateToAzkarDetail(
+                                context,
+                                'prayer_before_salam',
+                              ),
+                            ),
+                            _AzkarCategoryCard(
+                              key: const ValueKey('after_prayer'),
+                              title: 'أذكار بعد الصلاة',
+                              subtitle: '',
+                              icon: Icons.check_circle,
+                              color: isDarkTheme
+                                  ? _getColorFromHex(
+                                      '#B0D9B8',
+                                    ) // Muted light green for dark background
+                                  : _getColorFromHex(
+                                      '#B9FBC0',
+                                    ), // Original bright green for light background
+                              categoryId: 'after_prayer',
+                              onTap: () => _navigateToAzkarDetail(
+                                context,
+                                'after_prayer',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

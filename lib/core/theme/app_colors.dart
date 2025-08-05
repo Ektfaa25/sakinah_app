@@ -25,24 +25,33 @@ class AppColors {
 
   // Dark theme colors - Updated to match home page dark theme
   static const Color darkPrimary = Color(
-    0xFF9BB3D9,
-  ); // Muted soft blue (matching category colors)
+    0xFF5A6B8A,
+  ); // Darker muted blue to match background tone
   static const Color darkPrimaryContainer = Color(
-    0xFF252645,
-  ); // Slightly lighter than background
-  static const Color darkSecondary = Color(0xFFE8E2B8); // Muted warm yellow
-  static const Color darkSecondaryContainer = Color(0xFF3A3B5C); // Medium dark
-  static const Color darkTertiary = Color(0xFF94D9CC); // Muted mint green
+    0xFF2E3348,
+  ); // Darker to match background shade
+  static const Color darkSecondary = Color(
+    0xFFB8A97A,
+  ); // Darker toned warm yellow
+  static const Color darkSecondaryContainer = Color(
+    0xFF323544,
+  ); // Darker, closer to background
+  static const Color darkTertiary = Color(0xFF5FA59A); // Darker muted teal
   static const Color darkTertiaryContainer = Color(
-    0xFF2A2B3E,
-  ); // Dark container
-  static const Color darkSurface = Color(0xFF252645); // Progress section color
+    0xFF292C3E,
+  ); // Darker, harmonized with background
+  static const Color darkSurface = Color(
+    0xFF252842,
+  ); // Darker, closer to background tone
   static const Color darkSurfaceContainer = Color(
-    0xFF2A2B3E,
-  ); // Slightly lighter
-  static const Color darkBackground = Color(
-    0xFF1A1B2E,
-  ); // Main dark navy background
+    0xFF292C3E,
+  ); // Darker, matching background family
+  static const Color darkBackground = Color.fromARGB(
+    255,
+    47,
+    50,
+    82,
+  ); // Main dark navy background - KEEPING SAME
   static const Color darkOnPrimary = Color(
     0xFF1A1A2E,
   ); // Dark text on bright elements
@@ -58,39 +67,41 @@ class AppColors {
   static const Color darkOnBackground = Color(
     0xFFFFFFFF,
   ); // White text on dark background
-  static const Color darkOutline = Color(0xFF3A3B5C); // Border color
+  static const Color darkOutline = Color(
+    0xFF323544,
+  ); // Darker border color matching theme
   static const Color darkError = Color(0xFFCF6679);
-  static const Color darkSuccess = Color(0xFFB0D9B8); // Muted green
-  static const Color darkWarning = Color(0xFFE8CDB8); // Muted peach
-  static const Color darkInfo = Color(0xFF89C5D9); // Muted cyan
+  static const Color darkSuccess = Color(0xFF6B9175); // Darker muted green
+  static const Color darkWarning = Color(0xFFB89A75); // Darker muted peach
+  static const Color darkInfo = Color(0xFF5A7BA0); // Darker muted blue
 
   // Glassy effect colors - Updated for dark theme consistency
   static const Color glassOverlay = Color(0x0FFFFFFF);
   static const Color glassOverlayDark = Color(
-    0x1A252645,
-  ); // Using dark surface with opacity
+    0x1A252842,
+  ); // Using darker surface with opacity
   static const Color glassBorder = Color(0x3FFFFFFF);
   static const Color glassBorderDark = Color(
-    0x2F3A3B5C,
-  ); // Using dark outline with opacity
+    0x2F323544,
+  ); // Using darker outline with opacity
   static const Color glassBackground = Color(0x0DFFFFFF);
   static const Color glassBackgroundDark = Color(
-    0x1A1A1B2E,
-  ); // Using dark background with opacity
+    0x1A252742,
+  ); // Using darker background-matching color with opacity
 
   // Gradient colors - Updated for dark theme
   static const List<Color> primaryGradient = [lightPrimary, lightSecondary];
 
   static const List<Color> primaryGradientDark = [
-    Color(0xFF9BB3D9), // Muted soft blue
-    Color(0xFFE8E2B8), // Muted warm yellow
+    Color(0xFF5A6B8A), // Darker muted blue
+    Color(0xFFB8A97A), // Darker muted warm yellow
   ];
 
   static const List<Color> secondaryGradient = [lightSecondary, lightTertiary];
 
   static const List<Color> secondaryGradientDark = [
-    Color(0xFFE8CDB8), // Muted warm peach
-    Color(0xFF94D9CC), // Muted mint green
+    Color(0xFFB89A75), // Darker muted warm peach
+    Color(0xFF5FA59A), // Darker muted teal
   ];
 
   static const List<Color> surfaceGradient = [
@@ -99,8 +110,8 @@ class AppColors {
   ];
 
   static const List<Color> surfaceGradientDark = [
-    Color(0xFF252645), // Dark surface
-    Color(0xFF2A2B3E), // Dark surface container
+    Color(0xFF252842), // Darker surface
+    Color(0xFF292C3E), // Darker surface container
   ];
 
   // Mood colors

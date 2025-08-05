@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -19,141 +20,128 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildAppBar(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 8),
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-                    // Profile Section
-                    _buildProfileSection(),
-
-                    const SizedBox(height: 32),
-
-                    // Preferences Section
-                    _buildSectionTitle('التفضيلات', Icons.tune),
-                    const SizedBox(height: 16),
-                    _buildPreferencesSection(),
-
-                    const SizedBox(height: 32),
-
-                    // Notifications Section
-                    _buildSectionTitle(
-                      'الإشعارات',
-                      Icons.notifications_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildNotificationsSection(),
-
-                    const SizedBox(height: 32),
-
-                    // Data & Backup Section
-                    _buildSectionTitle(
-                      'البيانات والنسخ الاحتياطي',
-                      Icons.backup_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildDataBackupSection(),
-
-                    const SizedBox(height: 32),
-
-                    // About Section
-                    _buildSectionTitle('حول التطبيق', Icons.info_outlined),
-                    const SizedBox(height: 16),
-                    _buildAboutSection(),
-
-                    const SizedBox(height: 32),
-
-                    // Footer
-                    Center(
-                      child: Text(
-                        '💙Made with love by Ektfaa💙',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-      decoration: BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          // Back button
-          IconButton(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isDarkTheme
+              ? [
+                  AppColors.darkBackground.withOpacity(0.9),
+                  AppColors.darkSurface.withOpacity(0.9),
+                ]
+              : [
+                  _getGradientColor(0).withOpacity(0.6),
+                  _getGradientColor(1).withOpacity(0.4),
+                ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkTheme
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
             icon: Icon(
               Icons.arrow_back,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black87,
+              color: Theme.of(context).colorScheme.onBackground,
             ),
             onPressed: () => Navigator.pop(context),
             tooltip: 'رجوع',
           ),
-
-          const SizedBox(width: 16),
-
-          // Title section
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'الإعدادات',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A2E),
-                      ),
-                      textAlign: TextAlign.right,
-                    ),
-                    const SizedBox(width: 12),
-                    // Settings icon with background
-                    // Container(
-                    //   padding: const EdgeInsets.all(8),
-                    //   decoration: BoxDecoration(
-                    //     color: const Color(0xFF6366F1).withOpacity(0.1),
-                    //     borderRadius: BorderRadius.circular(12),
-                    //   ),
-                    //   child: Icon(
-                    //     Icons.settings,
-                    //     color: const Color(0xFF6366F1),
-                    //     size: 20,
-                    //   ),
-                    // ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-              ],
+          title: Text(
+            'الإعدادات',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onBackground,
             ),
+            textDirection: TextDirection.rtl,
           ),
-        ],
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 8),
+
+                      // Profile Section
+                      _buildProfileSection(),
+
+                      const SizedBox(height: 32),
+
+                      // Preferences Section
+                      _buildSectionTitle('التفضيلات', Icons.tune),
+                      const SizedBox(height: 16),
+                      _buildPreferencesSection(),
+
+                      const SizedBox(height: 32),
+
+                      // Notifications Section
+                      _buildSectionTitle(
+                        'الإشعارات',
+                        Icons.notifications_outlined,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildNotificationsSection(),
+
+                      const SizedBox(height: 32),
+
+                      // Data & Backup Section
+                      _buildSectionTitle(
+                        'البيانات والنسخ الاحتياطي',
+                        Icons.backup_outlined,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDataBackupSection(),
+
+                      const SizedBox(height: 32),
+
+                      // About Section
+                      _buildSectionTitle('حول التطبيق', Icons.info_outlined),
+                      const SizedBox(height: 16),
+                      _buildAboutSection(),
+
+                      const SizedBox(height: 32),
+
+                      // Footer
+                      Center(
+                        child: Text(
+                          '💙Made with love by Ektfaa💙',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -206,7 +194,7 @@ class _SettingsPageState extends State<SettingsPage> {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A2E),
+                color: Colors.white,
               ),
               textDirection: TextDirection.rtl,
             ),
@@ -233,14 +221,14 @@ class _SettingsPageState extends State<SettingsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
         children: [
-          Icon(icon, color: const Color(0xFF1A1A2E), size: 20),
+          Icon(icon, color: Colors.white, size: 20),
           const SizedBox(width: 12),
           Text(
             title,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A2E),
+              color: Colors.white,
             ),
             textDirection: TextDirection.rtl,
           ),
@@ -265,7 +253,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _selectedLanguage = value!;
                 });
               },
-              color: const Color(0xFF6366F1),
+              color: Color.lerp(_getGradientColor(0), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildSliderTile(
@@ -281,7 +269,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _dailyGoal = value.toInt();
                 });
               },
-              color: const Color(0xFF10B981),
+              color: Color.lerp(_getGradientColor(4), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildTimeTile(
@@ -294,7 +282,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _reminderTime = time;
                 });
               },
-              color: const Color.fromARGB(255, 245, 11, 116),
+              color: Color.lerp(_getGradientColor(6), Colors.black, 0.2)!,
             ),
           ],
         ),
@@ -317,7 +305,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _notificationsEnabled = value;
                 });
               },
-              color: const Color(0xFF6366F1),
+              color: Color.lerp(_getGradientColor(1), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildSwitchTile(
@@ -332,7 +320,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       });
                     }
                   : null,
-              color: const Color(0xFF10B981),
+              color: Color.lerp(_getGradientColor(5), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildSwitchTile(
@@ -347,7 +335,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       });
                     }
                   : null,
-              color: const Color(0xFFF59E0B),
+              color: Color.lerp(_getGradientColor(7), Colors.black, 0.2)!,
             ),
           ],
         ),
@@ -370,7 +358,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _autoBackupEnabled = value;
                 });
               },
-              color: const Color(0xFF6366F1),
+              color: Color.lerp(_getGradientColor(2), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildActionTile(
@@ -380,7 +368,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 _showBackupDialog();
               },
-              color: const Color(0xFF10B981),
+              color: Color.lerp(_getGradientColor(3), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildActionTile(
@@ -390,7 +378,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 _showRestoreDialog();
               },
-              color: const Color(0xFFF59E0B),
+              color: Color.lerp(_getGradientColor(8), Colors.black, 0.2)!,
             ),
           ],
         ),
@@ -410,7 +398,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 _showAboutDialog();
               },
-              color: const Color(0xFF6366F1),
+              color: Color.lerp(_getGradientColor(9), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildActionTile(
@@ -420,7 +408,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 _showHelpDialog();
               },
-              color: const Color(0xFF10B981),
+              color: Color.lerp(_getGradientColor(0), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildActionTile(
@@ -430,7 +418,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 _showTermsDialog();
               },
-              color: const Color(0xFFF59E0B),
+              color: Color.lerp(_getGradientColor(1), Colors.black, 0.2)!,
             ),
             _buildDivider(),
             _buildActionTile(
@@ -440,7 +428,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 _showRatingDialog();
               },
-              color: const Color(0xFFE91E63),
+              color: Color.lerp(_getGradientColor(6), Colors.black, 0.2)!,
             ),
           ],
         ),
@@ -449,20 +437,31 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSettingsCard({required List<Widget> children}) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return FadeInUp(
       duration: const Duration(milliseconds: 600),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkTheme
+              ? AppColors.darkSurface.withOpacity(0.8)
+              : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: isDarkTheme
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.06),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
+          border: Border.all(
+            color: isDarkTheme
+                ? AppColors.darkSurface.withOpacity(0.3)
+                : Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
         ),
         child: Column(children: children),
       ),
@@ -477,11 +476,23 @@ class _SettingsPageState extends State<SettingsPage> {
     required Function(bool)? onChanged,
     required Color color,
   }) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          Switch(value: value, onChanged: onChanged, activeColor: color),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: color,
+            inactiveThumbColor: isDarkTheme
+                ? Colors.grey[400]
+                : Colors.grey[300],
+            inactiveTrackColor: isDarkTheme
+                ? Colors.grey[600]
+                : Colors.grey[200],
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -493,7 +504,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: onChanged != null
-                        ? const Color(0xFF1A1A2E)
+                        ? (isDarkTheme ? Colors.white : const Color(0xFF1A1A2E))
                         : Colors.grey[500],
                   ),
                   textDirection: TextDirection.rtl,
@@ -504,7 +515,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   style: TextStyle(
                     fontSize: 13,
                     color: onChanged != null
-                        ? Colors.grey[600]
+                        ? (isDarkTheme ? Colors.grey[300] : Colors.grey[600])
                         : Colors.grey[400],
                   ),
                   textDirection: TextDirection.rtl,
@@ -533,6 +544,8 @@ class _SettingsPageState extends State<SettingsPage> {
     required VoidCallback onTap,
     required Color color,
   }) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -540,7 +553,11 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: isDarkTheme ? Colors.grey[400] : Colors.grey[400],
+              size: 16,
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -548,17 +565,22 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A1A2E),
+                      color: isDarkTheme
+                          ? Colors.white
+                          : const Color(0xFF1A1A2E),
                     ),
                     textDirection: TextDirection.rtl,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
+                    ),
                     textDirection: TextDirection.rtl,
                   ),
                 ],
@@ -588,6 +610,8 @@ class _SettingsPageState extends State<SettingsPage> {
     required Function(String?) onChanged,
     required Color color,
   }) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -598,14 +622,17 @@ class _SettingsPageState extends State<SettingsPage> {
               value: value,
               isExpanded: true,
               underline: Container(),
+              dropdownColor: isDarkTheme ? AppColors.darkSurface : Colors.white,
               items: items.map((String item) {
                 return DropdownMenuItem<String>(
                   value: item,
                   child: Text(
                     item,
                     textDirection: TextDirection.rtl,
-                    style: const TextStyle(
-                      color: Color(0xFF1A1A2E),
+                    style: TextStyle(
+                      color: isDarkTheme
+                          ? Colors.white
+                          : const Color(0xFF1A1A2E),
                       fontSize: 14,
                     ),
                   ),
@@ -622,17 +649,20 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A2E),
+                    color: isDarkTheme ? Colors.white : const Color(0xFF1A1A2E),
                   ),
                   textDirection: TextDirection.rtl,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
+                  ),
                   textDirection: TextDirection.rtl,
                 ),
               ],
@@ -663,6 +693,8 @@ class _SettingsPageState extends State<SettingsPage> {
     required Function(double) onChanged,
     required Color color,
   }) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -684,17 +716,24 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A2E),
+                        color: isDarkTheme
+                            ? Colors.white
+                            : const Color(0xFF1A1A2E),
                       ),
                       textDirection: TextDirection.rtl,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDarkTheme
+                            ? Colors.grey[300]
+                            : Colors.grey[600],
+                      ),
                       textDirection: TextDirection.rtl,
                     ),
                   ],
@@ -740,6 +779,8 @@ class _SettingsPageState extends State<SettingsPage> {
     required Function(String) onChanged,
     required Color color,
   }) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return InkWell(
       onTap: () async {
         final TimeOfDay? pickedTime = await showTimePicker(
@@ -748,6 +789,46 @@ class _SettingsPageState extends State<SettingsPage> {
             hour: int.parse(time.split(':')[0]),
             minute: int.parse(time.split(':')[1]),
           ),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                timePickerTheme: TimePickerThemeData(
+                  backgroundColor: isDarkTheme
+                      ? AppColors.darkSurface
+                      : Colors.white,
+                  hourMinuteTextColor: isDarkTheme
+                      ? Colors.white
+                      : const Color(0xFF1A1A2E),
+                  hourMinuteColor: const Color(
+                    0xFFE3F2FD,
+                  ), // Light baby blue background
+                  dayPeriodTextColor: isDarkTheme
+                      ? Colors.white
+                      : const Color(0xFF1A1A2E),
+                  dayPeriodColor: const Color(
+                    0xFFE3F2FD,
+                  ), // Light baby blue background
+                  dialHandColor: const Color(
+                    0xFF64B5F6,
+                  ), // Baby blue for dial hand
+                  dialTextColor: isDarkTheme
+                      ? Colors.white
+                      : const Color(0xFF1A1A2E),
+                  entryModeIconColor: const Color(
+                    0xFF64B5F6,
+                  ), // Baby blue for icons
+                  helpTextStyle: TextStyle(
+                    color: isDarkTheme ? Colors.white : const Color(0xFF1A1A2E),
+                  ),
+                ),
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: const Color(0xFF64B5F6), // Baby blue
+                  brightness: isDarkTheme ? Brightness.dark : Brightness.light,
+                ),
+              ),
+              child: child!,
+            );
+          },
         );
         if (pickedTime != null) {
           final formattedTime =
@@ -765,8 +846,9 @@ class _SettingsPageState extends State<SettingsPage> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: color,
+                color: isDarkTheme ? Colors.white : color,
               ),
+              textDirection: TextDirection.rtl,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -775,17 +857,22 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A1A2E),
+                      color: isDarkTheme
+                          ? Colors.white
+                          : const Color(0xFF1A1A2E),
                     ),
                     textDirection: TextDirection.rtl,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
+                    ),
                     textDirection: TextDirection.rtl,
                   ),
                 ],
@@ -1061,5 +1148,48 @@ class _SettingsPageState extends State<SettingsPage> {
         ],
       ),
     );
+  }
+
+  // Get gradient colors that match the home page design
+  Color _getGradientColor(int index) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    final darkColors = [
+      _getColorFromHex('#E8E2B8'), // Muted warm yellow
+      _getColorFromHex('#9BB3D9'), // Muted soft blue
+      _getColorFromHex('#E8CDB8'), // Muted warm peach
+      _getColorFromHex('#89C5D9'), // Muted cyan
+      _getColorFromHex('#94D9CC'), // Muted mint green
+      _getColorFromHex('#B0D9B8'), // Muted light green
+      _getColorFromHex('#D9B8BC'), // Muted light pink
+      _getColorFromHex('#D4B8D1'), // Muted light purple
+      _getColorFromHex('#C2A8D4'), // Muted light lavender
+      _getColorFromHex('#7FC4D9'), // Muted light turquoise
+    ];
+
+    final lightColors = [
+      _getColorFromHex('#FBF8CC'), // Light yellow
+      _getColorFromHex('#A3C4F3'), // Light blue
+      _getColorFromHex('#FDE4CF'), // Light peach
+      _getColorFromHex('#90DBF4'), // Light cyan
+      _getColorFromHex('#98F5E1'), // Light mint
+      _getColorFromHex('#B9FBC0'), // Light green
+      _getColorFromHex('#FFCFD2'), // Light pink
+      _getColorFromHex('#F1C0E8'), // Light purple
+      _getColorFromHex('#CFBAF0'), // Light lavender
+      _getColorFromHex('#8EECF5'), // Light turquoise
+    ];
+
+    final colors = isDarkTheme ? darkColors : lightColors;
+    return colors[index % colors.length];
+  }
+
+  /// Helper method to convert hex color string to Color object
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor'; // Add alpha channel
+    }
+    return Color(int.parse(hexColor, radix: 16));
   }
 }

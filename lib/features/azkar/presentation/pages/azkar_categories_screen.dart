@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/azkar_new.dart';
 import '../../data/services/azkar_database_adapter.dart';
 
@@ -92,63 +93,89 @@ class _AzkarScreenState extends State<AzkarScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(
-        context,
-      ).colorScheme.background, // Use theme background
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Theme.of(context).colorScheme.onBackground,
-          ),
-          onPressed: () => context.go(AppRoutes.home),
-          tooltip: 'رجوع',
-        ),
-        title: Text(
-          'الأذكار',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onBackground,
-          ),
-          textDirection: TextDirection.rtl,
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            FadeTransition(opacity: _fadeAnimation, child: _buildBody()),
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-            // Loading overlay when navigating
-            if (_isNavigating)
-              Container(
-                color: Theme.of(
-                  context,
-                ).colorScheme.background.withOpacity(0.8),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'جاري تحميل الأذكار...',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onBackground,
-                          fontSize: 16,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isDarkTheme
+              ? [
+                  AppColors.darkBackground.withOpacity(0.9),
+                  AppColors.darkSurface.withOpacity(0.9),
+                ]
+              : [
+                  _getGradientColor(0).withOpacity(0.6),
+                  _getGradientColor(1).withOpacity(0.4),
+                ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkTheme
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+            onPressed: () => context.go(AppRoutes.home),
+            tooltip: 'رجوع',
+          ),
+          title: Text(
+            'الأذكار',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+            textDirection: TextDirection.rtl,
+          ),
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              FadeTransition(opacity: _fadeAnimation, child: _buildBody()),
+
+              // Loading overlay when navigating
+              if (_isNavigating)
+                Container(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.background.withOpacity(0.8),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'جاري تحميل الأذكار...',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onBackground,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -427,7 +454,7 @@ class _AzkarScreenState extends State<AzkarScreen>
                   category.nameAr,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A2E), // Navy blue dark text
+                    color: Colors.white, // White text for better visibility
                     fontSize: 11, // Slightly smaller font size
                   ),
                   textDirection: TextDirection.rtl,

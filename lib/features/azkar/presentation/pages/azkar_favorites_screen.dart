@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/azkar_new.dart';
 import '../../data/services/azkar_database_adapter.dart';
 
@@ -111,96 +112,85 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF0D1B2A)
-          : const Color(0xFFFAFAFA),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_forward,
-            color: isDark ? const Color(0xFFE6F3FF) : const Color(0xFF2C2C2C),
-          ),
-          onPressed: () => context.go(AppRoutes.home),
-          tooltip: 'رجوع',
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isDarkTheme
+              ? [
+                  AppColors.darkBackground.withOpacity(0.9),
+                  AppColors.darkSurface.withOpacity(0.9),
+                ]
+              : [
+                  _getGradientColor(0).withOpacity(0.6),
+                  _getGradientColor(1).withOpacity(0.4),
+                ],
         ),
-        title: Text(
-          'الأذكار المفضلة',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: isDark ? const Color(0xFFE6F3FF) : const Color(0xFF1A1A1A),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkTheme
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
-          textDirection: TextDirection.rtl,
-        ),
-        centerTitle: true,
+        ],
       ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: _isLoading
-            ? _buildLoadingState()
-            : _error != null
-            ? _buildErrorState()
-            : _favoriteAzkar.isEmpty
-            ? _buildEmptyState()
-            : _buildFavoritesList(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: isDark ? const Color(0xFFE6F3FF) : const Color(0xFF2C2C2C),
+            ),
+            onPressed: () => context.go(AppRoutes.home),
+            tooltip: 'رجوع',
+          ),
+          title: Text(
+            'الأذكار المفضلة',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+            textDirection: TextDirection.rtl,
+          ),
+          centerTitle: true,
+        ),
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: _isLoading
+              ? _buildLoadingState()
+              : _error != null
+              ? _buildErrorState()
+              : _favoriteAzkar.isEmpty
+              ? _buildEmptyState()
+              : _buildFavoritesList(),
+        ),
       ),
     );
   }
 
   Widget _buildLoadingState() {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Center(
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF1B2B41)
-                    : const Color(0xFFFFFFFF),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark
-                        ? Colors.black.withOpacity(0.3)
-                        : Colors.grey.withOpacity(0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  isDark ? const Color(0xFF64B5F6) : const Color(0xFF2196F3),
-                ),
-                strokeWidth: 3,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'جاري تحميل الأذكار المفضلة...',
-              style: TextStyle(
-                fontSize: 16,
-                color: isDark
-                    ? const Color(0xFFB3D9FF)
-                    : const Color(0xFF666666),
-                fontWeight: FontWeight.w500,
-              ),
-              textDirection: TextDirection.rtl,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'جاري تحميل الأذكار المفضلة...',
+            style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
+          ),
+        ],
       ),
     );
   }
@@ -497,13 +487,14 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
                     style: TextStyle(
                       fontSize: 16,
                       color: theme.brightness == Brightness.dark
-                          ? const Color(0xFFB3D9FF)
+                          ? Colors.white
                           : const Color(0xFF666666),
                       fontWeight: FontWeight.w500,
                     ),
                     textDirection: TextDirection.rtl,
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -596,9 +587,7 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
           margin: const EdgeInsets.all(2), // Create space for border
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: theme.brightness == Brightness.light
-                ? const Color(0xFFFFFFFF)
-                : const Color(0xFF1B2B41),
+            color: Theme.of(context).cardColor,
           ),
           child: InkWell(
             onTap: () => _navigateToAzkarDetail(azkar, index),
@@ -828,5 +817,48 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
       isActive: true,
       createdAt: DateTime.now(),
     );
+  }
+
+  // Get gradient colors that match the home page design
+  Color _getGradientColor(int index) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    final darkColors = [
+      _getColorFromHex('#E8E2B8'), // Muted warm yellow
+      _getColorFromHex('#9BB3D9'), // Muted soft blue
+      _getColorFromHex('#E8CDB8'), // Muted warm peach
+      _getColorFromHex('#89C5D9'), // Muted cyan
+      _getColorFromHex('#94D9CC'), // Muted mint green
+      _getColorFromHex('#B0D9B8'), // Muted light green
+      _getColorFromHex('#D9B8BC'), // Muted light pink
+      _getColorFromHex('#D4B8D1'), // Muted light purple
+      _getColorFromHex('#C2A8D4'), // Muted light lavender
+      _getColorFromHex('#7FC4D9'), // Muted light turquoise
+    ];
+
+    final lightColors = [
+      _getColorFromHex('#FBF8CC'), // Light yellow
+      _getColorFromHex('#A3C4F3'), // Light blue
+      _getColorFromHex('#FDE4CF'), // Light peach
+      _getColorFromHex('#90DBF4'), // Light cyan
+      _getColorFromHex('#98F5E1'), // Light mint
+      _getColorFromHex('#B9FBC0'), // Light green
+      _getColorFromHex('#FFCFD2'), // Light pink
+      _getColorFromHex('#F1C0E8'), // Light purple
+      _getColorFromHex('#CFBAF0'), // Light lavender
+      _getColorFromHex('#8EECF5'), // Light turquoise
+    ];
+
+    final colors = isDarkTheme ? darkColors : lightColors;
+    return colors[index % colors.length];
+  }
+
+  /// Helper method to convert hex color string to Color object
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor'; // Add alpha channel
+    }
+    return Color(int.parse(hexColor, radix: 16));
   }
 }

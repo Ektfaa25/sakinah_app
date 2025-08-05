@@ -27,15 +27,12 @@ class _MonthlyProgressChartState extends State<MonthlyProgressChart> {
       currentYear = DateTime.now().year;
       availableYears = [currentYear];
     } else {
-      availableYears =
-          widget.monthlyProgress
-              .map((progress) => progress.date.year)
-              .toSet()
-              .toList()
-            ..sort();
-      currentYear = availableYears.isNotEmpty
-          ? availableYears.last
-          : DateTime.now().year;
+      availableYears = widget.monthlyProgress
+          .map((progress) => progress.date.year)
+          .toSet()
+          .toList()
+        ..sort();
+      currentYear = availableYears.isNotEmpty ? availableYears.last : DateTime.now().year;
     }
   }
 
@@ -68,24 +65,18 @@ class _MonthlyProgressChartState extends State<MonthlyProgressChart> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: _canGoToPreviousYear()
-                        ? _goToPreviousYear
-                        : null,
+                    onPressed: _canGoToPreviousYear() ? _goToPreviousYear : null,
                     icon: Icon(
                       Icons.chevron_left,
                       color: _canGoToPreviousYear()
-                          ? (isDarkTheme
-                                ? Colors.white
-                                : const Color(0xFF1A1A2E))
+                          ? (isDarkTheme ? Colors.white : const Color(0xFF1A1A2E))
                           : Colors.grey,
                     ),
                   ),
                   Text(
                     currentYear.toString(),
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: isDarkTheme
-                          ? Colors.white
-                          : const Color(0xFF1A1A2E),
+                      color: isDarkTheme ? Colors.white : const Color(0xFF1A1A2E),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -94,9 +85,7 @@ class _MonthlyProgressChartState extends State<MonthlyProgressChart> {
                     icon: Icon(
                       Icons.chevron_right,
                       color: _canGoToNextYear()
-                          ? (isDarkTheme
-                                ? Colors.white
-                                : const Color(0xFF1A1A2E))
+                          ? (isDarkTheme ? Colors.white : const Color(0xFF1A1A2E))
                           : Colors.grey,
                     ),
                   ),
@@ -109,9 +98,7 @@ class _MonthlyProgressChartState extends State<MonthlyProgressChart> {
                   Text(
                     'التقدم الشهري',
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: isDarkTheme
-                          ? Colors.white
-                          : const Color(0xFF1A1A2E),
+                      color: isDarkTheme ? Colors.white : const Color(0xFF1A1A2E),
                       fontWeight: FontWeight.w600,
                     ),
                     textDirection: TextDirection.rtl,
@@ -162,18 +149,18 @@ class _MonthlyProgressChartState extends State<MonthlyProgressChart> {
                       reservedSize: 30,
                       getTitlesWidget: (value, meta) {
                         const arabicMonths = [
-                          'ديسمبر', // 0 -> December (leftmost in RTL)
-                          'نوفمبر', // 1 -> November
-                          'أكتوبر', // 2 -> October
-                          'سبتمبر', // 3 -> September
-                          'أغسطس', // 4 -> August
-                          'يوليو', // 5 -> July
-                          'يونيو', // 6 -> June
-                          'مايو', // 7 -> May
-                          'أبريل', // 8 -> April
-                          'مارس', // 9 -> March
-                          'فبراير', // 10 -> February
-                          'يناير', // 11 -> January (rightmost in RTL)
+                          'ديسمبر',   // 0 -> December (leftmost in RTL)
+                          'نوفمبر',   // 1 -> November
+                          'أكتوبر',   // 2 -> October
+                          'سبتمبر',   // 3 -> September
+                          'أغسطس',   // 4 -> August
+                          'يوليو',   // 5 -> July
+                          'يونيو',    // 6 -> June
+                          'مايو',     // 7 -> May
+                          'أبريل',    // 8 -> April
+                          'مارس',     // 9 -> March
+                          'فبراير',   // 10 -> February
+                          'يناير',    // 11 -> January (rightmost in RTL)
                         ];
                         if (value >= 0 && value < arabicMonths.length) {
                           return Padding(
@@ -279,18 +266,18 @@ class _MonthlyProgressChartState extends State<MonthlyProgressChart> {
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
                         const arabicMonths = [
-                          'ديسمبر', // 0 -> December (leftmost in RTL)
-                          'نوفمبر', // 1 -> November
-                          'أكتوبر', // 2 -> October
-                          'سبتمبر', // 3 -> September
-                          'أغسطس', // 4 -> August
-                          'يوليو', // 5 -> July
-                          'يونيو', // 6 -> June
-                          'مايو', // 7 -> May
-                          'أبريل', // 8 -> April
-                          'مارس', // 9 -> March
-                          'فبراير', // 10 -> February
-                          'يناير', // 11 -> January (rightmost in RTL)
+                          'ديسمبر',   // 0 -> December (leftmost in RTL)
+                          'نوفمبر',   // 1 -> November
+                          'أكتوبر',   // 2 -> October
+                          'سبتمبر',   // 3 -> September
+                          'أغسطس',   // 4 -> August
+                          'يوليو',   // 5 -> July
+                          'يونيو',    // 6 -> June
+                          'مايو',     // 7 -> May
+                          'أبريل',    // 8 -> April
+                          'مارس',     // 9 -> March
+                          'فبراير',   // 10 -> February
+                          'يناير',    // 11 -> January (rightmost in RTL)
                         ];
                         final month = arabicMonths[spot.x.toInt()];
                         final count = spot.y.toInt();

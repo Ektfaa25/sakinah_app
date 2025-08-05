@@ -66,8 +66,8 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
     final theme = Theme.of(context);
     const daysInMonth = 30; // Simplified for now
     final cellSize =
-        (MediaQuery.of(context).size.width - 90) /
-        7; // 7 columns with more padding
+        (MediaQuery.of(context).size.width - 120) /
+        7; // 7 columns with increased padding to prevent overflow
 
     return Container(
       padding: const EdgeInsets.all(8),
@@ -80,47 +80,51 @@ class _MonthlyHeatmapState extends State<MonthlyHeatmap> {
         children: List.generate(
           (daysInMonth / 7).ceil(),
           (weekIndex) => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(7, (dayIndex) {
               final dayNumber = weekIndex * 7 + dayIndex;
               if (dayNumber >= daysInMonth) {
-                return SizedBox(width: cellSize, height: cellSize);
+                return Expanded(child: SizedBox(height: cellSize));
               }
 
               final progress = dayNumber < widget.monthlyProgress.length
                   ? widget.monthlyProgress[dayNumber]
                   : null;
 
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedDayIndex = dayNumber;
-                  });
-                },
-                child: Container(
-                  width: cellSize - 4,
-                  height: cellSize - 4,
-                  margin: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: _getHeatmapColor(
-                      context,
-                      progress?.azkarCompleted ?? 0,
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedDayIndex = dayNumber;
+                    });
+                  },
+                  child: Container(
+                    height: cellSize - 4,
+                    margin: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: _getHeatmapColor(
+                        context,
+                        progress?.azkarCompleted ?? 0,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                      border: selectedDayIndex == dayNumber
+                          ? Border.all(
+                              color: theme.colorScheme.primary,
+                              width: 2,
+                            )
+                          : null,
                     ),
-                    borderRadius: BorderRadius.circular(4),
-                    border: selectedDayIndex == dayNumber
-                        ? Border.all(color: theme.colorScheme.primary, width: 2)
-                        : null,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${dayNumber + 1}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: _getTextColor(
-                          context,
-                          progress?.azkarCompleted ?? 0,
+                    child: Center(
+                      child: Text(
+                        '${dayNumber + 1}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: _getTextColor(
+                            context,
+                            progress?.azkarCompleted ?? 0,
+                          ),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 10,
                         ),
-                        fontWeight: FontWeight.w500,
-                        fontSize: 10,
                       ),
                     ),
                   ),

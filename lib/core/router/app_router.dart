@@ -413,62 +413,58 @@ class _MainShellState extends State<_MainShell> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  AppColors.darkBackground.withOpacity(0.9),
-                  AppColors.darkSurface.withOpacity(0.9),
-                ]
-              : [
-                  _getGradientColor(0).withOpacity(0.6),
-                  _getGradientColor(1).withOpacity(0.4),
-                ],
+      // decoration: BoxDecoration(
+      //   // gradient: LinearGradient(
+      //   //   begin: Alignment.topCenter,
+      //   //   end: Alignment.bottomCenter,
+      //   //   colors: isDark
+      //   //       ? [
+      //   //           AppColors.darkBackground.withOpacity(0.9),
+      //   //           AppColors.darkSurface.withOpacity(0.9),
+      //   //         ]
+      //   //       : [
+      //   //           _getGradientColor(0).withOpacity(0.6),
+      //   //           _getGradientColor(1).withOpacity(0.4),
+      //   //         ],
+      //   // ),
+      //   boxShadow: [
+      //     BoxShadow(
+      //       color: isDark
+      //           ? Colors.black.withOpacity(0.3)
+      //           : Colors.black.withOpacity(0.1),
+      //       blurRadius: 10,
+      //       offset: const Offset(0, -2),
+      //     ),
+      //   ],
+      // ),
+      child: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        // backgroundColor: Colors.transparent,
+        selectedItemColor: isDark
+            ? AppColors.darkOnBackground
+            : const Color(0xFF1A1A2E), // Navy blue dark text
+        unselectedItemColor: isDark
+            ? AppColors
+                  .darkOnBackground // Full white for dark mode
+            : const Color(0xFF1A1A2E).withOpacity(0.6),
+        currentIndex: _currentIndex,
+        elevation: 0,
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
         ),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 11,
+        ),
+        items: [
+          _buildStyledNavItem(Icons.home, 'الرئيسية', 0, context),
+          _buildStyledNavItem(Icons.grid_view, 'الفئات', 1, context),
+          _buildStyledNavItem(Icons.favorite, 'المفضلة', 2, context),
+          _buildStyledNavItem(Icons.show_chart, 'التقدم', 3, context),
+          _buildStyledNavItem(Icons.settings, 'الإعدادات', 4, context),
         ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          selectedItemColor: isDark
-              ? AppColors.darkOnBackground
-              : const Color(0xFF1A1A2E), // Navy blue dark text
-          unselectedItemColor: isDark
-              ? AppColors
-                    .darkOnBackground // Full white for dark mode
-              : const Color(0xFF1A1A2E).withOpacity(0.6),
-          currentIndex: _currentIndex,
-          elevation: 0,
-          selectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 11,
-          ),
-          items: [
-            _buildStyledNavItem(Icons.home, 'الرئيسية', 0, context),
-            _buildStyledNavItem(Icons.grid_view, 'الفئات', 1, context),
-            _buildStyledNavItem(Icons.favorite, 'المفضلة', 2, context),
-            _buildStyledNavItem(Icons.show_chart, 'التقدم', 3, context),
-            _buildStyledNavItem(Icons.settings, 'الإعدادات', 4, context),
-          ],
-          onTap: _onBottomNavTap,
-        ),
+        onTap: _onBottomNavTap,
       ),
     );
   }
