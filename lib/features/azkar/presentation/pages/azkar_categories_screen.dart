@@ -97,26 +97,24 @@ class _AzkarScreenState extends State<AzkarScreen>
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDarkTheme
-              ? [
+        color: isDarkTheme ? null : Colors.white,
+        gradient: isDarkTheme
+            ? LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
                   AppColors.darkBackground.withOpacity(0.9),
                   AppColors.darkSurface.withOpacity(0.9),
-                ]
-              : [
-                  _getGradientColor(0).withOpacity(0.6),
-                  _getGradientColor(1).withOpacity(0.4),
                 ],
-        ),
+              )
+            : null,
         boxShadow: [
           BoxShadow(
             color: isDarkTheme
-                ? Colors.black.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+                ? Colors.black.withOpacity(0.15) // Reduced from 0.3
+                : Colors.black.withOpacity(0.04), // Reduced from 0.1
+            blurRadius: 6, // Reduced from 10
+            offset: const Offset(0, -1), // Reduced from -2
           ),
         ],
       ),
@@ -401,6 +399,7 @@ class _AzkarScreenState extends State<AzkarScreen>
 
   Widget _buildCategoryCard(AzkarCategory category, int index) {
     final color = _getGradientColor(index);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     return Card(
       elevation: 2,
@@ -411,14 +410,12 @@ class _AzkarScreenState extends State<AzkarScreen>
         child: Container(
           padding: const EdgeInsets.all(20), // Reduced padding from 24 to 20
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(
-              16,
-            ), // Increased border radius to match homepage
             gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [color.withOpacity(0.4), color.withOpacity(0.25)],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [color, color.withOpacity(0.30)],
             ),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: color.withOpacity(0.6), width: 1),
           ),
           child: Column(
@@ -431,9 +428,7 @@ class _AzkarScreenState extends State<AzkarScreen>
                   color: Colors.white, // White background
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: color.withValues(
-                      alpha: 0.3,
-                    ), // Darker border using card color
+                    color: color.withOpacity(0.3), // Border using card color
                     width: 4,
                   ),
                 ),
@@ -452,9 +447,12 @@ class _AzkarScreenState extends State<AzkarScreen>
                 // Wrap text in Flexible to prevent overflow
                 child: Text(
                   category.nameAr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white, // White text for better visibility
+                    color: isDarkTheme
+                        ? Colors
+                              .white // White text for dark theme
+                        : const Color(0xFF1A1A2E), // Dark text for light theme
                     fontSize: 11, // Slightly smaller font size
                   ),
                   textDirection: TextDirection.rtl,

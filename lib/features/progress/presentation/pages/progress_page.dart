@@ -4,7 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
 import 'package:sakinah_app/features/progress/presentation/widgets/animated_progress_ring.dart';
 import 'package:sakinah_app/features/progress/presentation/widgets/monthly_progress_chart.dart';
-import 'package:sakinah_app/features/progress/presentation/widgets/monthly_heatmap.dart';
+import 'package:sakinah_app/features/progress/presentation/widgets/monthly_calendar.dart';
 import 'package:sakinah_app/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -24,6 +24,15 @@ class _ProgressPageState extends State<ProgressPage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 2);
 
+    // Add listener to handle swipe gestures
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        // Tab animation has completed, load appropriate data
+        // Add a small delay to ensure smooth animation completion
+        Future.microtask(() => _loadDataForTab(_tabController.index));
+      }
+    });
+
     // Load initial progress data
     context.read<ProgressBloc>().add(
       const LoadTodayProgress(),
@@ -34,6 +43,26 @@ class _ProgressPageState extends State<ProgressPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Helper method to load data based on tab index
+  void _loadDataForTab(int index) {
+    // Only load data if the widget is still mounted
+    if (!mounted) return;
+
+    switch (index) {
+      case 0:
+        context.read<ProgressBloc>().add(
+          const LoadWeeklyProgress(),
+        ); // Treating as yearly for now
+        break;
+      case 1:
+        context.read<ProgressBloc>().add(const LoadMonthlyProgress());
+        break;
+      case 2:
+        context.read<ProgressBloc>().add(const LoadTodayProgress());
+        break;
+    }
   }
 
   @override
@@ -47,26 +76,24 @@ class _ProgressPageState extends State<ProgressPage>
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDarkTheme
-              ? [
+        color: isDarkTheme ? null : Colors.white,
+        gradient: isDarkTheme
+            ? LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
                   AppColors.darkBackground.withOpacity(0.9),
                   AppColors.darkSurface.withOpacity(0.9),
-                ]
-              : [
-                  _getGradientColor(0).withOpacity(0.6),
-                  _getGradientColor(1).withOpacity(0.4),
                 ],
-        ),
+              )
+            : null,
         boxShadow: [
           BoxShadow(
             color: isDarkTheme
-                ? Colors.black.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+                ? Colors.black.withOpacity(0.15) // Reduced from 0.3
+                : Colors.black.withOpacity(0.04), // Reduced from 0.1
+            blurRadius: 6, // Reduced from 10
+            offset: const Offset(0, -1), // Reduced from -2
           ),
         ],
       ),
@@ -112,19 +139,7 @@ class _ProgressPageState extends State<ProgressPage>
               letterSpacing: 0.3,
             ),
             onTap: (index) {
-              switch (index) {
-                case 0:
-                  context.read<ProgressBloc>().add(
-                    const LoadWeeklyProgress(),
-                  ); // Treating as yearly for now
-                  break;
-                case 1:
-                  context.read<ProgressBloc>().add(const LoadMonthlyProgress());
-                  break;
-                case 2:
-                  context.read<ProgressBloc>().add(const LoadTodayProgress());
-                  break;
-              }
+              _loadDataForTab(index);
             },
             tabs: const [
               Tab(
@@ -163,6 +178,8 @@ class _ProgressPageState extends State<ProgressPage>
         body: SafeArea(
           child: TabBarView(
             controller: _tabController,
+            physics:
+                const BouncingScrollPhysics(), // Enable smooth swiping with bounce effect
             children: [
               _buildWeeklyTab(context, l10n), // Using weekly as yearly for now
               _buildMonthlyTab(context, l10n),
@@ -222,27 +239,17 @@ class _ProgressPageState extends State<ProgressPage>
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDarkTheme
-                      ? [
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
                           AppColors.darkSurface,
                           AppColors.darkSurface.withOpacity(0.8),
-                        ]
-                      : [
-                          Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.05),
-                          Color.lerp(
-                            _getGradientColor(1),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.02),
                         ],
-                ),
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -282,8 +289,10 @@ class _ProgressPageState extends State<ProgressPage>
                         : completionRate > 0
                         ? '🌱 بداية جيدة!'
                         : '🕌 ابدأ رحلتك',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isDarkTheme
+                          ? Colors.white
+                          : const Color(0xFF1A1A1A),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -296,7 +305,7 @@ class _ProgressPageState extends State<ProgressPage>
                         ? 'لقد أكملت هدفك اليومي! استمر في العمل الرائع.'
                         : 'كل ذكر يقربك إلى الله. واصل رحلتك الروحية.',
                     style: TextStyle(
-                      color: Colors.grey[300],
+                      color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
                       fontSize: 14,
                       height: 1.4,
                     ),
@@ -316,27 +325,17 @@ class _ProgressPageState extends State<ProgressPage>
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDarkTheme
-                      ? [
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
                           AppColors.darkSurface,
                           AppColors.darkSurface.withOpacity(0.8),
-                        ]
-                      : [
-                          Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.05),
-                          Color.lerp(
-                            _getGradientColor(1),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.02),
                         ],
-                ),
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -459,51 +458,46 @@ class _ProgressPageState extends State<ProgressPage>
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: isDarkTheme
-                            ? [
+                      color: isDarkTheme ? null : Colors.white,
+                      gradient: isDarkTheme
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
                                 AppColors.darkSurface,
                                 AppColors.darkSurface.withOpacity(0.8),
-                              ]
-                            : [
-                                Color.lerp(
-                                  _getGradientColor(0),
-                                  Colors.black,
-                                  0.2,
-                                )!.withOpacity(0.05),
-                                Color.lerp(
-                                  _getGradientColor(1),
-                                  Colors.black,
-                                  0.2,
-                                )!.withOpacity(0.02),
                               ],
-                      ),
+                            )
+                          : null,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.08),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
+                          color: isDarkTheme
+                              ? Color.lerp(
+                                  _getGradientColor(0),
+                                  Colors.black,
+                                  0.2,
+                                )!.withOpacity(0.08)
+                              : Colors.grey.withOpacity(0.1),
+                          blurRadius: isDarkTheme ? 24 : 12,
+                          offset: Offset(0, isDarkTheme ? 8 : 4),
                           spreadRadius: 0,
                         ),
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
+                        if (isDarkTheme)
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
                       ],
                       border: Border.all(
-                        color: Color.lerp(
-                          _getGradientColor(0),
-                          Colors.black,
-                          0.2,
-                        )!.withOpacity(0.1),
+                        color: isDarkTheme
+                            ? Color.lerp(
+                                _getGradientColor(0),
+                                Colors.black,
+                                0.2,
+                              )!.withOpacity(0.1)
+                            : Colors.grey.withOpacity(0.2),
                         width: 1,
                       ),
                     ),
@@ -528,8 +522,10 @@ class _ProgressPageState extends State<ProgressPage>
                         const SizedBox(height: 12),
                         Text(
                           '${state.currentStreak}',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: isDarkTheme
+                                ? Colors.white
+                                : const Color(0xFF1A1A1A),
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
                           ),
@@ -538,7 +534,9 @@ class _ProgressPageState extends State<ProgressPage>
                         Text(
                           'أيام متتالية',
                           style: TextStyle(
-                            color: Colors.grey[300],
+                            color: isDarkTheme
+                                ? Colors.grey[300]
+                                : Colors.grey[600],
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -560,51 +558,46 @@ class _ProgressPageState extends State<ProgressPage>
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: isDarkTheme
-                            ? [
+                      color: isDarkTheme ? null : Colors.white,
+                      gradient: isDarkTheme
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
                                 AppColors.darkSurface,
                                 AppColors.darkSurface.withOpacity(0.8),
-                              ]
-                            : [
-                                Color.lerp(
-                                  _getGradientColor(0),
-                                  Colors.black,
-                                  0.2,
-                                )!.withOpacity(0.05),
-                                Color.lerp(
-                                  _getGradientColor(1),
-                                  Colors.black,
-                                  0.2,
-                                )!.withOpacity(0.02),
                               ],
-                      ),
+                            )
+                          : null,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.08),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
+                          color: isDarkTheme
+                              ? Color.lerp(
+                                  _getGradientColor(0),
+                                  Colors.black,
+                                  0.2,
+                                )!.withOpacity(0.08)
+                              : Colors.grey.withOpacity(0.1),
+                          blurRadius: isDarkTheme ? 24 : 12,
+                          offset: Offset(0, isDarkTheme ? 8 : 4),
                           spreadRadius: 0,
                         ),
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
+                        if (isDarkTheme)
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
                       ],
                       border: Border.all(
-                        color: Color.lerp(
-                          _getGradientColor(0),
-                          Colors.black,
-                          0.2,
-                        )!.withOpacity(0.1),
+                        color: isDarkTheme
+                            ? Color.lerp(
+                                _getGradientColor(0),
+                                Colors.black,
+                                0.2,
+                              )!.withOpacity(0.1)
+                            : Colors.grey.withOpacity(0.2),
                         width: 1,
                       ),
                     ),
@@ -629,8 +622,10 @@ class _ProgressPageState extends State<ProgressPage>
                         const SizedBox(height: 12),
                         Text(
                           '${progress.azkarCompleted}',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: isDarkTheme
+                                ? Colors.white
+                                : const Color(0xFF1A1A1A),
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
                           ),
@@ -639,7 +634,9 @@ class _ProgressPageState extends State<ProgressPage>
                         Text(
                           'اليوم',
                           style: TextStyle(
-                            color: Colors.grey[300],
+                            color: isDarkTheme
+                                ? Colors.grey[300]
+                                : Colors.grey[600],
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -712,51 +709,46 @@ class _ProgressPageState extends State<ProgressPage>
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDarkTheme
-                      ? [
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
                           AppColors.darkSurface,
                           AppColors.darkSurface.withOpacity(0.8),
-                        ]
-                      : [
-                          Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.05),
-                          Color.lerp(
-                            _getGradientColor(1),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.02),
                         ],
-                ),
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.lerp(
-                      _getGradientColor(0),
-                      Colors.black,
-                      0.2,
-                    )!.withOpacity(0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    color: isDarkTheme
+                        ? Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.08)
+                        : Colors.grey.withOpacity(0.1),
+                    blurRadius: isDarkTheme ? 24 : 12,
+                    offset: Offset(0, isDarkTheme ? 8 : 4),
                     spreadRadius: 0,
                   ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+                  if (isDarkTheme)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
                 ],
                 border: Border.all(
-                  color: Color.lerp(
-                    _getGradientColor(0),
-                    Colors.black,
-                    0.2,
-                  )!.withOpacity(0.1),
+                  color: isDarkTheme
+                      ? Color.lerp(
+                          _getGradientColor(0),
+                          Colors.black,
+                          0.2,
+                        )!.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -767,18 +759,22 @@ class _ProgressPageState extends State<ProgressPage>
                     children: [
                       Icon(
                         Icons.calendar_view_week,
-                        color: Color.lerp(
-                          _getGradientColor(0),
-                          Colors.black,
-                          0.2,
-                        ),
+                        color: isDarkTheme
+                            ? Color.lerp(
+                                _getGradientColor(0),
+                                Colors.black,
+                                0.2,
+                              )
+                            : Colors.grey[600],
                         size: 24,
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'رحلة هذه السنة',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: isDarkTheme
+                              ? Colors.white
+                              : const Color(0xFF1A1A1A),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -821,51 +817,46 @@ class _ProgressPageState extends State<ProgressPage>
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDarkTheme
-                      ? [
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
                           AppColors.darkSurface,
                           AppColors.darkSurface.withOpacity(0.8),
-                        ]
-                      : [
-                          Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.05),
-                          Color.lerp(
-                            _getGradientColor(1),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.02),
                         ],
-                ),
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.lerp(
-                      _getGradientColor(0),
-                      Colors.black,
-                      0.2,
-                    )!.withOpacity(0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    color: isDarkTheme
+                        ? Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.08)
+                        : Colors.grey.withOpacity(0.1),
+                    blurRadius: isDarkTheme ? 24 : 12,
+                    offset: Offset(0, isDarkTheme ? 8 : 4),
                     spreadRadius: 0,
                   ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+                  if (isDarkTheme)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
                 ],
                 border: Border.all(
-                  color: Color.lerp(
-                    _getGradientColor(0),
-                    Colors.black,
-                    0.2,
-                  )!.withOpacity(0.1),
+                  color: isDarkTheme
+                      ? Color.lerp(
+                          _getGradientColor(0),
+                          Colors.black,
+                          0.2,
+                        )!.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -877,20 +868,16 @@ class _ProgressPageState extends State<ProgressPage>
                     children: [
                       Icon(
                         Icons.bar_chart,
-                        color: isDarkTheme
-                            ? Colors.white
-                            : Color.lerp(
-                                _getGradientColor(0),
-                                Colors.black,
-                                0.2,
-                              ),
+                        color: isDarkTheme ? Colors.white : Colors.grey[600],
                         size: 20,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'التقدم عبر الأشهر',
                         style: TextStyle(
-                          color: isDarkTheme ? Colors.white : Color(0xFF1A1A2E),
+                          color: isDarkTheme
+                              ? Colors.white
+                              : const Color(0xFF1A1A1A),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1002,51 +989,46 @@ class _ProgressPageState extends State<ProgressPage>
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDarkTheme
-                      ? [
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
                           AppColors.darkSurface,
                           AppColors.darkSurface.withOpacity(0.8),
-                        ]
-                      : [
-                          Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.05),
-                          Color.lerp(
-                            _getGradientColor(1),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.02),
                         ],
-                ),
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.lerp(
-                      _getGradientColor(0),
-                      Colors.black,
-                      0.2,
-                    )!.withOpacity(0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    color: isDarkTheme
+                        ? Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.08)
+                        : Colors.grey.withOpacity(0.1),
+                    blurRadius: isDarkTheme ? 24 : 12,
+                    offset: Offset(0, isDarkTheme ? 8 : 4),
                     spreadRadius: 0,
                   ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+                  if (isDarkTheme)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
                 ],
                 border: Border.all(
-                  color: Color.lerp(
-                    _getGradientColor(0),
-                    Colors.black,
-                    0.2,
-                  )!.withOpacity(0.1),
+                  color: isDarkTheme
+                      ? Color.lerp(
+                          _getGradientColor(0),
+                          Colors.black,
+                          0.2,
+                        )!.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -1057,18 +1039,22 @@ class _ProgressPageState extends State<ProgressPage>
                     children: [
                       Icon(
                         Icons.calendar_month,
-                        color: Color.lerp(
-                          _getGradientColor(0),
-                          Colors.black,
-                          0.2,
-                        ),
+                        color: isDarkTheme
+                            ? Color.lerp(
+                                _getGradientColor(0),
+                                Colors.black,
+                                0.2,
+                              )
+                            : Colors.grey[600],
                         size: 24,
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'إنجازات هذا الشهر',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: isDarkTheme
+                              ? Colors.white
+                              : const Color(0xFF1A1A1A),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1114,31 +1100,52 @@ class _ProgressPageState extends State<ProgressPage>
 
           const SizedBox(height: 32),
 
-          // Monthly Heatmap Card
+          // Monthly Calendar Card
           FadeInUp(
             duration: const Duration(milliseconds: 800),
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDarkTheme ? AppColors.darkSurface : Colors.white,
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.darkSurface,
+                          AppColors.darkSurface.withOpacity(0.8),
+                        ],
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.lerp(
-                      _getGradientColor(0),
-                      Colors.black,
-                      0.2,
-                    )!.withOpacity(0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    color: isDarkTheme
+                        ? Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.08)
+                        : Colors.grey.withOpacity(0.1),
+                    blurRadius: isDarkTheme ? 24 : 12,
+                    offset: Offset(0, isDarkTheme ? 8 : 4),
+                    spreadRadius: 0,
                   ),
+                  if (isDarkTheme)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
                 ],
                 border: Border.all(
-                  color: Color.lerp(
-                    _getGradientColor(0),
-                    Colors.black,
-                    0.2,
-                  )!.withOpacity(0.1),
+                  color: isDarkTheme
+                      ? Color.lerp(
+                          _getGradientColor(0),
+                          Colors.black,
+                          0.2,
+                        )!.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -1154,7 +1161,7 @@ class _ProgressPageState extends State<ProgressPage>
                         textDirection: TextDirection.rtl,
                         children: [
                           Text(
-                            'النشاط الشهري',
+                            'التقويم الشهري',
                             style: TextStyle(
                               color: isDarkTheme
                                   ? Colors.white
@@ -1166,7 +1173,7 @@ class _ProgressPageState extends State<ProgressPage>
                           ),
                           const SizedBox(width: 8),
                           Icon(
-                            Icons.grid_view,
+                            Icons.calendar_view_month,
                             color: Color.lerp(
                               _getGradientColor(0),
                               Colors.black,
@@ -1181,7 +1188,7 @@ class _ProgressPageState extends State<ProgressPage>
                         textDirection: TextDirection.rtl,
                         children: [
                           Text(
-                            'أكثر',
+                            'مكتمل',
                             style: TextStyle(
                               color: isDarkTheme
                                   ? Colors.grey[400]
@@ -1191,63 +1198,17 @@ class _ProgressPageState extends State<ProgressPage>
                             textDirection: TextDirection.rtl,
                           ),
                           const SizedBox(width: 8),
-                          Row(
-                            textDirection: TextDirection.rtl,
-                            children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: Color.lerp(
-                                    _getGradientColor(0),
-                                    Colors.black,
-                                    0.2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: Color.lerp(
-                                    _getGradientColor(0),
-                                    Colors.black,
-                                    0.2,
-                                  )!.withOpacity(0.6),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: Color.lerp(
-                                    _getGradientColor(0),
-                                    Colors.black,
-                                    0.2,
-                                  )!.withOpacity(0.3),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: isDarkTheme
-                                      ? Colors.grey[700]
-                                      : Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            ],
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade500,
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 12),
                           Text(
-                            'أقل',
+                            'غير مكتمل',
                             style: TextStyle(
                               color: isDarkTheme
                                   ? Colors.grey[400]
@@ -1255,13 +1216,24 @@ class _ProgressPageState extends State<ProgressPage>
                               fontSize: 12,
                             ),
                             textDirection: TextDirection.rtl,
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: isDarkTheme
+                                  ? Colors.grey.shade600
+                                  : Colors.grey.shade300,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  MonthlyHeatmap(monthlyProgress: state.monthlyProgress),
+                  MonthlyCalendar(monthlyProgress: state.monthlyProgress),
                 ],
               ),
             ),

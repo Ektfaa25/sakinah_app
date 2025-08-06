@@ -116,28 +116,18 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDarkTheme
-              ? [
+        color: isDarkTheme ? null : Colors.white,
+        gradient: isDarkTheme
+            ? LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
                   AppColors.darkBackground.withOpacity(0.9),
                   AppColors.darkSurface.withOpacity(0.9),
-                ]
-              : [
-                  _getGradientColor(0).withOpacity(0.6),
-                  _getGradientColor(1).withOpacity(0.4),
                 ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDarkTheme
-                ? Colors.black.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+              )
+            : null,
+        // Remove the boxShadow to eliminate navigation shadows
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -577,8 +567,8 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
             end: Alignment.centerLeft,
             stops: const [0.0, 0.05, 1.0],
             colors: [
-              categoryColor, // Vibrant color on the right
-              categoryColor.withOpacity(0.7), // Medium opacity
+              categoryColor.withOpacity(0.8), // Vibrant color on the right
+              categoryColor.withOpacity(0.5), // Medium opacity
               Colors.transparent, // Fade to transparent on the left
             ],
           ),
@@ -586,8 +576,49 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
         child: Container(
           margin: const EdgeInsets.all(2), // Create space for border
           decoration: BoxDecoration(
+            color: theme.brightness == Brightness.dark
+                ? null
+                : Colors.white, // White background for light mode
+            gradient: theme.brightness == Brightness.dark
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.darkSurface,
+                      AppColors.darkSurface.withOpacity(0.8),
+                    ],
+                  )
+                : null, // No gradient for light mode, use solid white
             borderRadius: BorderRadius.circular(10),
-            color: Theme.of(context).cardColor,
+            boxShadow: [
+              BoxShadow(
+                color: Color.lerp(
+                  _getGradientColor(0),
+                  Colors.black,
+                  0.2,
+                )!.withOpacity(0.04), // Reduced from 0.08
+                blurRadius: 12, // Reduced from 24
+                offset: const Offset(0, 4), // Reduced from 8
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02), // Reduced from 0.04
+                blurRadius: 4, // Reduced from 8
+                offset: const Offset(0, 1), // Reduced from 2
+              ),
+            ],
+            border: Border.all(
+              color: theme.brightness == Brightness.dark
+                  ? Color.lerp(
+                      _getGradientColor(0),
+                      Colors.black,
+                      0.2,
+                    )!.withOpacity(0.1)
+                  : Colors.grey.withOpacity(
+                      0.2,
+                    ), // Light grey border for white cards
+              width: 1,
+            ),
           ),
           child: InkWell(
             onTap: () => _navigateToAzkarDetail(azkar, index),
@@ -638,8 +669,6 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
                     ],
                   ),
 
-                  const SizedBox(height: 10),
-
                   // Bismillah
                   const SizedBox(height: 8),
 
@@ -648,6 +677,7 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
                     azkar.textAr,
                     style: TextStyle(
                       fontSize: 14,
+                      fontFamily: 'AmiriQuran',
                       fontWeight: FontWeight.w600,
                       color: theme.brightness == Brightness.dark
                           ? const Color(0xFFE6F3FF)

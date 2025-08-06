@@ -387,16 +387,16 @@ class _MainShellState extends State<_MainShell> {
   void _updateCurrentIndex() {
     final location = GoRouterState.of(context).uri.path;
     setState(() {
-      if (location == AppRoutes.home) {
-        _currentIndex = 0;
-      } else if (location == AppRoutes.azkarCategories) {
-        _currentIndex = 1;
-      } else if (location == AppRoutes.azkarFavorites) {
-        _currentIndex = 2;
+      if (location == AppRoutes.settings) {
+        _currentIndex = 0; // Settings is at array index 0
       } else if (location == AppRoutes.progress) {
-        _currentIndex = 3;
-      } else if (location == AppRoutes.settings) {
-        _currentIndex = 4;
+        _currentIndex = 1; // Progress is at array index 1
+      } else if (location == AppRoutes.azkarFavorites) {
+        _currentIndex = 2; // Favorites is at array index 2
+      } else if (location == AppRoutes.azkarCategories) {
+        _currentIndex = 3; // Categories is at array index 3
+      } else if (location == AppRoutes.home) {
+        _currentIndex = 4; // Home is at array index 4 (rightmost)
       }
     });
   }
@@ -458,11 +458,11 @@ class _MainShellState extends State<_MainShell> {
           fontSize: 11,
         ),
         items: [
-          _buildStyledNavItem(Icons.home, 'الرئيسية', 0, context),
-          _buildStyledNavItem(Icons.grid_view, 'الفئات', 1, context),
-          _buildStyledNavItem(Icons.favorite, 'المفضلة', 2, context),
-          _buildStyledNavItem(Icons.show_chart, 'التقدم', 3, context),
-          _buildStyledNavItem(Icons.settings, 'الإعدادات', 4, context),
+          _buildStyledNavItem(Icons.settings, 'الإعدادات', 5, context),
+          _buildStyledNavItem(Icons.show_chart, 'التقدم', 4, context),
+          _buildStyledNavItem(Icons.favorite, 'المفضلة', 3, context),
+          _buildStyledNavItem(Icons.grid_view, 'الفئات', 2, context),
+          _buildStyledNavItem(Icons.home, 'الرئيسية', 1, context),
         ],
         onTap: _onBottomNavTap,
       ),
@@ -517,24 +517,24 @@ class _MainShellState extends State<_MainShell> {
   void _onBottomNavTap(int index) {
     switch (index) {
       case 0:
-        // Home
-        context.go(AppRoutes.home);
+        // Settings (الإعدادات) - tap index 0 -> custom index 5
+        context.go(AppRoutes.settings);
         break;
       case 1:
-        // All Categories (Azkar grid)
-        context.go(AppRoutes.azkarCategories);
+        // Progress (التقدم) - tap index 1 -> custom index 4
+        context.go(AppRoutes.progress);
         break;
       case 2:
-        // Favorites
+        // Favorites (المفضلة) - tap index 2 -> custom index 3
         context.go(AppRoutes.azkarFavorites);
         break;
       case 3:
-        // Progress
-        context.go(AppRoutes.progress);
+        // Categories (الفئات) - tap index 3 -> custom index 2
+        context.go(AppRoutes.azkarCategories);
         break;
       case 4:
-        // Settings
-        context.go(AppRoutes.settings);
+        // Home (الرئيسية) - tap index 4 -> custom index 1 (rightmost)
+        context.go(AppRoutes.home);
         break;
     }
   }
@@ -558,19 +558,19 @@ class _MainShellState extends State<_MainShell> {
 
   Color _getCategoryColorForTab(int index) {
     switch (index) {
-      case 0: // Home
+      case 1: // Home (rightmost - custom index 1)
         return _getColorFromHex(
           '#FFD93D',
         ); // Bright warm yellow like morning azkar
-      case 1: // Categories
+      case 2: // Categories (custom index 2)
         return _getColorFromHex(
           '#6FB3FF',
         ); // Vibrant soft blue like evening azkar
-      case 2: // Favorites
+      case 3: // Favorites (center - custom index 3)
         return _getColorFromHex('#FF6B9D'); // Pink for favorites
-      case 3: // Progress
+      case 4: // Progress (custom index 4)
         return _getColorFromHex('#4ECDC4'); // Vibrant mint green for progress
-      case 4: // Settings
+      case 5: // Settings (leftmost - custom index 5)
         return _getColorFromHex('#95E1A3'); // Bright light green for settings
       default:
         return _getGradientColor(index);

@@ -264,26 +264,24 @@ class _HomePageState extends State<HomePage> {
         child: SingleChildScrollView(
           child: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: isDarkTheme
-                    ? [
+              color: isDarkTheme ? null : Colors.white,
+              gradient: isDarkTheme
+                  ? LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
                         AppColors.darkBackground.withOpacity(0.9),
                         AppColors.darkSurface.withOpacity(0.9),
-                      ]
-                    : [
-                        _getGradientColor(0).withOpacity(0.6),
-                        _getGradientColor(1).withOpacity(0.4),
                       ],
-              ),
+                    )
+                  : null,
               boxShadow: [
                 BoxShadow(
                   color: isDarkTheme
-                      ? Colors.black.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                      ? Colors.black.withOpacity(0.15) // Reduced from 0.3
+                      : Colors.black.withOpacity(0.04), // Reduced from 0.1
+                  blurRadius: 6, // Reduced from 10
+                  offset: const Offset(0, 2), // Reduced from 4
                 ),
               ],
             ),
@@ -420,22 +418,26 @@ class _HomePageState extends State<HomePage> {
                           Row(
                             children: [
                               // Small + icon button to show all categories
-                              Text(
-                                'المزيد',
+                              GestureDetector(
+                                onTap: () =>
+                                    context.go(AppRoutes.azkarCategories),
+                                child: Text(
+                                  'عرض الكل',
 
-                                // Azkar
-                                style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  height: 1.5,
+                                  // Azkar
+                                  style: TextStyle(
+                                    decoration: TextDecoration.underline,
+                                    height: 1.5,
 
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
 
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface, // Use theme text color
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface, // Use theme text color
+                                  ),
+                                  textDirection: TextDirection.rtl,
                                 ),
-                                textDirection: TextDirection.rtl,
                               ),
                             ],
                           ),

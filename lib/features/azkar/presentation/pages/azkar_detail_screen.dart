@@ -231,34 +231,39 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
   }
 
   Widget _buildAzkarPage(Azkar azkar, Color categoryColor) {
-    return SingleChildScrollView(
-      controller: _scrollController,
-      physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        0,
-        24,
-        0,
-        80,
-      ), // Remove horizontal padding, keep vertical padding
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Azkar text at the top
-          _buildAzkarText(azkar),
-          const SizedBox(height: 100), // Space between text and counter
-          // Counter circle positioned lower for thumb access
-          _buildCounterCircle(azkar, categoryColor),
-          const SizedBox(
-            height: 40,
-          ), // Space between counter and repetition text
-          _buildRepetitionText(azkar, categoryColor),
-          const SizedBox(height: 24),
-        ],
+    return GestureDetector(
+      onTap: _isCompleted ? null : () => _incrementCounter(azkar),
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        physics: const ClampingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          0,
+          24,
+          0,
+          80,
+        ), // Remove horizontal padding, keep vertical padding
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Azkar text at the top
+            _buildAzkarText(azkar),
+            const SizedBox(height: 100), // Space between text and counter
+            // Counter circle positioned lower for thumb access
+            _buildCounterCircle(azkar, categoryColor),
+            const SizedBox(
+              height: 40,
+            ), // Space between counter and repetition text
+            _buildRepetitionText(azkar, categoryColor),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context, Color categoryColor) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
@@ -277,7 +282,10 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
           children: [
             // Clean back button
             IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: Icon(
+                Icons.arrow_back,
+                color: isDarkTheme ? Colors.white : Colors.black,
+              ),
               onPressed: () => Navigator.pop(context),
               tooltip: 'رجوع',
             ),
@@ -285,10 +293,10 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
             Expanded(
               child: Text(
                 widget.category.nameAr,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: isDarkTheme ? Colors.white : Colors.black,
                 ),
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.center,
@@ -301,7 +309,9 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                 _isFavorite ? Icons.favorite : Icons.favorite_border,
                 color: _isFavorite
                     ? const Color.fromARGB(255, 244, 54, 108)
-                    : Colors.grey[200],
+                    : isDarkTheme
+                    ? Colors.grey[200]
+                    : Colors.grey[600],
                 size: 24,
               ),
             ),
@@ -372,6 +382,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
   // New method to build just the counter circle for overlapping positioning
   Widget _buildCounterCircle(Azkar azkar, Color categoryColor) {
     final progress = _currentCount / azkar.repeatCount;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     return FadeInUp(
       duration: const Duration(milliseconds: 600),
@@ -381,13 +392,17 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
+            color: isDarkTheme
+                ? Theme.of(context).cardColor
+                : const Color(0xFFFAF9F7), // Cream off-white color
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: categoryColor.withOpacity(0.2),
-                blurRadius: 15,
-                offset: const Offset(0, 4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withOpacity(0.08), // Reduced from 0.2
+                blurRadius: 8, // Reduced from 15
+                offset: const Offset(0, 2), // Reduced from 4
               ),
             ],
           ),
@@ -401,9 +416,17 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
                 child: CircularProgressIndicator(
                   value: progress.clamp(0.0, 1.0),
                   strokeWidth: 4,
-                  backgroundColor: categoryColor.withOpacity(0.2),
+                  backgroundColor: isDarkTheme
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+                      : categoryColor.withOpacity(
+                          0.15,
+                        ), // Light category color for light theme
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    _isCompleted ? Colors.green : categoryColor,
+                    _isCompleted
+                        ? Colors.green
+                        : isDarkTheme
+                        ? Theme.of(context).colorScheme.primary
+                        : categoryColor, // Use category color for progress in light theme
                   ),
                   strokeCap: StrokeCap.round,
                 ),
@@ -411,67 +434,64 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               // Counter button
               ScaleTransition(
                 scale: _pulseAnimation,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _isCompleted ? null : () => _incrementCounter(azkar),
-                    borderRadius: BorderRadius.circular(30),
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      child: Center(
-                        child: _isCompleted
-                            ? Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle,
-                                    color: Colors.green,
-                                    size: 24,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'تم',
-                                    style: TextStyle(
-                                      color: Colors.green,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textDirection: TextDirection.rtl,
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '$_currentCount',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 20,
-                                    height: 1,
-                                    color: Colors.white.withOpacity(0.6),
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 2,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${azkar.repeatCount}',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.7),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  child: Center(
+                    child: _isCompleted
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 24,
                               ),
-                      ),
-                    ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'تم',
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textDirection: TextDirection.rtl,
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$_currentCount',
+                                style: TextStyle(
+                                  color: isDarkTheme
+                                      ? Colors.white.withOpacity(0.9)
+                                      : Colors.black.withOpacity(0.8),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Container(
+                                width: 20,
+                                height: 1.5,
+                                color: isDarkTheme
+                                    ? Colors.white.withOpacity(0.6)
+                                    : Colors.black.withOpacity(0.5),
+                                margin: const EdgeInsets.symmetric(vertical: 2),
+                              ),
+                              Text(
+                                '${azkar.repeatCount}',
+                                style: TextStyle(
+                                  color: isDarkTheme
+                                      ? Colors.white.withOpacity(0.7)
+                                      : Colors.black.withOpacity(0.6),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ),
@@ -484,6 +504,25 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
 
   // New method to build just the repetition text
   Widget _buildRepetitionText(Azkar azkar, Color categoryColor) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    // Create a lighter version of the category color for better readability
+    final textColor = _isCompleted
+        ? Colors.green.shade700
+        : isDarkTheme
+        ? categoryColor.withOpacity(0.9) // Lighter for dark theme
+        : categoryColor; // Original color for light theme
+
+    final backgroundColor = (_isCompleted ? Colors.green : categoryColor)
+        .withOpacity(
+          isDarkTheme ? 0.15 : 0.1, // Slightly more opacity for dark theme
+        );
+
+    final borderColor = (_isCompleted ? Colors.green : categoryColor)
+        .withOpacity(
+          isDarkTheme ? 0.4 : 0.3, // More visible border for dark theme
+        );
+
     return FadeInUp(
       duration: const Duration(milliseconds: 600),
       delay: const Duration(milliseconds: 500),
@@ -491,21 +530,14 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: (_isCompleted ? Colors.green : categoryColor).withOpacity(
-              0.1,
-            ),
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: (_isCompleted ? Colors.green : categoryColor).withOpacity(
-                0.3,
-              ),
-              width: 1,
-            ),
+            border: Border.all(color: borderColor, width: 1),
           ),
           child: Text(
             'يُكرر ${azkar.repeatCount} ${_getRepetitionWord(azkar.repeatCount)}',
             style: TextStyle(
-              color: _isCompleted ? Colors.green.shade700 : categoryColor,
+              color: textColor,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),

@@ -24,26 +24,24 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDarkTheme
-              ? [
+        color: isDarkTheme ? null : Colors.white,
+        gradient: isDarkTheme
+            ? LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
                   AppColors.darkBackground.withOpacity(0.9),
                   AppColors.darkSurface.withOpacity(0.9),
-                ]
-              : [
-                  _getGradientColor(0).withOpacity(0.6),
-                  _getGradientColor(1).withOpacity(0.4),
                 ],
-        ),
+              )
+            : null,
         boxShadow: [
           BoxShadow(
             color: isDarkTheme
-                ? Colors.black.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+                ? Colors.black.withOpacity(0.15) // Reduced from 0.3
+                : Colors.black.withOpacity(0.04), // Reduced from 0.1
+            blurRadius: 6, // Reduced from 10
+            offset: const Offset(0, -1), // Reduced from -2
           ),
         ],
       ),
@@ -127,7 +125,9 @@ class _SettingsPageState extends State<SettingsPage> {
                           'Made w luv by Ektfaa🩷',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[300],
+                            color: isDarkTheme
+                                ? Colors.grey[300]
+                                : Colors.grey[600],
                             fontWeight: FontWeight.w500,
                           ),
                           textAlign: TextAlign.center,
@@ -147,22 +147,38 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildProfileSection() {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return FadeInDown(
       duration: const Duration(milliseconds: 600),
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF6366F1).withOpacity(0.08),
-              const Color(0xFF8B5CF6).withOpacity(0.04),
-            ],
-          ),
+          color: isDarkTheme ? null : Colors.white,
+          gradient: isDarkTheme
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF6366F1).withOpacity(0.08),
+                    const Color(0xFF8B5CF6).withOpacity(0.04),
+                  ],
+                )
+              : null,
           borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: isDarkTheme
+                  ? const Color(0xFF6366F1).withOpacity(0.2)
+                  : Colors.grey.withOpacity(0.1),
+              blurRadius: isDarkTheme ? 12 : 8,
+              offset: Offset(0, isDarkTheme ? 4 : 2),
+            ),
+          ],
           border: Border.all(
-            color: const Color(0xFF6366F1).withOpacity(0.2),
+            color: isDarkTheme
+                ? const Color(0xFF6366F1).withOpacity(0.2)
+                : Colors.grey.withOpacity(0.2),
             width: 1,
           ),
         ),
@@ -191,10 +207,10 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             Text(
               'مستخدم سكينة',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: isDarkTheme ? Colors.white : const Color(0xFF1A1A1A),
               ),
               textDirection: TextDirection.rtl,
             ),
@@ -203,7 +219,7 @@ class _SettingsPageState extends State<SettingsPage> {
               'عضو منذ يناير 2024',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[200],
+                color: isDarkTheme ? Colors.grey[200] : Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
               textDirection: TextDirection.rtl,
@@ -215,20 +231,26 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSectionTitle(String title, IconData icon) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
         children: [
-          Icon(icon, color: Colors.white, size: 20),
+          Icon(
+            icon,
+            color: isDarkTheme ? Colors.white : Colors.grey[600],
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: isDarkTheme ? Colors.white : const Color(0xFF1A1A1A),
             ),
             textDirection: TextDirection.rtl,
           ),

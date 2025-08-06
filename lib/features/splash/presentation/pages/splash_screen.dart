@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sakinah_app/core/theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -60,19 +61,33 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              _getColorFromHex('#FBF8CC'), // Light yellow (same as bottom nav)
-              _getColorFromHex('#A3C4F3'), // Light blue (same as bottom nav)
-              Colors.white, // Fade to white for elegance
-            ],
-            stops: const [0.0, 0.6, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDarkTheme
+                ? [
+                    AppColors.darkBackground.withOpacity(0.9),
+                    AppColors.darkSurface.withOpacity(0.9),
+                  ]
+                : [
+                    _getGradientColor(0).withOpacity(0.6),
+                    _getGradientColor(1).withOpacity(0.4),
+                  ],
           ),
+          boxShadow: [
+            BoxShadow(
+              color: isDarkTheme
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Stack(
           children: [
@@ -309,17 +324,21 @@ class _SplashScreenState extends State<SplashScreen>
                                   // App name in Arabic
                                   Text(
                                     'سكينة',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: 'PlaypenSansArabic',
                                       fontSize: 64,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(
-                                        0xFF1B2951,
-                                      ), // Navy dark color
+                                      color: isDarkTheme
+                                          ? Colors.white
+                                          : const Color(
+                                              0xFF1B2951,
+                                            ), // White for dark theme, navy for light theme
                                       shadows: [
                                         Shadow(
-                                          color: Colors.black26,
-                                          offset: Offset(2, 2),
+                                          color: isDarkTheme
+                                              ? Colors.black54
+                                              : Colors.black26,
+                                          offset: const Offset(2, 2),
                                           blurRadius: 4,
                                         ),
                                       ],
@@ -334,10 +353,11 @@ class _SplashScreenState extends State<SplashScreen>
                                       fontFamily: 'PlaypenSansArabic',
                                       fontSize: 22,
                                       fontWeight: FontWeight.w500,
-                                      color: const Color(0xFF1B2951)
-                                          .withOpacity(
-                                            0.8,
-                                          ), // Navy dark color with opacity
+                                      color: isDarkTheme
+                                          ? Colors.white.withOpacity(0.9)
+                                          : const Color(0xFF1B2951).withOpacity(
+                                              0.8,
+                                            ), // White with opacity for dark theme, navy with opacity for light theme
                                       letterSpacing: 1.2,
                                     ),
                                     textDirection: TextDirection.rtl,
@@ -411,7 +431,9 @@ class _SplashScreenState extends State<SplashScreen>
                               style: TextStyle(
                                 fontFamily: 'PlaypenSansArabic',
                                 fontSize: 14,
-                                color: Colors.white.withOpacity(0.8),
+                                color: isDarkTheme
+                                    ? Colors.white.withOpacity(0.8)
+                                    : Colors.white.withOpacity(0.8),
                                 fontWeight: FontWeight.w400,
                               ),
                               textDirection: TextDirection.rtl,
@@ -437,5 +459,39 @@ class _SplashScreenState extends State<SplashScreen>
       hexColor = 'FF$hexColor'; // Add alpha channel
     }
     return Color(int.parse(hexColor, radix: 16));
+  }
+
+  // Get gradient colors that match the azkar categories design
+  Color _getGradientColor(int index) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    final darkColors = [
+      _getColorFromHex('#E8E2B8'), // Muted warm yellow
+      _getColorFromHex('#9BB3D9'), // Muted soft blue
+      _getColorFromHex('#E8CDB8'), // Muted warm peach
+      _getColorFromHex('#89C5D9'), // Muted cyan
+      const Color(0xFFE91E63), // Slightly lighter pink for today's highlight
+      _getColorFromHex('#B0D9B8'), // Muted light green
+      _getColorFromHex('#D9B8BC'), // Muted light pink
+      _getColorFromHex('#D4B8D1'), // Muted light purple
+      _getColorFromHex('#C2A8D4'), // Muted light lavender
+      _getColorFromHex('#7FC4D9'), // Muted light turquoise
+    ];
+
+    final lightColors = [
+      _getColorFromHex('#FBF8CC'), // Bright warm yellow
+      _getColorFromHex('#A3C4F3'), // Bright soft blue
+      _getColorFromHex('#FDE4CF'), // Bright warm peach
+      _getColorFromHex('#90DBF4'), // Bright cyan
+      const Color(0xFFE91E63), // Pink for today's highlight
+      _getColorFromHex('#B9FBC0'), // Bright light green
+      _getColorFromHex('#FFCFD2'), // Bright light pink
+      _getColorFromHex('#F1C0E8'), // Bright light purple
+      _getColorFromHex('#CFBAF0'), // Bright light lavender
+      _getColorFromHex('#8EECF5'), // Bright light turquoise
+    ];
+
+    final colors = isDarkTheme ? darkColors : lightColors;
+    return colors[index % colors.length];
   }
 }

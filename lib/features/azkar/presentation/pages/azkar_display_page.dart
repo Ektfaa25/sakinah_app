@@ -152,6 +152,8 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage>
       title = _getCategoryDisplayName(widget.category!);
     }
 
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 120,
       width: double.infinity,
@@ -173,7 +175,10 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage>
         children: [
           // Clean back button
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(
+              Icons.arrow_back,
+              color: isDarkTheme ? Colors.white : Colors.black,
+            ),
             onPressed: () => context.pop(),
             tooltip: 'رجوع',
           ),
@@ -181,10 +186,10 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage>
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 24,
+              style: TextStyle(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: isDarkTheme ? Colors.white : Colors.black,
               ),
               textDirection: TextDirection.rtl,
               textAlign: TextAlign.center,
@@ -274,38 +279,45 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage>
             itemCount: azkarList.length,
             itemBuilder: (context, index) {
               final azkar = azkarList[index];
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Azkar text
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
+              final isCompleted = _azkarCompleted[index] ?? false;
 
-                      child: Text(
-                        azkar.arabicText,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          height: 2.2,
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontFamily: 'Amiri',
+              return GestureDetector(
+                onTap: isCompleted
+                    ? null
+                    : () => _incrementCounter(azkar, index),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Azkar text
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+
+                        child: Text(
+                          azkar.arabicText,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            height: 1.9,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontFamily: 'Amiri',
+                          ),
+                          textAlign: TextAlign.center,
+                          textDirection: TextDirection.rtl,
                         ),
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
                       ),
-                    ),
-                    const SizedBox(
-                      height: 60,
-                    ), // Space between text and counter
-                    // Circular counter
-                    _buildCounterCircle(azkar, index),
-                    const SizedBox(
-                      height: 20,
-                    ), // Space between counter and repetition text
-                    _buildRepetitionText(azkar, index),
-                  ],
+                      const SizedBox(
+                        height: 60,
+                      ), // Space between text and counter
+                      // Circular counter
+                      _buildCounterCircle(azkar, index),
+                      const SizedBox(
+                        height: 20,
+                      ), // Space between counter and repetition text
+                      _buildRepetitionText(azkar, index),
+                    ],
+                  ),
                 ),
               );
             },
@@ -320,19 +332,22 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage>
     final isCompleted = _azkarCompleted[azkarIndex] ?? false;
     final progress = currentCount / azkar.repetitions;
     final categoryColor = Theme.of(context).colorScheme.primary;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     return Center(
       child: Container(
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: isDarkTheme
+              ? Theme.of(context).cardColor
+              : const Color(0xFFF5F4F0), // Cream greyish color
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: categoryColor.withOpacity(0.2),
-              blurRadius: 15,
-              offset: const Offset(0, 4),
+              color: categoryColor.withOpacity(0.08), // Reduced from 0.2
+              blurRadius: 8, // Reduced from 15
+              offset: const Offset(0, 2), // Reduced from 4
             ),
           ],
         ),
@@ -356,69 +371,64 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage>
             // Counter button
             ScaleTransition(
               scale: _pulseAnimation,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: isCompleted
-                      ? null
-                      : () => _incrementCounter(azkar, azkarIndex),
-                  borderRadius: BorderRadius.circular(50),
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    child: Center(
-                      child: isCompleted
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 24,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'تم',
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textDirection: TextDirection.rtl,
-                                ),
-                              ],
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '$currentCount',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Container(
-                                  width: 20,
-                                  height: 1.5,
-                                  color: Colors.white.withOpacity(0.6),
-                                  margin: const EdgeInsets.symmetric(
-                                    vertical: 2,
-                                  ),
-                                ),
-                                Text(
-                                  '${azkar.repetitions}',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.7),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+              child: Container(
+                width: 60,
+                height: 60,
+                child: Center(
+                  child: isCompleted
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 24,
                             ),
-                    ),
-                  ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'تم',
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textDirection: TextDirection.rtl,
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$currentCount',
+                              style: TextStyle(
+                                color: isDarkTheme
+                                    ? Colors.white.withOpacity(0.9)
+                                    : Colors.black.withOpacity(0.8),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Container(
+                              width: 20,
+                              height: 1.5,
+                              color: isDarkTheme
+                                  ? Colors.white.withOpacity(0.6)
+                                  : Colors.black.withOpacity(0.5),
+                              margin: const EdgeInsets.symmetric(vertical: 2),
+                            ),
+                            Text(
+                              '${azkar.repetitions}',
+                              style: TextStyle(
+                                color: isDarkTheme
+                                    ? Colors.white.withOpacity(0.7)
+                                    : Colors.black.withOpacity(0.6),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ),
