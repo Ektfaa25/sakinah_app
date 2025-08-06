@@ -1005,32 +1005,55 @@ class _ProgressPageState extends State<ProgressPage>
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color.lerp(
+                  colors: isDarkTheme
+                      ? [
+                          AppColors.darkSurface,
+                          AppColors.darkSurface.withOpacity(0.8),
+                        ]
+                      : [
+                          Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.05),
+                          Color.lerp(
+                            _getGradientColor(1),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.02),
+                        ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color.lerp(
                       _getGradientColor(0),
                       Colors.black,
                       0.2,
-                    )!.withOpacity(0.4),
-                    Color.lerp(
-                      _getGradientColor(1),
-                      Colors.black,
-                      0.2,
-                    )!.withOpacity(0.25),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(20),
+                    )!.withOpacity(0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
                 border: Border.all(
                   color: Color.lerp(
                     _getGradientColor(0),
                     Colors.black,
                     0.2,
-                  )!.withOpacity(0.6),
+                  )!.withOpacity(0.1),
                   width: 1,
                 ),
               ),
               child: Column(
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Icon(
                         Icons.calendar_month,
@@ -1120,104 +1143,120 @@ class _ProgressPageState extends State<ProgressPage>
                 ),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    textDirection: TextDirection.rtl,
                     children: [
-                      Icon(
-                        Icons.grid_view,
-                        color: Color.lerp(
-                          _getGradientColor(0),
-                          Colors.black,
-                          0.2,
-                        ),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'النشاط الشهري',
-                        style: TextStyle(
-                          color: isDarkTheme ? Colors.white : Color(0xFF1A1A2E),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textDirection: TextDirection.rtl,
-                      ),
-                      const Spacer(),
-                      Text(
-                        'أقل',
-                        style: TextStyle(
-                          color: isDarkTheme
-                              ? Colors.grey[400]
-                              : Colors.grey[500],
-                          fontSize: 12,
-                        ),
-                        textDirection: TextDirection.rtl,
-                      ),
-                      const SizedBox(width: 8),
+                      // Title and icon (right side in RTL)
                       Row(
+                        textDirection: TextDirection.rtl,
                         children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
+                          Text(
+                            'النشاط الشهري',
+                            style: TextStyle(
                               color: isDarkTheme
-                                  ? Colors.grey[700]
-                                  : Colors.grey[200],
-                              borderRadius: BorderRadius.circular(2),
+                                  ? Colors.white
+                                  : Color(0xFF1A1A2E),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
+                            textDirection: TextDirection.rtl,
                           ),
-                          const SizedBox(width: 2),
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: Color.lerp(
-                                _getGradientColor(0),
-                                Colors.black,
-                                0.2,
-                              )!.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(2),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.grid_view,
+                            color: Color.lerp(
+                              _getGradientColor(0),
+                              Colors.black,
+                              0.2,
                             ),
-                          ),
-                          const SizedBox(width: 2),
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: Color.lerp(
-                                _getGradientColor(0),
-                                Colors.black,
-                                0.2,
-                              )!.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: Color.lerp(
-                                _getGradientColor(0),
-                                Colors.black,
-                                0.2,
-                              ),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
+                            size: 20,
                           ),
                         ],
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'أكثر',
-                        style: TextStyle(
-                          color: isDarkTheme
-                              ? Colors.grey[400]
-                              : Colors.grey[500],
-                          fontSize: 12,
-                        ),
+                      // Legend (left side in RTL)
+                      Row(
                         textDirection: TextDirection.rtl,
+                        children: [
+                          Text(
+                            'أكثر',
+                            style: TextStyle(
+                              color: isDarkTheme
+                                  ? Colors.grey[400]
+                                  : Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                            textDirection: TextDirection.rtl,
+                          ),
+                          const SizedBox(width: 8),
+                          Row(
+                            textDirection: TextDirection.rtl,
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: Color.lerp(
+                                    _getGradientColor(0),
+                                    Colors.black,
+                                    0.2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: Color.lerp(
+                                    _getGradientColor(0),
+                                    Colors.black,
+                                    0.2,
+                                  )!.withOpacity(0.6),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: Color.lerp(
+                                    _getGradientColor(0),
+                                    Colors.black,
+                                    0.2,
+                                  )!.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: isDarkTheme
+                                      ? Colors.grey[700]
+                                      : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'أقل',
+                            style: TextStyle(
+                              color: isDarkTheme
+                                  ? Colors.grey[400]
+                                  : Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                            textDirection: TextDirection.rtl,
+                          ),
+                        ],
                       ),
                     ],
                   ),

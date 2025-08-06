@@ -296,109 +296,112 @@ class _HomePageState extends State<HomePage> {
                 // Add spacing after progress tracker
                 const SizedBox(height: 24),
                 // Quick mood selection section (no horizontal padding)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'كيف تشعر الآن؟', // How do you feel now?
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onBackground, // Use theme text color
+                Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'كيف تشعر الآن؟', // How do you feel now?
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onBackground, // Use theme text color
+                        ),
+                        textDirection: TextDirection.rtl,
                       ),
-                      textDirection: TextDirection.rtl,
-                    ),
-                    const SizedBox(height: 16),
-                    // Horizontal mood selector
-                    SizedBox(
-                      height: 80,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        reverse: true, // Enable RTL scrolling
-                        itemCount: 6, // Show first 6 moods
-                        itemBuilder: (context, index) {
-                          final moods = [
-                            {
-                              'name': 'happy',
-                              'emoji': '😊',
-                              'nameAr': 'سعيد',
-                            },
-                            {'name': 'sad', 'emoji': '😔', 'nameAr': 'حزين'},
-                            {
-                              'name': 'anxious',
-                              'emoji': '😰',
-                              'nameAr': 'قلق',
-                            },
-                            {
-                              'name': 'grateful',
-                              'emoji': '🙏',
-                              'nameAr': 'شاكر',
-                            },
-                            {
-                              'name': 'stressed',
-                              'emoji': '😤',
-                              'nameAr': 'متوتر',
-                            },
-                            {
-                              'name': 'peaceful',
-                              'emoji': '😌',
-                              'nameAr': 'مطمئن',
-                            },
-                          ];
-                
-                          final mood = moods[index];
-                          return Container(
-                            key: ValueKey('mood_${mood['name']}'),
-                            width: 65,
-                            margin: const EdgeInsets.only(right: 12),
-                            child: GestureDetector(
-                              onTap: () => context.push(
-                                '${AppRoutes.azkarDisplay}?mood=${mood['name']}',
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: _getMoodColor(
-                                    mood['name'] as String,
-                                  ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
+                      const SizedBox(height: 16),
+                      // Horizontal mood selector
+                      SizedBox(
+                        height: 80,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          reverse: true, // Enable RTL scrolling
+                          itemCount: 6, // Show first 6 moods
+                          itemBuilder: (context, index) {
+                            final moods = [
+                              {
+                                'name': 'happy',
+                                'emoji': '😊',
+                                'nameAr': 'سعيد',
+                              },
+                              {'name': 'sad', 'emoji': '😔', 'nameAr': 'حزين'},
+                              {
+                                'name': 'anxious',
+                                'emoji': '😰',
+                                'nameAr': 'قلق',
+                              },
+                              {
+                                'name': 'grateful',
+                                'emoji': '🙏',
+                                'nameAr': 'شاكر',
+                              },
+                              {
+                                'name': 'stressed',
+                                'emoji': '😤',
+                                'nameAr': 'متوتر',
+                              },
+                              {
+                                'name': 'peaceful',
+                                'emoji': '😌',
+                                'nameAr': 'مطمئن',
+                              },
+                            ];
+
+                            final mood = moods[index];
+                            return Container(
+                              key: ValueKey('mood_${mood['name']}'),
+                              width: 65,
+                              margin: const EdgeInsets.only(right: 12),
+                              child: GestureDetector(
+                                onTap: () => context.push(
+                                  '${AppRoutes.azkarDisplay}?mood=${mood['name']}',
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
                                     color: _getMoodColor(
                                       mood['name'] as String,
-                                    ).withOpacity(0.3),
-                                    width: 1,
+                                    ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: _getMoodColor(
+                                        mood['name'] as String,
+                                      ).withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        mood['emoji'] as String,
+                                        style: const TextStyle(fontSize: 24),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        mood['nameAr'] as String,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: _getMoodColor(
+                                            mood['name'] as String,
+                                          ),
+                                        ),
+                                        textDirection: TextDirection.rtl,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      mood['emoji'] as String,
-                                      style: const TextStyle(fontSize: 24),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      mood['nameAr'] as String,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: _getMoodColor(
-                                          mood['name'] as String,
-                                        ),
-                                      ),
-                                      textDirection: TextDirection.rtl,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
                 // Rest of content with horizontal padding
@@ -471,11 +474,11 @@ class _HomePageState extends State<HomePage> {
                               icon: Icons.wb_sunny,
                               color: isDarkTheme
                                   ? _getColorFromHex(
-                                      '#E8E2B8',
-                                    ) // Muted warm yellow for dark background
+                                      '#F5F2B8',
+                                    ) // Powder yellow for dark background
                                   : _getColorFromHex(
-                                      '#FBF8CC',
-                                    ), // Original bright yellow for light background
+                                      '#FFFBCC',
+                                    ), // Powder yellow for light background
                               categoryId: 'morning',
                               onTap: () =>
                                   _navigateToAzkarDetail(context, 'morning'),
@@ -487,11 +490,11 @@ class _HomePageState extends State<HomePage> {
                               icon: Icons.nights_stay,
                               color: isDarkTheme
                                   ? _getColorFromHex(
-                                      '#9BB3D9',
-                                    ) // Muted soft blue for dark background
+                                      '#B8D4F5',
+                                    ) // Powder blue for dark background
                                   : _getColorFromHex(
-                                      '#A3C4F3',
-                                    ), // Original bright blue for light background
+                                      '#CCE7FF',
+                                    ), // Powder blue for light background
                               categoryId: 'evening',
                               onTap: () =>
                                   _navigateToAzkarDetail(context, 'evening'),
@@ -1037,9 +1040,9 @@ class _AzkarCategoryCard extends StatelessWidget {
           padding: const EdgeInsets.all(20), // Reduced from 24 to 20
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [color.withOpacity(0.4), color.withOpacity(0.25)],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [color, color.withOpacity(0.30)],
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: color.withOpacity(0.6), width: 1),

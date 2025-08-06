@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:sakinah_app/core/di/service_locator.dart';
 import 'package:sakinah_app/features/azkar/domain/entities/azkar.dart';
 import 'package:sakinah_app/features/azkar/presentation/bloc/azkar_bloc.dart';
-import 'package:sakinah_app/features/azkar/presentation/widgets/azkar_card.dart';
-import 'package:sakinah_app/shared/widgets/glassy_container.dart';
 
 class AzkarDisplayPage extends StatefulWidget {
   final String? mood;
@@ -17,23 +15,35 @@ class AzkarDisplayPage extends StatefulWidget {
   State<AzkarDisplayPage> createState() => _AzkarDisplayPageState();
 }
 
-class _AzkarDisplayPageState extends State<AzkarDisplayPage> {
-  int _currentIndex = 0;
+class _AzkarDisplayPageState extends State<AzkarDisplayPage>
+    with TickerProviderStateMixin {
   late PageController _pageController;
-  bool _isSearchMode = false;
-  final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'All';
+
+  // Counter state management
+  Map<int, int> _azkarCounts = {};
+  Map<int, bool> _azkarCompleted = {};
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+
+    // Initialize pulse animation for counter
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.elasticOut),
+    );
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _searchController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -52,69 +62,82 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage> {
         return bloc;
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(context),
-              if (_isSearchMode) _buildSearchBar(context),
-              if (_isSearchMode) _buildFilterChips(context),
-              Expanded(
-                child: BlocBuilder<AzkarBloc, AzkarState>(
-                  builder: (context, state) {
-                    if (state is AzkarLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is AzkarError) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 64,
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Failed to load azkar',
-                              style: Theme.of(context).textTheme.headlineSmall,
-                            ),
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.background.withOpacity(0.26),
+                Theme.of(context).colorScheme.background,
+                Theme.of(context).colorScheme.background.withOpacity(0.9),
+              ],
+              stops: const [0.0, 0.6, 1.0],
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildAppBar(context),
+                Expanded(
+                  child: BlocBuilder<AzkarBloc, AzkarState>(
+                    builder: (context, state) {
+                      if (state is AzkarLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is AzkarError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 64,
+                                color: Theme.of(context).colorScheme.error,
                               ),
-                              child: Text(
-                                state.message,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyMedium,
+                              const SizedBox(height: 16),
+                              Text(
+                                'Failed to load azkar',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            ElevatedButton(
-                              onPressed: () {
-                                context.read<AzkarBloc>().add(
-                                  const RefreshAzkar(),
-                                );
-                              },
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else if (state is AzkarLoaded) {
-                      return _buildAzkarContent(
-                        context,
-                        state.azkarList,
-                        state.completedAzkarIds,
-                      );
-                    } else {
-                      return const Center(child: Text('No azkar available'));
-                    }
-                  },
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                ),
+                                child: Text(
+                                  state.message,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              ElevatedButton(
+                                onPressed: () {
+                                  context.read<AzkarBloc>().add(
+                                    const RefreshAzkar(),
+                                  );
+                                },
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else if (state is AzkarLoaded) {
+                        return _buildAzkarContent(
+                          context,
+                          state.azkarList,
+                          state.completedAzkarIds,
+                        );
+                      } else {
+                        return const Center(child: Text('No azkar available'));
+                      }
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -124,52 +147,48 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage> {
   Widget _buildAppBar(BuildContext context) {
     String title = 'أذكار';
     if (widget.mood != null) {
-      title = 'أذكار • ${_getMoodDisplayName(widget.mood!)}';
+      title = 'الاذكار التي تقال عند ${_getMoodDisplayName(widget.mood!)}';
     } else if (widget.category != null) {
       title = _getCategoryDisplayName(widget.category!);
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 120,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.background,
+        border: Border(
+          bottom: BorderSide(
+            color: _getMoodColor(context).withOpacity(0.3),
+            width: 4.0,
+          ),
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+      ),
       child: Row(
         children: [
+          // Clean back button
           IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => context.pop(),
+            tooltip: 'رجوع',
           ),
-          const SizedBox(width: 8),
+          // Centered title
           Expanded(
             child: Text(
               title,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
               textDirection: TextDirection.rtl,
+              textAlign: TextAlign.center,
             ),
-          ),
-          IconButton(
-            icon: Icon(_isSearchMode ? Icons.close : Icons.search),
-            onPressed: () {
-              setState(() {
-                _isSearchMode = !_isSearchMode;
-                if (!_isSearchMode) {
-                  _searchController.clear();
-                  _reloadAzkar();
-                }
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.bookmark_border),
-            onPressed: () {
-              // TODO: Implement bookmark functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              // TODO: Implement share functionality
-            },
           ),
         ],
       ),
@@ -214,14 +233,26 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage> {
     }
   }
 
-  void _reloadAzkar() {
+  Color _getMoodColor(BuildContext context) {
     if (widget.mood != null) {
-      context.read<AzkarBloc>().add(LoadAzkarByMood(widget.mood!));
-    } else if (widget.category != null) {
-      context.read<AzkarBloc>().add(LoadAzkarByCategory(widget.category!));
-    } else {
-      context.read<AzkarBloc>().add(const LoadAzkar());
+      switch (widget.mood!) {
+        case 'happy':
+          return Colors.orange;
+        case 'sad':
+          return Colors.blue;
+        case 'anxious':
+          return Colors.purple;
+        case 'grateful':
+          return Colors.green;
+        case 'stressed':
+          return Colors.red;
+        case 'peaceful':
+          return Colors.teal;
+        default:
+          return Theme.of(context).colorScheme.primary;
+      }
     }
+    return Theme.of(context).colorScheme.primary;
   }
 
   Widget _buildAzkarContent(
@@ -235,193 +266,241 @@ class _AzkarDisplayPageState extends State<AzkarDisplayPage> {
 
     return Column(
       children: [
-        // Progress indicator
-        Container(
-          margin: const EdgeInsets.all(16),
-          child: GlassyContainer(
-            padding: const EdgeInsets.all(16),
-            child: LinearProgressIndicator(
-              value: ((_currentIndex + 1) / azkarList.length),
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-        ),
         // Azkar display
         Expanded(
           child: PageView.builder(
             controller: _pageController,
+            reverse: true,
             itemCount: azkarList.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
             itemBuilder: (context, index) {
               final azkar = azkarList[index];
-              return Padding(
+              return SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                child: AzkarCard(
-                  azkar: azkar,
-                  isCompleted: azkar.id != null
-                      ? completedIds.contains(azkar.id!)
-                      : false,
-                  onCompleted: () {
-                    if (azkar.id != null) {
-                      context.read<AzkarBloc>().add(
-                        MarkAzkarAsCompleted(azkar.id!),
-                      );
-                    }
-                  },
-                  onIncomplete: () {
-                    if (azkar.id != null) {
-                      context.read<AzkarBloc>().add(
-                        MarkAzkarAsIncomplete(azkar.id!),
-                      );
-                    }
-                  },
+                child: Column(
+                  children: [
+                    // Azkar text
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+
+                      child: Text(
+                        azkar.arabicText,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          height: 2.2,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontFamily: 'Amiri',
+                        ),
+                        textAlign: TextAlign.center,
+                        textDirection: TextDirection.rtl,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 60,
+                    ), // Space between text and counter
+                    // Circular counter
+                    _buildCounterCircle(azkar, index),
+                    const SizedBox(
+                      height: 20,
+                    ), // Space between counter and repetition text
+                    _buildRepetitionText(azkar, index),
+                  ],
                 ),
               );
             },
-          ),
-        ),
-        // Navigation buttons
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: _currentIndex > 0
-                    ? () => _navigateToIndex(_currentIndex - 1)
-                    : null,
-                child: const Text('Previous'),
-              ),
-              ElevatedButton(
-                onPressed: _currentIndex < azkarList.length - 1
-                    ? () => _navigateToIndex(_currentIndex + 1)
-                    : null,
-                child: const Text('Next'),
-              ),
-            ],
           ),
         ),
       ],
     );
   }
 
-  void _navigateToIndex(int index) {
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
-  }
+  Widget _buildCounterCircle(Azkar azkar, int azkarIndex) {
+    final currentCount = _azkarCounts[azkarIndex] ?? 0;
+    final isCompleted = _azkarCompleted[azkarIndex] ?? false;
+    final progress = currentCount / azkar.repetitions;
+    final categoryColor = Theme.of(context).colorScheme.primary;
 
-  Widget _buildSearchBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: GlassyContainer(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: TextField(
-          controller: _searchController,
-          decoration: const InputDecoration(
-            hintText: 'Search azkar...',
-            border: InputBorder.none,
-            prefixIcon: Icon(Icons.search),
-          ),
-          onChanged: (query) {
-            if (query.isNotEmpty) {
-              context.read<AzkarBloc>().add(SearchAzkar(query));
-            } else {
-              context.read<AzkarBloc>().add(
-                widget.mood != null
-                    ? LoadAzkarByMood(widget.mood!)
-                    : const LoadAzkar(),
-              );
-            }
-          },
+    return Center(
+      child: Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: categoryColor.withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Progress indicator
+            SizedBox(
+              width: 70,
+              height: 70,
+              child: CircularProgressIndicator(
+                value: progress.clamp(0.0, 1.0),
+                strokeWidth: 4,
+                backgroundColor: categoryColor.withOpacity(0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  isCompleted ? Colors.green : categoryColor,
+                ),
+                strokeCap: StrokeCap.round,
+              ),
+            ),
+            // Counter button
+            ScaleTransition(
+              scale: _pulseAnimation,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: isCompleted
+                      ? null
+                      : () => _incrementCounter(azkar, azkarIndex),
+                  borderRadius: BorderRadius.circular(50),
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    child: Center(
+                      child: isCompleted
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 24,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'تم',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textDirection: TextDirection.rtl,
+                                ),
+                              ],
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '$currentCount',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Container(
+                                  width: 20,
+                                  height: 1.5,
+                                  color: Colors.white.withOpacity(0.6),
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 2,
+                                  ),
+                                ),
+                                Text(
+                                  '${azkar.repetitions}',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.7),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterChips(BuildContext context) {
-    final categories = [
-      'All',
-      'Morning',
-      'Evening',
-      'Gratitude',
-      'Peace',
-      'Stress Relief',
-      'Protection',
-    ];
+  Widget _buildRepetitionText(Azkar azkar, int azkarIndex) {
+    final isCompleted = _azkarCompleted[azkarIndex] ?? false;
+    final categoryColor = _getMoodColor(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = _selectedCategory == category;
-
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(category),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  _selectedCategory = category;
-                });
-
-                if (category == 'All') {
-                  context.read<AzkarBloc>().add(
-                    widget.mood != null
-                        ? LoadAzkarByMood(widget.mood!)
-                        : const LoadAzkar(),
-                  );
-                } else {
-                  // Map display names to database keys
-                  String categoryKey = category.toLowerCase();
-                  switch (category) {
-                    case 'Stress Relief':
-                      categoryKey = 'stress_relief';
-                      break;
-                    case 'Morning':
-                      categoryKey = 'morning';
-                      break;
-                    case 'Evening':
-                      categoryKey = 'evening';
-                      break;
-                    case 'Gratitude':
-                      categoryKey = 'gratitude';
-                      break;
-                    case 'Peace':
-                      categoryKey = 'peace';
-                      break;
-                    case 'Protection':
-                      categoryKey = 'protection';
-                      break;
-                  }
-                  context.read<AzkarBloc>().add(
-                    LoadAzkarByCategory(categoryKey),
-                  );
-                }
-              },
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              selectedColor: Theme.of(
-                context,
-              ).colorScheme.primary.withOpacity(0.2),
-              checkmarkColor: Theme.of(context).colorScheme.primary,
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: (isCompleted ? Colors.green : categoryColor).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: (isCompleted ? Colors.green : categoryColor).withOpacity(
+              0.3,
             ),
-          );
-        },
+            width: 1,
+          ),
+        ),
+        child: Text(
+          'يُكرر ${azkar.repetitions} ${_getRepetitionWord(azkar.repetitions)}',
+          style: TextStyle(
+            color: isCompleted ? Colors.green.shade700 : categoryColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.rtl,
+        ),
       ),
     );
+  }
+
+  String _getRepetitionWord(int count) {
+    if (count == 1) {
+      return 'مرة';
+    } else if (count == 2) {
+      return 'مرتين';
+    } else {
+      return 'مرات';
+    }
+  }
+
+  void _incrementCounter(Azkar azkar, int azkarIndex) {
+    final currentCount = _azkarCounts[azkarIndex] ?? 0;
+    final isCompleted = _azkarCompleted[azkarIndex] ?? false;
+
+    if (currentCount < azkar.repetitions && !isCompleted) {
+      setState(() {
+        _azkarCounts[azkarIndex] = currentCount + 1;
+        _azkarCompleted[azkarIndex] =
+            _azkarCounts[azkarIndex]! >= azkar.repetitions;
+      });
+
+      // Pulse animation
+      _pulseController.forward().then((_) {
+        _pulseController.reverse();
+      });
+
+      // Show completion message
+      if (_azkarCompleted[azkarIndex]!) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'بارك الله فيك! تم الانتهاء من الذكر',
+              textDirection: TextDirection.rtl,
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    }
   }
 }

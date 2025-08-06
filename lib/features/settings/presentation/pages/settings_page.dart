@@ -124,10 +124,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       // Footer
                       Center(
                         child: Text(
-                          '💙Made with love by Ektfaa💙',
+                          'Made w luv by Ektfaa🩷',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: Colors.grey[300],
                             fontWeight: FontWeight.w500,
                           ),
                           textAlign: TextAlign.center,
@@ -175,12 +175,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                  colors: [const Color(0xFFF8BBD9), const Color(0xFFE1BEE7)],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                    color: const Color(0xFFF8BBD9).withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -203,7 +203,7 @@ class _SettingsPageState extends State<SettingsPage> {
               'عضو منذ يناير 2024',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: Colors.grey[200],
                 fontWeight: FontWeight.w500,
               ),
               textDirection: TextDirection.rtl,
@@ -904,13 +904,36 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showBackupDialog() {
+    final backupColor = Color.lerp(_getGradientColor(2), Colors.black, 0.2)!;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'إنشاء نسخة احتياطية',
-          textDirection: TextDirection.rtl,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: backupColor.withOpacity(0.3), width: 2),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'إنشاء نسخة احتياطية',
+              textDirection: TextDirection.rtl,
+              style: TextStyle(fontWeight: FontWeight.bold, color: backupColor),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: backupColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.backup, color: backupColor, size: 20),
+            ),
+          ],
         ),
         content: Text(
           'هل تريد إنشاء نسخة احتياطية من بياناتك؟',
@@ -930,12 +953,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     'تم إنشاء النسخة الاحتياطية بنجاح',
                     textDirection: TextDirection.rtl,
                   ),
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: backupColor,
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: backupColor,
               foregroundColor: Colors.white,
             ),
             child: Text('موافق', textDirection: TextDirection.rtl),
@@ -946,13 +969,39 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showRestoreDialog() {
+    final restoreColor = Color.lerp(_getGradientColor(8), Colors.black, 0.2)!;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'استعادة البيانات',
-          textDirection: TextDirection.rtl,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: restoreColor.withOpacity(0.3), width: 2),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'استعادة البيانات',
+              textDirection: TextDirection.rtl,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: restoreColor,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: restoreColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.cloud_download, color: restoreColor, size: 20),
+            ),
+          ],
         ),
         content: Text(
           'هل تريد استعادة البيانات من النسخة الاحتياطية؟ سيتم استبدال البيانات الحالية.',
@@ -972,12 +1021,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     'تم استعادة البيانات بنجاح',
                     textDirection: TextDirection.rtl,
                   ),
-                  backgroundColor: const Color(0xFFF59E0B),
+                  backgroundColor: restoreColor,
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
+              backgroundColor: restoreColor,
               foregroundColor: Colors.white,
             ),
             child: Text('استعادة', textDirection: TextDirection.rtl),
@@ -988,13 +1037,36 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showAboutDialog() {
+    final aboutColor = Color.lerp(_getGradientColor(9), Colors.black, 0.2)!;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'حول تطبيق سكينة',
-          textDirection: TextDirection.rtl,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: aboutColor.withOpacity(0.3), width: 2),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'حول تطبيق سكينة',
+              textDirection: TextDirection.rtl,
+              style: TextStyle(fontWeight: FontWeight.bold, color: aboutColor),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: aboutColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.info, color: aboutColor, size: 20),
+            ),
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1004,7 +1076,7 @@ class _SettingsPageState extends State<SettingsPage> {
               height: 60,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                  colors: [aboutColor, aboutColor.withOpacity(0.7)],
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -1012,10 +1084,27 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'تطبيق سكينة للأذكار\nالإصدار 1.0.0\n\nتطبيق يساعدك على ذكر الله والحفاظ على الأذكار اليومية\n',
+              'تطبيق سكينة للأذكار\nالإصدار 1.0.0\n\nتطبيق يساعدك على ذكر الله والحفاظ على الأذكار اليومية\nويذكرك بالأذكار المناسبة حسب حالتك النفسية ومشاعرك\n',
               textDirection: TextDirection.rtl,
               textAlign: TextAlign.center,
-              style: TextStyle(height: 1.5),
+              style: TextStyle(height: 1.5, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+
+              child: Text(
+                'صدقة جارية لروح أبي أحمد كمال رحمة الله عليه',
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  height: 1.4,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: aboutColor,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
             ),
           ],
         ),
@@ -1023,7 +1112,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: aboutColor,
               foregroundColor: Colors.white,
             ),
             child: Text('موافق', textDirection: TextDirection.rtl),
@@ -1034,13 +1123,36 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showHelpDialog() {
+    final helpColor = Color.lerp(_getGradientColor(0), Colors.black, 0.2)!;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'المساعدة والدعم',
-          textDirection: TextDirection.rtl,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: helpColor.withOpacity(0.3), width: 2),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'المساعدة والدعم',
+              textDirection: TextDirection.rtl,
+              style: TextStyle(fontWeight: FontWeight.bold, color: helpColor),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: helpColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.help, color: helpColor, size: 20),
+            ),
+          ],
         ),
         content: Text(
           'إذا كنت بحاجة للمساعدة، يمكنك التواصل معنا عبر:\n\n• البريد الإلكتروني: support@sakinah.app\n• الموقع الإلكتروني: www.sakinah.app\n• الهاتف: +966123456789',
@@ -1051,7 +1163,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: helpColor,
               foregroundColor: Colors.white,
             ),
             child: Text('موافق', textDirection: TextDirection.rtl),
@@ -1062,13 +1174,36 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showTermsDialog() {
+    final termsColor = Color.lerp(_getGradientColor(1), Colors.black, 0.2)!;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'شروط الاستخدام',
-          textDirection: TextDirection.rtl,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: termsColor.withOpacity(0.3), width: 2),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'شروط الاستخدام',
+              textDirection: TextDirection.rtl,
+              style: TextStyle(fontWeight: FontWeight.bold, color: termsColor),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: termsColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.description, color: termsColor, size: 20),
+            ),
+          ],
         ),
         content: SingleChildScrollView(
           child: Text(
@@ -1081,7 +1216,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
+              backgroundColor: termsColor,
               foregroundColor: Colors.white,
             ),
             child: Text('موافق', textDirection: TextDirection.rtl),
@@ -1092,13 +1227,36 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showRatingDialog() {
+    final ratingColor = Color.lerp(_getGradientColor(6), Colors.black, 0.2)!;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'تقييم التطبيق',
-          textDirection: TextDirection.rtl,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: ratingColor.withOpacity(0.3), width: 2),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'تقييم التطبيق',
+              textDirection: TextDirection.rtl,
+              style: TextStyle(fontWeight: FontWeight.bold, color: ratingColor),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: ratingColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.star, color: ratingColor, size: 20),
+            ),
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1112,11 +1270,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(5, (index) {
-                return Icon(
-                  Icons.star,
-                  color: const Color(0xFFF59E0B),
-                  size: 32,
-                );
+                return Icon(Icons.star, color: ratingColor, size: 32);
               }),
             ),
           ],
@@ -1135,12 +1289,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     'شكراً لتقييمك!',
                     textDirection: TextDirection.rtl,
                   ),
-                  backgroundColor: const Color(0xFFE91E63),
+                  backgroundColor: ratingColor,
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE91E63),
+              backgroundColor: ratingColor,
               foregroundColor: Colors.white,
             ),
             child: Text('تقييم', textDirection: TextDirection.rtl),
