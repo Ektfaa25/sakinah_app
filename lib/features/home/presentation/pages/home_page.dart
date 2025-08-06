@@ -258,332 +258,336 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDarkTheme ? null : Colors.white,
-              gradient: isDarkTheme
-                  ? LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        AppColors.darkBackground.withOpacity(0.9),
-                        AppColors.darkSurface.withOpacity(0.9),
-                      ],
-                    )
-                  : null,
-              boxShadow: [
-                BoxShadow(
-                  color: isDarkTheme
-                      ? Colors.black.withOpacity(0.15) // Reduced from 0.3
-                      : Colors.black.withOpacity(0.04), // Reduced from 0.1
-                  blurRadius: 6, // Reduced from 10
-                  offset: const Offset(0, 2), // Reduced from 4
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Weekly progress tracker at the top (no spacing)
-                _buildDateTracker(context),
+    return Directionality(
+      textDirection: TextDirection.rtl, // Force RTL for entire page
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.darkBackground.withOpacity(0.9),
+                          AppColors.darkSurface.withOpacity(0.9),
+                        ],
+                      )
+                    : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: isDarkTheme
+                        ? Colors.black.withOpacity(0.15) // Reduced from 0.3
+                        : Colors.black.withOpacity(0.04), // Reduced from 0.1
+                    blurRadius: 6, // Reduced from 10
+                    offset: const Offset(0, 2), // Reduced from 4
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Weekly progress tracker at the top (no spacing)
+                  _buildDateTracker(context),
 
-                // Add spacing after progress tracker
-                const SizedBox(height: 24),
-                // Quick mood selection section (no horizontal padding)
-                Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'كيف تشعر الآن؟', // How do you feel now?
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onBackground, // Use theme text color
+                  // Add spacing after progress tracker
+                  const SizedBox(height: 24),
+                  // Quick mood selection section (no horizontal padding)
+                  Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'كيف تشعر الآن؟', // How do you feel now?
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onBackground, // Use theme text color
+                          ),
+                          textDirection: TextDirection.ltr,
                         ),
-                        textDirection: TextDirection.rtl,
-                      ),
-                      const SizedBox(height: 16),
-                      // Horizontal mood selector
-                      SizedBox(
-                        height: 80,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          reverse: true, // Enable RTL scrolling
-                          itemCount: 6, // Show first 6 moods
-                          itemBuilder: (context, index) {
-                            final moods = [
-                              {
-                                'name': 'happy',
-                                'emoji': '😊',
-                                'nameAr': 'سعيد',
-                              },
-                              {'name': 'sad', 'emoji': '😔', 'nameAr': 'حزين'},
-                              {
-                                'name': 'anxious',
-                                'emoji': '😰',
-                                'nameAr': 'قلق',
-                              },
-                              {
-                                'name': 'grateful',
-                                'emoji': '🙏',
-                                'nameAr': 'شاكر',
-                              },
-                              {
-                                'name': 'stressed',
-                                'emoji': '😤',
-                                'nameAr': 'متوتر',
-                              },
-                              {
-                                'name': 'peaceful',
-                                'emoji': '😌',
-                                'nameAr': 'مطمئن',
-                              },
-                            ];
+                        const SizedBox(height: 16),
+                        // Horizontal mood selector
+                        SizedBox(
+                          height: 80,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            reverse:
+                                false, // Normal LTR scrolling to show happy on the right
+                            itemCount: 6, // Show first 6 moods
+                            itemBuilder: (context, index) {
+                              final moods = [
+                                {
+                                  'name': 'happy',
+                                  'emoji': '😊',
+                                  'nameAr': 'سعيد',
+                                },
+                                {
+                                  'name': 'sad',
+                                  'emoji': '😔',
+                                  'nameAr': 'حزين',
+                                },
+                                {
+                                  'name': 'anxious',
+                                  'emoji': '😰',
+                                  'nameAr': 'قلق',
+                                },
+                                {
+                                  'name': 'grateful',
+                                  'emoji': '🙏',
+                                  'nameAr': 'شاكر',
+                                },
+                                {
+                                  'name': 'stressed',
+                                  'emoji': '😤',
+                                  'nameAr': 'متوتر',
+                                },
+                                {
+                                  'name': 'peaceful',
+                                  'emoji': '😌',
+                                  'nameAr': 'مطمئن',
+                                },
+                              ];
 
-                            final mood = moods[index];
-                            return Container(
-                              key: ValueKey('mood_${mood['name']}'),
-                              width: 65,
-                              margin: const EdgeInsets.only(right: 12),
-                              child: GestureDetector(
-                                onTap: () => context.push(
-                                  '${AppRoutes.azkarDisplay}?mood=${mood['name']}',
-                                ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: _getMoodColor(
-                                      mood['name'] as String,
-                                    ).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
+                              final mood = moods[index];
+                              return Container(
+                                key: ValueKey('mood_${mood['name']}'),
+                                width: 65,
+                                margin: const EdgeInsets.only(right: 12),
+                                child: GestureDetector(
+                                  onTap: () => context.push(
+                                    '${AppRoutes.azkarDisplay}?mood=${mood['name']}',
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
                                       color: _getMoodColor(
                                         mood['name'] as String,
-                                      ).withOpacity(0.3),
-                                      width: 1,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: _getMoodColor(
+                                          mood['name'] as String,
+                                        ).withOpacity(0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          mood['emoji'] as String,
+                                          style: const TextStyle(fontSize: 24),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          mood['nameAr'] as String,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: _getMoodColor(
+                                              mood['name'] as String,
+                                            ),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        mood['emoji'] as String,
-                                        style: const TextStyle(fontSize: 24),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        mood['nameAr'] as String,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: _getMoodColor(
-                                            mood['name'] as String,
-                                          ),
-                                        ),
-                                        textDirection: TextDirection.rtl,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Rest of content with horizontal padding
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 32),
+
+                        // Azkar categories section with + and heart icons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'الاذكار', // Azkar
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onBackground, // Use theme text color
+                              ),
+                              textDirection: TextDirection.rtl,
+                            ),
+                            // Group of icons (plus and heart)
+                            Row(
+                              children: [
+                                // Small + icon button to show all categories
+                                GestureDetector(
+                                  onTap: () =>
+                                      context.go(AppRoutes.azkarCategories),
+                                  child: Text(
+                                    'عرض الكل',
+                                    // Azkar
+                                    style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      height: 1.5,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.normal,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface, // Use theme text color
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                              ],
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                        const SizedBox(height: 16),
 
-                // Rest of content with horizontal padding
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 32),
-
-                      // Azkar categories section with + and heart icons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Group of icons (plus and heart)
-                          Row(
+                        // Azkar category cards - now using a fixed height container
+                        SizedBox(
+                          height:
+                              600, // Increased height to show all 6 cards (3 rows)
+                          child: GridView.count(
+                            physics:
+                                const NeverScrollableScrollPhysics(), // Disable internal scrolling
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 1.1,
                             children: [
-                              // Small + icon button to show all categories
-                              GestureDetector(
+                              _AzkarCategoryCard(
+                                key: const ValueKey('morning'),
+                                title: 'أذكار الصباح',
+                                subtitle: '',
+                                icon: Icons.wb_sunny,
+                                color: isDarkTheme
+                                    ? _getColorFromHex(
+                                        '#F5F2B8',
+                                      ) // Powder yellow for dark background
+                                    : _getColorFromHex(
+                                        '#FFFBCC',
+                                      ), // Powder yellow for light background
+                                categoryId: 'morning',
                                 onTap: () =>
-                                    context.go(AppRoutes.azkarCategories),
-                                child: Text(
-                                  'عرض الكل',
-
-                                  // Azkar
-                                  style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    height: 1.5,
-
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.normal,
-
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface, // Use theme text color
-                                  ),
-                                  textDirection: TextDirection.rtl,
+                                    _navigateToAzkarDetail(context, 'morning'),
+                              ),
+                              _AzkarCategoryCard(
+                                key: const ValueKey('evening'),
+                                title: 'أذكار المساء',
+                                subtitle: '',
+                                icon: Icons.nights_stay,
+                                color: isDarkTheme
+                                    ? _getColorFromHex(
+                                        '#B8D4F5',
+                                      ) // Powder blue for dark background
+                                    : _getColorFromHex(
+                                        '#CCE7FF',
+                                      ), // Powder blue for light background
+                                categoryId: 'evening',
+                                onTap: () =>
+                                    _navigateToAzkarDetail(context, 'evening'),
+                              ),
+                              _AzkarCategoryCard(
+                                key: const ValueKey('waking_up'),
+                                title: 'أذكار الاستيقاظ',
+                                subtitle: '',
+                                icon: Icons.light_mode,
+                                color: isDarkTheme
+                                    ? _getColorFromHex(
+                                        '#E8CDB8',
+                                      ) // Muted warm peach for dark background
+                                    : _getColorFromHex(
+                                        '#FDE4CF',
+                                      ), // Original bright peach for light background
+                                categoryId: 'waking_up',
+                                onTap: () => _navigateToAzkarDetail(
+                                  context,
+                                  'waking_up',
+                                ),
+                              ),
+                              _AzkarCategoryCard(
+                                key: const ValueKey('sleep'),
+                                title: 'أذكار النوم',
+                                subtitle: '',
+                                icon: Icons.bedtime,
+                                color: isDarkTheme
+                                    ? _getColorFromHex(
+                                        '#89C5D9',
+                                      ) // Muted cyan for dark background
+                                    : _getColorFromHex(
+                                        '#90DBF4',
+                                      ), // Original bright cyan for light background
+                                categoryId: 'sleep',
+                                onTap: () =>
+                                    _navigateToAzkarDetail(context, 'sleep'),
+                              ),
+                              _AzkarCategoryCard(
+                                key: const ValueKey('prayer_before_salam'),
+                                title: 'أذكار الصلاة',
+                                subtitle: '',
+                                icon: Icons.mosque,
+                                color: isDarkTheme
+                                    ? _getColorFromHex(
+                                        '#94D9CC',
+                                      ) // Muted mint green for dark background
+                                    : _getColorFromHex(
+                                        '#98F5E1',
+                                      ), // Original bright mint for light background
+                                categoryId: 'prayer_before_salam',
+                                onTap: () => _navigateToAzkarDetail(
+                                  context,
+                                  'prayer_before_salam',
+                                ),
+                              ),
+                              _AzkarCategoryCard(
+                                key: const ValueKey('after_prayer'),
+                                title: 'أذكار بعد الصلاة',
+                                subtitle: '',
+                                icon: Icons.check_circle,
+                                color: isDarkTheme
+                                    ? _getColorFromHex(
+                                        '#B0D9B8',
+                                      ) // Muted light green for dark background
+                                    : _getColorFromHex(
+                                        '#B9FBC0',
+                                      ), // Original bright green for light background
+                                categoryId: 'after_prayer',
+                                onTap: () => _navigateToAzkarDetail(
+                                  context,
+                                  'after_prayer',
                                 ),
                               ),
                             ],
                           ),
-                          // Azkar title
-                          Text(
-                            'الاذكار', // Azkar
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onBackground, // Use theme text color
-                            ),
-                            textDirection: TextDirection.rtl,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Azkar category cards - now using a fixed height container
-                      SizedBox(
-                        height:
-                            600, // Increased height to show all 6 cards (3 rows)
-                        child: GridView.count(
-                          physics:
-                              const NeverScrollableScrollPhysics(), // Disable internal scrolling
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 1.1,
-                          children: [
-                            _AzkarCategoryCard(
-                              key: const ValueKey('morning'),
-                              title: 'أذكار الصباح',
-                              subtitle: '',
-                              icon: Icons.wb_sunny,
-                              color: isDarkTheme
-                                  ? _getColorFromHex(
-                                      '#F5F2B8',
-                                    ) // Powder yellow for dark background
-                                  : _getColorFromHex(
-                                      '#FFFBCC',
-                                    ), // Powder yellow for light background
-                              categoryId: 'morning',
-                              onTap: () =>
-                                  _navigateToAzkarDetail(context, 'morning'),
-                            ),
-                            _AzkarCategoryCard(
-                              key: const ValueKey('evening'),
-                              title: 'أذكار المساء',
-                              subtitle: '',
-                              icon: Icons.nights_stay,
-                              color: isDarkTheme
-                                  ? _getColorFromHex(
-                                      '#B8D4F5',
-                                    ) // Powder blue for dark background
-                                  : _getColorFromHex(
-                                      '#CCE7FF',
-                                    ), // Powder blue for light background
-                              categoryId: 'evening',
-                              onTap: () =>
-                                  _navigateToAzkarDetail(context, 'evening'),
-                            ),
-                            _AzkarCategoryCard(
-                              key: const ValueKey('waking_up'),
-                              title: 'أذكار الاستيقاظ',
-                              subtitle: '',
-                              icon: Icons.light_mode,
-                              color: isDarkTheme
-                                  ? _getColorFromHex(
-                                      '#E8CDB8',
-                                    ) // Muted warm peach for dark background
-                                  : _getColorFromHex(
-                                      '#FDE4CF',
-                                    ), // Original bright peach for light background
-                              categoryId: 'waking_up',
-                              onTap: () =>
-                                  _navigateToAzkarDetail(context, 'waking_up'),
-                            ),
-                            _AzkarCategoryCard(
-                              key: const ValueKey('sleep'),
-                              title: 'أذكار النوم',
-                              subtitle: '',
-                              icon: Icons.bedtime,
-                              color: isDarkTheme
-                                  ? _getColorFromHex(
-                                      '#89C5D9',
-                                    ) // Muted cyan for dark background
-                                  : _getColorFromHex(
-                                      '#90DBF4',
-                                    ), // Original bright cyan for light background
-                              categoryId: 'sleep',
-                              onTap: () =>
-                                  _navigateToAzkarDetail(context, 'sleep'),
-                            ),
-                            _AzkarCategoryCard(
-                              key: const ValueKey('prayer_before_salam'),
-                              title: 'أذكار الصلاة',
-                              subtitle: '',
-                              icon: Icons.mosque,
-                              color: isDarkTheme
-                                  ? _getColorFromHex(
-                                      '#94D9CC',
-                                    ) // Muted mint green for dark background
-                                  : _getColorFromHex(
-                                      '#98F5E1',
-                                    ), // Original bright mint for light background
-                              categoryId: 'prayer_before_salam',
-                              onTap: () => _navigateToAzkarDetail(
-                                context,
-                                'prayer_before_salam',
-                              ),
-                            ),
-                            _AzkarCategoryCard(
-                              key: const ValueKey('after_prayer'),
-                              title: 'أذكار بعد الصلاة',
-                              subtitle: '',
-                              icon: Icons.check_circle,
-                              color: isDarkTheme
-                                  ? _getColorFromHex(
-                                      '#B0D9B8',
-                                    ) // Muted light green for dark background
-                                  : _getColorFromHex(
-                                      '#B9FBC0',
-                                    ), // Original bright green for light background
-                              categoryId: 'after_prayer',
-                              onTap: () => _navigateToAzkarDetail(
-                                context,
-                                'after_prayer',
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
-  }
+  } // Date tracker widget methods
 
-  // Date tracker widget methods
   Widget _buildDateTracker(BuildContext context) {
     // Try to get the ProgressBloc from context, but don't require it
     try {

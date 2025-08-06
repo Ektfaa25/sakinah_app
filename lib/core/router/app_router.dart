@@ -384,21 +384,42 @@ class _MainShellState extends State<_MainShell> {
     _updateCurrentIndex();
   }
 
+  @override
+  void didUpdateWidget(_MainShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateCurrentIndex();
+  }
+
   void _updateCurrentIndex() {
     final location = GoRouterState.of(context).uri.path;
-    setState(() {
-      if (location == AppRoutes.settings) {
-        _currentIndex = 0; // Settings is at array index 0
-      } else if (location == AppRoutes.progress) {
-        _currentIndex = 1; // Progress is at array index 1
-      } else if (location == AppRoutes.azkarFavorites) {
-        _currentIndex = 2; // Favorites is at array index 2
-      } else if (location == AppRoutes.azkarCategories) {
-        _currentIndex = 3; // Categories is at array index 3
-      } else if (location == AppRoutes.home) {
-        _currentIndex = 4; // Home is at array index 4 (rightmost)
-      }
-    });
+    int newIndex;
+
+    // RTL index mapping - Settings on left (index 0), Home on right (index 4)
+    switch (location) {
+      case '/settings':
+        newIndex = 0; // Settings (leftmost in RTL)
+        break;
+      case '/progress':
+        newIndex = 1; // Progress
+        break;
+      case '/azkar-favorites':
+        newIndex = 2; // Favorites (center)
+        break;
+      case '/azkar-categories':
+        newIndex = 3; // Categories
+        break;
+      case '/home':
+        newIndex = 4; // Home (rightmost in RTL)
+        break;
+      default:
+        newIndex = 4; // Default to home
+    }
+
+    if (_currentIndex != newIndex) {
+      setState(() {
+        _currentIndex = newIndex;
+      });
+    }
   }
 
   @override
@@ -458,11 +479,11 @@ class _MainShellState extends State<_MainShell> {
           fontSize: 11,
         ),
         items: [
-          _buildStyledNavItem(Icons.settings, 'الإعدادات', 5, context),
-          _buildStyledNavItem(Icons.show_chart, 'التقدم', 4, context),
-          _buildStyledNavItem(Icons.favorite, 'المفضلة', 3, context),
-          _buildStyledNavItem(Icons.grid_view, 'الفئات', 2, context),
-          _buildStyledNavItem(Icons.home, 'الرئيسية', 1, context),
+          _buildStyledNavItem(Icons.settings, 'الإعدادات', 0, context),
+          _buildStyledNavItem(Icons.show_chart, 'التقدم', 1, context),
+          _buildStyledNavItem(Icons.favorite, 'المفضلة', 2, context),
+          _buildStyledNavItem(Icons.grid_view, 'الفئات', 3, context),
+          _buildStyledNavItem(Icons.home, 'الرئيسية', 4, context),
         ],
         onTap: _onBottomNavTap,
       ),
@@ -515,25 +536,26 @@ class _MainShellState extends State<_MainShell> {
   }
 
   void _onBottomNavTap(int index) {
+    // RTL index mapping - Settings on left (index 0), Home on right (index 4)
     switch (index) {
       case 0:
-        // Settings (الإعدادات) - tap index 0 -> custom index 5
+        // Settings (leftmost in RTL)
         context.go(AppRoutes.settings);
         break;
       case 1:
-        // Progress (التقدم) - tap index 1 -> custom index 4
+        // Progress
         context.go(AppRoutes.progress);
         break;
       case 2:
-        // Favorites (المفضلة) - tap index 2 -> custom index 3
+        // Favorites (center)
         context.go(AppRoutes.azkarFavorites);
         break;
       case 3:
-        // Categories (الفئات) - tap index 3 -> custom index 2
+        // Categories
         context.go(AppRoutes.azkarCategories);
         break;
       case 4:
-        // Home (الرئيسية) - tap index 4 -> custom index 1 (rightmost)
+        // Home (rightmost in RTL)
         context.go(AppRoutes.home);
         break;
     }
@@ -558,20 +580,20 @@ class _MainShellState extends State<_MainShell> {
 
   Color _getCategoryColorForTab(int index) {
     switch (index) {
-      case 1: // Home (rightmost - custom index 1)
-        return _getColorFromHex(
-          '#FFD93D',
-        ); // Bright warm yellow like morning azkar
-      case 2: // Categories (custom index 2)
+      case 0: // Settings (leftmost in RTL)
+        return _getColorFromHex('#95E1A3'); // Bright light green for settings
+      case 1: // Progress
+        return _getColorFromHex('#4ECDC4'); // Vibrant mint green for progress
+      case 2: // Favorites (center)
+        return _getColorFromHex('#FF6B9D'); // Pink for favorites
+      case 3: // Categories
         return _getColorFromHex(
           '#6FB3FF',
         ); // Vibrant soft blue like evening azkar
-      case 3: // Favorites (center - custom index 3)
-        return _getColorFromHex('#FF6B9D'); // Pink for favorites
-      case 4: // Progress (custom index 4)
-        return _getColorFromHex('#4ECDC4'); // Vibrant mint green for progress
-      case 5: // Settings (leftmost - custom index 5)
-        return _getColorFromHex('#95E1A3'); // Bright light green for settings
+      case 4: // Home (rightmost in RTL)
+        return _getColorFromHex(
+          '#FFD93D',
+        ); // Bright warm yellow like morning azkar
       default:
         return _getGradientColor(index);
     }
