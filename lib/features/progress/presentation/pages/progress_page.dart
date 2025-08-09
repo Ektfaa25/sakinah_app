@@ -18,6 +18,7 @@ class ProgressPage extends StatefulWidget {
 class _ProgressPageState extends State<ProgressPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  int selectedYear = DateTime.now().year; // Track current selected year
 
   @override
   void initState() {
@@ -26,6 +27,11 @@ class _ProgressPageState extends State<ProgressPage>
 
     // Add listener to handle swipe gestures
     _tabController.addListener(() {
+      // Update indicator color immediately when tab starts changing
+      if (mounted) {
+        setState(() {});
+      }
+
       if (!_tabController.indexIsChanging) {
         // Tab animation has completed, load appropriate data
         // Add a small delay to ensure smooth animation completion
@@ -43,6 +49,22 @@ class _ProgressPageState extends State<ProgressPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Navigation methods for year selection
+  void _goToPreviousYear() {
+    setState(() {
+      selectedYear--;
+    });
+  }
+
+  void _goToNextYear() {
+    final currentYear = DateTime.now().year;
+    if (selectedYear < currentYear) {
+      setState(() {
+        selectedYear++;
+      });
+    }
   }
 
   // Helper method to load data based on tab index
@@ -126,7 +148,7 @@ class _ProgressPageState extends State<ProgressPage>
             unselectedLabelColor: isDarkTheme
                 ? Colors.grey[400]
                 : Colors.grey[600],
-            indicatorColor: const Color(0xFF6366F1),
+            indicatorColor: _getTabIndicatorColor(),
             indicatorWeight: 3,
             labelStyle: const TextStyle(
               fontWeight: FontWeight.w700,
@@ -211,7 +233,8 @@ class _ProgressPageState extends State<ProgressPage>
           );
         }
 
-        return const Center(child: Text('No progress data available'));
+        // Show loading for other states (when switching tabs)
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
@@ -253,27 +276,32 @@ class _ProgressPageState extends State<ProgressPage>
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.lerp(
-                      _getGradientColor(0),
-                      Colors.black,
-                      0.2,
-                    )!.withOpacity(0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    color: isDarkTheme
+                        ? Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.08)
+                        : Colors.grey.withOpacity(0.1),
+                    blurRadius: isDarkTheme ? 24 : 12,
+                    offset: Offset(0, isDarkTheme ? 8 : 4),
                     spreadRadius: 0,
                   ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+                  if (isDarkTheme)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
                 ],
                 border: Border.all(
-                  color: Color.lerp(
-                    _getGradientColor(0),
-                    Colors.black,
-                    0.2,
-                  )!.withOpacity(0.1),
+                  color: isDarkTheme
+                      ? Color.lerp(
+                          _getGradientColor(0),
+                          Colors.black,
+                          0.2,
+                        )!.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -339,27 +367,32 @@ class _ProgressPageState extends State<ProgressPage>
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.lerp(
-                      _getGradientColor(0),
-                      Colors.black,
-                      0.2,
-                    )!.withOpacity(0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    color: isDarkTheme
+                        ? Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.08)
+                        : Colors.grey.withOpacity(0.1),
+                    blurRadius: isDarkTheme ? 24 : 12,
+                    offset: Offset(0, isDarkTheme ? 8 : 4),
                     spreadRadius: 0,
                   ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+                  if (isDarkTheme)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
                 ],
                 border: Border.all(
-                  color: Color.lerp(
-                    _getGradientColor(0),
-                    Colors.black,
-                    0.2,
-                  )!.withOpacity(0.1),
+                  color: isDarkTheme
+                      ? Color.lerp(
+                          _getGradientColor(0),
+                          Colors.black,
+                          0.2,
+                        )!.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -677,7 +710,8 @@ class _ProgressPageState extends State<ProgressPage>
           return _buildWeeklyContent(context, state, l10n);
         }
 
-        return const Center(child: Text('No weekly data available'));
+        // Show loading for other states (when switching tabs)
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
@@ -697,12 +731,11 @@ class _ProgressPageState extends State<ProgressPage>
     );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16), // Reduced from 24 to 16
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 12),
-
+          const SizedBox(height: 8), // Reduced from 12 to 8
           // Weekly Overview Card
           FadeInDown(
             duration: const Duration(milliseconds: 600),
@@ -809,13 +842,11 @@ class _ProgressPageState extends State<ProgressPage>
             ),
           ),
 
-          const SizedBox(height: 32),
-
-          // Weekly Chart Card
+          const SizedBox(height: 24), // Reduced from 32 to 24
+          // Yearly Chart Card
           FadeInUp(
             duration: const Duration(milliseconds: 800),
             child: Container(
-              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: isDarkTheme ? null : Colors.white,
                 gradient: isDarkTheme
@@ -863,30 +894,107 @@ class _ProgressPageState extends State<ProgressPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Icon(
-                        Icons.bar_chart,
-                        color: isDarkTheme ? Colors.white : Colors.grey[600],
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'التقدم عبر الأشهر',
-                        style: TextStyle(
-                          color: isDarkTheme
-                              ? Colors.white
-                              : const Color(0xFF1A1A1A),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                  // Header with padding
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Year navigation controls (left side)
+                        Row(
+                          children: [
+                            // Previous year button
+                            IconButton(
+                              onPressed: _goToPreviousYear,
+                              icon: Icon(
+                                Icons.arrow_back_ios,
+                                color: isDarkTheme
+                                    ? Colors.white
+                                    : Colors.grey[700],
+                                size: 18,
+                              ),
+                              tooltip: 'السنة السابقة',
+                              padding: const EdgeInsets.all(8),
+                            ),
+                            // Current year display
+                            Text(
+                              '$selectedYear',
+                              style: TextStyle(
+                                color: isDarkTheme
+                                    ? Colors.white
+                                    : const Color(0xFF1A1A1A),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            // Next year button (disabled if current year)
+                            IconButton(
+                              onPressed: selectedYear >= DateTime.now().year
+                                  ? null
+                                  : _goToNextYear,
+                              icon: Icon(
+                                Icons.arrow_forward_ios,
+                                color: selectedYear >= DateTime.now().year
+                                    ? (isDarkTheme
+                                          ? Colors.grey[600]
+                                          : Colors.grey[400])
+                                    : (isDarkTheme
+                                          ? Colors.white
+                                          : Colors.grey[700]),
+                                size: 18,
+                              ),
+                              tooltip: 'السنة التالية',
+                              padding: const EdgeInsets.all(8),
+                            ),
+                          ],
                         ),
-                        textDirection: TextDirection.rtl,
-                      ),
-                    ],
+                        // Title and icon (right side in RTL)
+                        Row(
+                          textDirection: TextDirection.rtl,
+                          children: [
+                            Text(
+                              'التقدم السنوي',
+                              style: TextStyle(
+                                color: isDarkTheme
+                                    ? Colors.white
+                                    : const Color(0xFF1A1A1A),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textDirection: TextDirection.rtl,
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.bar_chart,
+                              color: isDarkTheme
+                                  ? Colors.white
+                                  : Colors.grey[600],
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  MonthlyProgressChart(monthlyProgress: state.weeklyProgress),
+                  // Chart with no padding - takes full width
+                  GestureDetector(
+                    onPanEnd: (details) {
+                      // Handle swipe gestures
+                      if (details.velocity.pixelsPerSecond.dx > 500) {
+                        // Swipe right - go to next year (if not current year)
+                        if (selectedYear < DateTime.now().year) {
+                          _goToNextYear();
+                        }
+                      } else if (details.velocity.pixelsPerSecond.dx < -500) {
+                        // Swipe left - go to previous year
+                        _goToPreviousYear();
+                      }
+                    },
+                    child: _buildYearlyBarChart(
+                      isDarkTheme,
+                      state.weeklyProgress,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -952,7 +1060,8 @@ class _ProgressPageState extends State<ProgressPage>
           return _buildMonthlyContent(context, state, l10n);
         }
 
-        return const Center(child: Text('No monthly data available'));
+        // Show loading for other states (when switching tabs)
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
@@ -1626,5 +1735,162 @@ class _ProgressPageState extends State<ProgressPage>
       hexColor = 'FF$hexColor'; // Add alpha channel
     }
     return Color(int.parse(hexColor, radix: 16));
+  }
+
+  /// Get tab indicator color based on current tab
+  Color _getTabIndicatorColor() {
+    switch (_tabController.index) {
+      case 0: // Year tab
+        return const Color(0xFFE91E63); // Pink/Magenta
+      case 1: // Month tab
+        return const Color(0xFF9C27B0); // Purple
+      case 2: // Day tab
+        return const Color(0xFF2196F3); // Blue
+      default:
+        return const Color(0xFF6366F1); // Default indigo
+    }
+  }
+
+  /// Build yearly bar chart showing monthly progress across the year
+  Widget _buildYearlyBarChart(bool isDarkTheme, List<dynamic> yearData) {
+    // Generate sample yearly data with Arabic month names
+    final monthNames = [
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
+    ];
+
+    // Create data based on selected year
+    final List<int> monthlyValues = List.generate(12, (index) {
+      final currentYear = DateTime.now().year;
+      final currentMonth = DateTime.now().month - 1;
+
+      if (selectedYear == currentYear) {
+        // Current year - only show data up to current month
+        if (index <= currentMonth) {
+          return (index + 1) * 15 + (index % 3) * 10; // Sample values
+        } else {
+          return 0; // Future months
+        }
+      } else if (selectedYear < currentYear) {
+        // Past years - show full year data
+        return (index + 1) * 12 + (selectedYear % 3) * 8 + (index % 4) * 6;
+      } else {
+        // Future years - no data
+        return 0;
+      }
+    });
+
+    final maxValue = monthlyValues.isNotEmpty && monthlyValues.any((v) => v > 0)
+        ? monthlyValues.reduce((a, b) => a > b ? a : b)
+        : 100;
+
+    return Container(
+      height: 250, // Increased height to accommodate year indicator
+      child: Column(
+        children: [
+          // Chart area - full width
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                12,
+                0,
+                12,
+                20,
+              ), // Added bottom padding for month labels
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: monthNames.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final month = entry.value;
+                  final value = monthlyValues[index];
+                  final height = maxValue > 0 ? (value / maxValue) * 140 : 0.0;
+
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 1,
+                      ), // Reduced padding between bars
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          // Value label
+                          if (value > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                '$value',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDarkTheme
+                                      ? Colors.white70
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          // Bar with key for animation reset when year changes
+                          AnimatedContainer(
+                            key: ValueKey('$selectedYear-$index'),
+                            duration: Duration(
+                              milliseconds: 800 + (index * 100),
+                            ),
+                            height: height,
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(3),
+                              ),
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  _getGradientColor(index),
+                                  _getGradientColor(index).withOpacity(0.7),
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _getGradientColor(
+                                    index,
+                                  ).withOpacity(0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // Month label
+                          Text(
+                            month,
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w500,
+                              color: isDarkTheme
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
+                            textDirection: TextDirection.rtl,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
