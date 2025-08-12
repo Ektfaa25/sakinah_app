@@ -20,7 +20,7 @@ abstract class ProgressRepository extends BaseRepository {
 
   /// Add azkar completion to today's progress
   Future<void> addAzkarCompletion({
-    required int azkarId,
+    required String azkarId,
     String? moodBefore,
     String? moodAfter,
     String? reflection,

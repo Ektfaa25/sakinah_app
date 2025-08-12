@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:sakinah_app/features/progress/domain/entities/user_progress.dart';
+import 'package:sakinah_app/core/storage/preferences_service.dart';
+import 'package:sakinah_app/features/azkar/data/services/azkar_database_adapter.dart';
+import '../../../../core/di/service_locator.dart';
 
 class MonthlyCalendar extends StatefulWidget {
   final List<UserProgress> monthlyProgress;
+  final DateTime? initialSelectedDate;
 
-  const MonthlyCalendar({super.key, required this.monthlyProgress});
+  const MonthlyCalendar({
+    super.key,
+    required this.monthlyProgress,
+    this.initialSelectedDate,
+  });
 
   @override
   State<MonthlyCalendar> createState() => _MonthlyCalendarState();
@@ -17,7 +25,18 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
   @override
   void initState() {
     super.initState();
-    currentMonth = DateTime.now();
+    // Set currentMonth to the month/year of the selected date, or current month
+    if (widget.initialSelectedDate != null) {
+      currentMonth = DateTime(
+        widget.initialSelectedDate!.year,
+        widget.initialSelectedDate!.month,
+        1,
+      );
+      // Set selectedDayIndex to the day number minus 1 (day 1 = index 0, day 2 = index 1, etc.)
+      selectedDayIndex = widget.initialSelectedDate!.day - 1;
+    } else {
+      currentMonth = DateTime.now();
+    }
   }
 
   @override
@@ -210,22 +229,39 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
         date.month == today.month &&
         date.year == today.year;
 
-    // Get azkar progress for this day
-    final progress = dayIndex < widget.monthlyProgress.length
-        ? widget.monthlyProgress[dayIndex]
-        : null;
+    // Find progress for this specific date (not by index)
+    final progress = widget.monthlyProgress.cast<UserProgress?>().firstWhere(
+      (p) =>
+          p != null &&
+          p.date.day == date.day &&
+          p.date.month == date.month &&
+          p.date.year == date.year,
+      orElse: () => null,
+    );
     final azkarCompleted = progress?.azkarCompleted ?? 0;
 
-    final dailyGoal = 5;
+    final dailyGoal = sl<PreferencesService>().getDailyGoalForDate(date);
+    final hasCustomGoal = sl<PreferencesService>().hasCustomGoalForDate(date);
     final isGoalCompleted = azkarCompleted >= dailyGoal;
     final isSelected = selectedDayIndex == dayIndex;
 
-    // Same color logic as home page day indicators
-    final circleColor = isGoalCompleted
-        ? Colors.green.shade500
-        : isDarkTheme
-        ? Colors.grey.shade600
-        : Colors.grey.shade300;
+    // Determine colors based on completion status
+    Color circleColor;
+    Color textColor;
+
+    if (azkarCompleted == 0) {
+      // No azkar completed - grey
+      circleColor = isDarkTheme ? Colors.grey[700]! : Colors.grey[300]!;
+      textColor = isDarkTheme ? Colors.grey[400]! : Colors.grey[600]!;
+    } else if (isGoalCompleted) {
+      // Goal completed - green
+      circleColor = Colors.green.shade500;
+      textColor = Colors.white;
+    } else {
+      // Partial completion - orange/amber
+      circleColor = Colors.orange.shade400;
+      textColor = Colors.white;
+    }
 
     // Get gradient color for today's border (same as home page)
     final todayBorderColor = _getGradientColor(4);
@@ -235,6 +271,9 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
         setState(() {
           selectedDayIndex = isSelected ? null : dayIndex;
         });
+      },
+      onLongPress: () {
+        _showSetGoalDialog(context, date);
       },
       child: Container(
         height: 40,
@@ -248,12 +287,7 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
               border: isToday
                   ? Border.all(color: todayBorderColor, width: 2)
                   : isSelected
-                  ? Border.all(
-                      color: isDarkTheme
-                          ? Colors.white
-                          : const Color(0xFF1A1A2E),
-                      width: 2,
-                    )
+                  ? Border.all(color: Colors.purple.shade500, width: 3)
                   : null,
               boxShadow: isSelected && !isToday
                   ? [
@@ -270,17 +304,33 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
                   : null,
             ),
             child: Center(
-              child: Text(
-                '${date.day}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isGoalCompleted
-                      ? Colors.white
-                      : isDarkTheme
-                      ? Colors.white.withOpacity(0.8)
-                      : const Color(0xFF1A1A2E).withOpacity(0.8),
-                ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Day number only
+                  Text(
+                    '${date.day}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                  // Custom goal indicator (small dot in top-right)
+                  if (hasCustomGoal)
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -293,17 +343,31 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
     if (selectedDayIndex == null) return const SizedBox();
 
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final progress = selectedDayIndex! < widget.monthlyProgress.length
-        ? widget.monthlyProgress[selectedDayIndex!]
-        : null;
 
     final selectedDate = DateTime(
       currentMonth.year,
       currentMonth.month,
       selectedDayIndex! + 1,
     );
+
+    // Find progress for this specific date (not by index)
+    final progress = widget.monthlyProgress.cast<UserProgress?>().firstWhere(
+      (p) =>
+          p != null &&
+          p.date.day == selectedDate.day &&
+          p.date.month == selectedDate.month &&
+          p.date.year == selectedDate.year,
+      orElse: () => null,
+    );
+
     final azkarCompleted = progress?.azkarCompleted ?? 0;
-    final dailyGoal = 5;
+    final completedAzkarIds = progress?.completedAzkarIds ?? [];
+    final dailyGoal = sl<PreferencesService>().getDailyGoalForDate(
+      selectedDate,
+    );
+    final hasCustomGoal = sl<PreferencesService>().hasCustomGoalForDate(
+      selectedDate,
+    );
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -317,63 +381,382 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
           width: 1,
         ),
       ),
-      child: Row(
-        textDirection: TextDirection.rtl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: _getGradientColor(4).withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.calendar_today,
-              color: _getGradientColor(4),
-              size: 20,
-            ),
+          // Date header
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _getGradientColor(4).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.calendar_today,
+                  color: _getGradientColor(4),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${selectedDate.day} ${_getMonthName(selectedDate.month)} ${selectedDate.year}',
+                      style: TextStyle(
+                        color: isDarkTheme
+                            ? Colors.white
+                            : const Color(0xFF1A1A1A),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textDirection: TextDirection.rtl,
+                    ),
+                    const SizedBox(height: 4),
+                    // Goal completion status with detailed info
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: azkarCompleted >= dailyGoal
+                            ? Colors.green.withOpacity(0.1)
+                            : azkarCompleted > 0
+                            ? Colors.orange.withOpacity(0.1)
+                            : Colors.grey.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: azkarCompleted >= dailyGoal
+                              ? Colors.green.withOpacity(0.3)
+                              : azkarCompleted > 0
+                              ? Colors.orange.withOpacity(0.3)
+                              : Colors.grey.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        textDirection: TextDirection.rtl,
+                        children: [
+                          Icon(
+                            azkarCompleted >= dailyGoal
+                                ? Icons.check_circle
+                                : azkarCompleted > 0
+                                ? Icons.access_time
+                                : Icons.circle_outlined,
+                            color: azkarCompleted >= dailyGoal
+                                ? Colors.green
+                                : azkarCompleted > 0
+                                ? Colors.orange
+                                : Colors.grey,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  azkarCompleted >= dailyGoal
+                                      ? 'تم إنجاز الهدف اليومي!'
+                                      : azkarCompleted > 0
+                                      ? 'قراءة جزئية'
+                                      : 'لم يتم قراءة أذكار',
+                                  style: TextStyle(
+                                    color: azkarCompleted >= dailyGoal
+                                        ? Colors.green[700]
+                                        : azkarCompleted > 0
+                                        ? Colors.orange[700]
+                                        : Colors.grey[600],
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  textDirection: TextDirection.rtl,
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  textDirection: TextDirection.rtl,
+                                  children: [
+                                    Text(
+                                      '$azkarCompleted',
+                                      style: TextStyle(
+                                        color: azkarCompleted >= dailyGoal
+                                            ? Colors.green[800]
+                                            : azkarCompleted > 0
+                                            ? Colors.orange[800]
+                                            : Colors.grey[700],
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      ' من ',
+                                      style: TextStyle(
+                                        color: isDarkTheme
+                                            ? Colors.grey[400]
+                                            : Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    Text(
+                                      '$dailyGoal',
+                                      style: TextStyle(
+                                        color: isDarkTheme
+                                            ? Colors.grey[300]
+                                            : Colors.grey[700],
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      ' أذكار',
+                                      style: TextStyle(
+                                        color: isDarkTheme
+                                            ? Colors.grey[400]
+                                            : Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    if (hasCustomGoal) ...[
+                                      const SizedBox(width: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.amber.withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'مخصص',
+                                          style: TextStyle(
+                                            color: Colors.amber[800],
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+
+          // Completed azkar section
+          if (completedAzkarIds.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Divider(
+              color: isDarkTheme ? Colors.grey[600] : Colors.grey[300],
+              height: 1,
+            ),
+            const SizedBox(height: 12),
+
+            // Section title
+            Row(
+              textDirection: TextDirection.rtl,
               children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 16),
+                const SizedBox(width: 6),
                 Text(
-                  '${selectedDate.day} ${_getMonthName(selectedDate.month)} ${selectedDate.year}',
+                  'الأذكار المقروءة:',
                   style: TextStyle(
                     color: isDarkTheme ? Colors.white : const Color(0xFF1A1A1A),
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                   textDirection: TextDirection.rtl,
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  textDirection: TextDirection.rtl,
-                  children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      color: azkarCompleted >= dailyGoal
-                          ? Colors.green
-                          : Colors.orange,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$azkarCompleted من $dailyGoal أذكار',
-                      style: TextStyle(
-                        color: isDarkTheme
-                            ? Colors.grey[300]
-                            : Colors.grey[600],
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Future builder to get azkar details and group by category
+            FutureBuilder<Map<String, int>>(
+              future: _getAzkarCategoryCounts(completedAzkarIds),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
                       textDirection: TextDirection.rtl,
+                      children: [
+                        SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: isDarkTheme
+                                ? Colors.white70
+                                : Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'جاري تحميل تفاصيل الأذكار...',
+                          style: TextStyle(
+                            color: isDarkTheme
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textDirection: TextDirection.rtl,
+                        ),
+                      ],
                     ),
-                  ],
+                  );
+                }
+
+                if (snapshot.hasError ||
+                    !snapshot.hasData ||
+                    snapshot.data!.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      textDirection: TextDirection.rtl,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[400],
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'تم قراءة ${completedAzkarIds.length} من الأذكار',
+                          style: TextStyle(
+                            color: isDarkTheme
+                                ? Colors.grey[200]
+                                : Colors.grey[700],
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textDirection: TextDirection.rtl,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final categoryCounts = snapshot.data!;
+                return Column(
+                  children: categoryCounts.entries.map((entry) {
+                    final categoryId = entry.key;
+                    final count = entry.value;
+                    final azkarName = _getAzkarCategoryName(categoryId);
+                    final categoryColor = _getCategoryColor(categoryId);
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        textDirection: TextDirection.rtl,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: categoryColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '$azkarName ($count)',
+                              style: TextStyle(
+                                color: isDarkTheme
+                                    ? Colors.grey[200]
+                                    : Colors.grey[700],
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textDirection: TextDirection.rtl,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ] else if (azkarCompleted == 0) ...[
+            const SizedBox(height: 12),
+            Divider(
+              color: isDarkTheme ? Colors.grey[600] : Colors.grey[300],
+              height: 1,
+            ),
+            const SizedBox(height: 12),
+
+            Row(
+              textDirection: TextDirection.rtl,
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'لم يتم قراءة أذكار في هذا اليوم',
+                  style: TextStyle(
+                    color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textDirection: TextDirection.rtl,
                 ),
               ],
             ),
+          ],
+
+          // Add goal setting hint at the bottom
+          const SizedBox(height: 12),
+          Divider(
+            color: isDarkTheme ? Colors.grey[600] : Colors.grey[300],
+            height: 1,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Icon(
+                Icons.touch_app,
+                color: isDarkTheme ? Colors.grey[500] : Colors.grey[500],
+                size: 14,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'اضغط مطولاً على أي يوم لتعديل الهدف اليومي',
+                  style: TextStyle(
+                    color: isDarkTheme ? Colors.grey[500] : Colors.grey[500],
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textDirection: TextDirection.rtl,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -453,5 +836,243 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
       hexColor = 'FF$hexColor'; // Add alpha channel
     }
     return Color(int.parse(hexColor, radix: 16));
+  }
+
+  /// Helper method to get category colors and counts for azkar
+  Future<Map<String, int>> _getAzkarCategoryCounts(
+    List<String> azkarIds,
+  ) async {
+    if (azkarIds.isEmpty) return {};
+
+    try {
+      // Fetch azkar details by IDs
+      final azkarList = await AzkarDatabaseAdapter.getAzkarByIds(azkarIds);
+
+      // Group azkar by categories and count them
+      final Map<String, int> categoryCounts = {};
+
+      for (final azkar in azkarList) {
+        final categoryId = azkar.categoryId;
+        categoryCounts[categoryId] = (categoryCounts[categoryId] ?? 0) + 1;
+      }
+
+      return categoryCounts;
+    } catch (e) {
+      // If fetching fails, return empty map
+      debugPrint('Error fetching azkar category counts: $e');
+      return {};
+    }
+  }
+
+  /// Show dialog to set daily goal for a specific date
+  Future<void> _showSetGoalDialog(BuildContext context, DateTime date) async {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final preferencesService = sl<PreferencesService>();
+    final currentGoal = preferencesService.getDailyGoalForDate(date);
+    final hasCustomGoal = preferencesService.hasCustomGoalForDate(date);
+    final defaultGoal = preferencesService.getDailyGoal();
+
+    final TextEditingController controller = TextEditingController(
+      text: currentGoal.toString(),
+    );
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            backgroundColor: isDarkTheme ? Colors.grey[800] : Colors.white,
+            title: Text(
+              'تعديل الهدف اليومي',
+              style: TextStyle(
+                color: isDarkTheme ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+              textDirection: TextDirection.rtl,
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${date.day} ${_getMonthName(date.month)} ${date.year}',
+                  style: TextStyle(
+                    color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
+                    fontSize: 16,
+                  ),
+                  textDirection: TextDirection.rtl,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  hasCustomGoal
+                      ? 'الهدف الحالي: $currentGoal أذكار (مخصص)'
+                      : 'الهدف الحالي: $currentGoal أذكار (افتراضي)',
+                  style: TextStyle(
+                    color: isDarkTheme ? Colors.grey[400] : Colors.grey[700],
+                    fontSize: 14,
+                  ),
+                  textDirection: TextDirection.rtl,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  textDirection: TextDirection.rtl,
+                  style: TextStyle(
+                    color: isDarkTheme ? Colors.white : Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'الهدف الجديد',
+                    labelStyle: TextStyle(
+                      color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: isDarkTheme
+                            ? Colors.grey[600]!
+                            : Colors.grey[400]!,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: _getGradientColor(4),
+                        width: 2,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: isDarkTheme
+                            ? Colors.grey[600]!
+                            : Colors.grey[400]!,
+                      ),
+                    ),
+                  ),
+                ),
+                if (hasCustomGoal) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'الهدف الافتراضي: $defaultGoal أذكار',
+                    style: TextStyle(
+                      color: isDarkTheme ? Colors.grey[500] : Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                    textDirection: TextDirection.rtl,
+                  ),
+                ],
+              ],
+            ),
+            actions: [
+              if (hasCustomGoal)
+                TextButton(
+                  onPressed: () async {
+                    await preferencesService.removeDailyGoalForDate(date);
+                    setState(() {}); // Refresh the calendar
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    'استخدام الافتراضي',
+                    style: TextStyle(
+                      color: isDarkTheme
+                          ? Colors.orange[300]
+                          : Colors.orange[700],
+                    ),
+                  ),
+                ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  'إلغاء',
+                  style: TextStyle(
+                    color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final newGoal = int.tryParse(controller.text);
+                  if (newGoal != null && newGoal > 0) {
+                    await preferencesService.setDailyGoalForDate(date, newGoal);
+                    setState(() {}); // Refresh the calendar
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: Text(
+                  'حفظ',
+                  style: TextStyle(
+                    color: _getGradientColor(4),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Helper method to get Arabic name for azkar category
+  String _getAzkarCategoryName(String categoryId) {
+    switch (categoryId) {
+      case 'morning':
+        return 'أذكار الصباح';
+      case 'evening':
+        return 'أذكار المساء';
+      case 'sleep':
+        return 'أذكار النوم';
+      case 'waking_up':
+        return 'أذكار الاستيقاظ';
+      case 'opening_dua':
+        return 'اذكار الصلاه';
+      case 'after_prayer':
+        return 'أذكار بعد الصلاة';
+      case 'general':
+        return 'أذكار عامة';
+      case 'stress':
+        return 'أذكار الضغط';
+      case 'gratitude':
+        return 'أذكار الشكر';
+      case 'travel':
+        return 'أذكار السفر';
+      case 'eating':
+        return 'أذكار الطعام';
+      default:
+        return categoryId; // Fallback to category ID if no mapping found
+    }
+  }
+
+  /// Helper method to get color for azkar category
+  Color _getCategoryColor(String categoryId) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    switch (categoryId) {
+      case 'morning':
+        return isDarkTheme ? const Color(0xFFE5C068) : const Color(0xFFF2D68A);
+      case 'evening':
+        return isDarkTheme ? const Color(0xFF7BB3E0) : const Color(0xFF9BC7ED);
+      case 'sleep':
+        return isDarkTheme ? const Color(0xFFB68DC7) : const Color(0xFFCBA8DC);
+      case 'waking_up':
+        return isDarkTheme ? const Color(0xFFE6A67A) : const Color(0xFFF0BF9A);
+      case 'opening_dua':
+        return isDarkTheme ? const Color(0xFF8BC797) : const Color(0xFFA6D4B2);
+      case 'after_prayer':
+        return isDarkTheme ? const Color(0xFF7AC7D8) : const Color(0xFF9DE2F2);
+      case 'general':
+        return isDarkTheme ? const Color(0xFF9BB3D9) : const Color(0xFFB8CBE8);
+      case 'stress':
+        return isDarkTheme ? const Color(0xFFE8CDB8) : const Color(0xFFF2E0CC);
+      case 'gratitude':
+        return isDarkTheme ? const Color(0xFF94D9CC) : const Color(0xFFB0E8DC);
+      case 'travel':
+        return isDarkTheme ? const Color(0xFFD9B8BC) : const Color(0xFFE8CCD0);
+      case 'eating':
+        return isDarkTheme ? const Color(0xFFD4B8D1) : const Color(0xFFE2CCE0);
+      default:
+        return isDarkTheme ? Colors.grey[600]! : Colors.grey[400]!;
+    }
   }
 }

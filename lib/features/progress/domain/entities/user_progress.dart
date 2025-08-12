@@ -6,7 +6,7 @@ class UserProgress extends Equatable {
   final DateTime date;
   final int azkarCompleted;
   final int streakCount;
-  final List<int> completedAzkarIds;
+  final List<String> completedAzkarIds;
   final String? reflection;
   final String? moodBefore;
   final String? moodAfter;
@@ -30,7 +30,7 @@ class UserProgress extends Equatable {
     DateTime? date,
     int? azkarCompleted,
     int? streakCount,
-    List<int>? completedAzkarIds,
+    List<String>? completedAzkarIds,
     String? reflection,
     String? moodBefore,
     String? moodAfter,
@@ -82,7 +82,7 @@ class UserProgress extends Equatable {
   factory UserProgress.today({
     required int azkarCompleted,
     required int streakCount,
-    required List<int> completedAzkarIds,
+    required List<String> completedAzkarIds,
     String? reflection,
     String? moodBefore,
     String? moodAfter,

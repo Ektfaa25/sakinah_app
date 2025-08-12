@@ -20,6 +20,7 @@ class AppRoutes {
   static const String azkarCategories = '/azkar-categories';
   static const String azkarDetailNew = '/azkar-detail-new';
   static const String azkarFavorites = '/azkar-favorites';
+  static const String azkarCardDemo = '/azkar-card-demo';
 
   // Secondary routes
   static const String customAzkar = '/custom-azkar';

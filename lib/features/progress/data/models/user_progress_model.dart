@@ -29,8 +29,8 @@ class UserProgressModel extends UserProgress {
       azkarCompleted: json['azkar_completed'] as int? ?? 0,
       streakCount: json['streak_count'] as int? ?? 0,
       completedAzkarIds: json['completed_azkar_ids'] != null
-          ? List<int>.from(json['completed_azkar_ids'] as List)
-          : <int>[],
+          ? List<String>.from(json['completed_azkar_ids'] as List)
+          : <String>[],
       reflection: json['reflection'] as String?,
       moodBefore: json['mood_before'] as String?,
       moodAfter: json['mood_after'] as String?,
@@ -74,7 +74,7 @@ class UserProgressModel extends UserProgress {
     DateTime? date,
     int? azkarCompleted,
     int? streakCount,
-    List<int>? completedAzkarIds,
+    List<String>? completedAzkarIds,
     String? reflection,
     String? moodBefore,
     String? moodAfter,
@@ -102,7 +102,7 @@ class UserProgressModel extends UserProgress {
     DateTime? date,
     int? azkarCompleted,
     int? streakCount,
-    List<int>? completedAzkarIds,
+    List<String>? completedAzkarIds,
     String? reflection,
     String? moodBefore,
     String? moodAfter,

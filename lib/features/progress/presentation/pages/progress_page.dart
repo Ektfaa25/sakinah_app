@@ -1,15 +1,26 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sakinah_app/features/azkar/data/services/azkar_database_adapter.dart';
+import 'package:sakinah_app/features/azkar/domain/entities/azkar_new.dart';
+import 'package:sakinah_app/features/progress/domain/entities/user_progress.dart';
 import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
 import 'package:sakinah_app/features/progress/presentation/widgets/animated_progress_ring.dart';
-import 'package:sakinah_app/features/progress/presentation/widgets/monthly_progress_chart.dart';
 import 'package:sakinah_app/features/progress/presentation/widgets/monthly_calendar.dart';
+import 'package:sakinah_app/features/progress/presentation/widgets/monthly_progress_chart.dart';
 import 'package:sakinah_app/l10n/app_localizations.dart';
+import 'package:sakinah_app/core/storage/preferences_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/router/app_routes.dart';
 
 class ProgressPage extends StatefulWidget {
-  const ProgressPage({super.key});
+  final int? initialTabIndex;
+  final DateTime? selectedDate;
+
+  const ProgressPage({super.key, this.initialTabIndex, this.selectedDate});
 
   @override
   State<ProgressPage> createState() => _ProgressPageState();
@@ -19,11 +30,19 @@ class _ProgressPageState extends State<ProgressPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
   int selectedYear = DateTime.now().year; // Track current selected year
+  List<Azkar> _completedAzkarDetails = []; // Store completed azkar details
+  bool _isLoadingAzkarDetails = false; // Track loading state for azkar details
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 2);
+    // Use the provided initialTabIndex, defaulting to 2 (Today tab) if not provided
+    final initialIndex = widget.initialTabIndex ?? 2;
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
 
     // Add listener to handle swipe gestures
     _tabController.addListener(() {
@@ -39,10 +58,26 @@ class _ProgressPageState extends State<ProgressPage>
       }
     });
 
-    // Load initial progress data
-    context.read<ProgressBloc>().add(
-      const LoadTodayProgress(),
-    ); // Start with today's data
+    // Load initial progress data based on the initial tab
+    _loadDataForTab(initialIndex);
+
+    // Load the daily goal to ensure it's available for UI calculations
+    context.read<ProgressBloc>().add(const LoadDailyGoal());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh progress data when returning to this page
+    if (mounted) {
+      _refreshCurrentTab();
+    }
+  }
+
+  void _refreshCurrentTab() {
+    final currentIndex = _tabController.index;
+    _loadDataForTab(currentIndex);
+    debugPrint('🔄 Progress Page: Refreshed current tab ($currentIndex) data');
   }
 
   @override
@@ -51,19 +86,42 @@ class _ProgressPageState extends State<ProgressPage>
     super.dispose();
   }
 
-  // Navigation methods for year selection
-  void _goToPreviousYear() {
-    setState(() {
-      selectedYear--;
-    });
-  }
-
-  void _goToNextYear() {
-    final currentYear = DateTime.now().year;
-    if (selectedYear < currentYear) {
+  // Method to fetch completed azkar details
+  Future<void> _fetchCompletedAzkarDetails(
+    List<String> completedAzkarIds,
+  ) async {
+    if (completedAzkarIds.isEmpty) {
       setState(() {
-        selectedYear++;
+        _completedAzkarDetails = [];
+        _isLoadingAzkarDetails = false;
       });
+      return;
+    }
+
+    setState(() {
+      _isLoadingAzkarDetails = true;
+    });
+
+    try {
+      final azkarDetails = await AzkarDatabaseAdapter.getAzkarByIds(
+        completedAzkarIds,
+      );
+      debugPrint('✅ Fetched ${azkarDetails.length} completed azkar details');
+
+      if (mounted) {
+        setState(() {
+          _completedAzkarDetails = azkarDetails;
+          _isLoadingAzkarDetails = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ Error fetching completed azkar details: $e');
+      if (mounted) {
+        setState(() {
+          _completedAzkarDetails = [];
+          _isLoadingAzkarDetails = false;
+        });
+      }
     }
   }
 
@@ -74,9 +132,7 @@ class _ProgressPageState extends State<ProgressPage>
 
     switch (index) {
       case 0:
-        context.read<ProgressBloc>().add(
-          const LoadWeeklyProgress(),
-        ); // Treating as yearly for now
+        context.read<ProgressBloc>().add(const LoadWeeklyProgress());
         break;
       case 1:
         context.read<ProgressBloc>().add(const LoadMonthlyProgress());
@@ -84,6 +140,19 @@ class _ProgressPageState extends State<ProgressPage>
       case 2:
         context.read<ProgressBloc>().add(const LoadTodayProgress());
         break;
+    }
+  }
+
+  // Helper method to get the current daily goal
+  int _getDailyGoal() {
+    try {
+      final today = DateTime.now();
+      return sl<PreferencesService>().getDailyGoalForDate(today);
+    } catch (e) {
+      debugPrint(
+        '⚠️ Progress Page: Error getting daily goal, using default: $e',
+      );
+      return 5; // Default fallback
     }
   }
 
@@ -129,7 +198,7 @@ class _ProgressPageState extends State<ProgressPage>
               Icons.arrow_back,
               color: Theme.of(context).colorScheme.onBackground,
             ),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.go(AppRoutes.home),
             tooltip: 'رجوع',
           ),
           title: Text(
@@ -142,6 +211,28 @@ class _ProgressPageState extends State<ProgressPage>
             textDirection: TextDirection.rtl,
           ),
           centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(
+                Icons.refresh,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+              onPressed: () {
+                _refreshCurrentTab();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'تم تحديث البيانات 🔄',
+                      textDirection: TextDirection.rtl,
+                    ),
+                    duration: Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              tooltip: 'تحديث البيانات',
+            ),
+          ],
           bottom: TabBar(
             controller: _tabController,
             labelColor: isDarkTheme ? Colors.white : const Color(0xFF1A1A2E),
@@ -168,7 +259,7 @@ class _ProgressPageState extends State<ProgressPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.calendar_today, size: 18),
+                    Icon(Icons.date_range, size: 18),
                     SizedBox(width: 8),
                     Text('السنة'),
                   ],
@@ -198,15 +289,93 @@ class _ProgressPageState extends State<ProgressPage>
           ),
         ),
         body: SafeArea(
-          child: TabBarView(
-            controller: _tabController,
-            physics:
-                const BouncingScrollPhysics(), // Enable smooth swiping with bounce effect
-            children: [
-              _buildWeeklyTab(context, l10n), // Using weekly as yearly for now
-              _buildMonthlyTab(context, l10n),
-              _buildTodayTab(context, l10n),
-            ],
+          child: BlocListener<ProgressBloc, ProgressState>(
+            listener: (context, state) {
+              // Listen for progress updates and refresh if needed
+              if (state is TodayProgressLoaded) {
+                debugPrint(
+                  '✅ Progress Page: Received updated today progress - azkarCompleted: ${state.progress.azkarCompleted}',
+                );
+
+                // Fetch details of completed azkar to display their titles
+                _fetchCompletedAzkarDetails(state.progress.completedAzkarIds);
+
+                // Show success message when data is updated
+                if (state.progress.azkarCompleted > 0) {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'تم تحديث تقدمك! ${state.progress.azkarCompleted} فئات أذكار مكتملة اليوم 🎉',
+                        textDirection: TextDirection.rtl,
+                      ),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              } else if (state is ProgressError) {
+                debugPrint('❌ Progress Page: Error received: ${state.message}');
+                // Optionally show error message to user
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'خطأ في تحديث التقدم: ${state.message}',
+                      textDirection: TextDirection.rtl,
+                    ),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } else if (state is FullProgressLoaded) {
+                debugPrint(
+                  '✅ Progress Page: Received updated full progress - azkarCompleted: ${state.todayProgress.azkarCompleted}',
+                );
+
+                // Fetch details of completed azkar for today's progress
+                _fetchCompletedAzkarDetails(
+                  state.todayProgress.completedAzkarIds,
+                );
+              } else if (state is DailyGoalUpdated) {
+                debugPrint(
+                  '✅ Progress Page: Daily goal updated to ${state.goal}',
+                );
+                // Trigger a UI rebuild to reflect the new daily goal
+                if (mounted) {
+                  setState(() {});
+                }
+
+                // Show confirmation message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'تم تحديث الهدف اليومي إلى ${state.goal} فئات أذكار ✅',
+                      textDirection: TextDirection.rtl,
+                    ),
+                    backgroundColor: Colors.blue,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              } else if (state is DailyGoalLoaded) {
+                debugPrint('✅ Progress Page: Daily goal loaded: ${state.goal}');
+                // Trigger a UI rebuild to reflect the loaded daily goal
+                if (mounted) {
+                  setState(() {});
+                }
+              }
+            },
+            child: TabBarView(
+              controller: _tabController,
+              physics:
+                  const BouncingScrollPhysics(), // Enable smooth swiping with bounce effect
+              children: [
+                _buildWeeklyTab(context, l10n),
+                _buildMonthlyTab(context, l10n),
+                _buildTodayTab(context, l10n),
+              ],
+            ),
           ),
         ),
       ),
@@ -246,8 +415,22 @@ class _ProgressPageState extends State<ProgressPage>
   ) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final progress = state.progress;
-    final dailyGoal = 5; // TODO: Get from settings
+    final dailyGoal = _getDailyGoal();
     final completionRate = progress.azkarCompleted / dailyGoal;
+
+    // Debug output to see what we're displaying
+    debugPrint(
+      '🏠 Progress Page: azkarCompleted (categories) = ${progress.azkarCompleted}',
+    );
+    debugPrint('🏠 Progress Page: dailyGoal (categories) = $dailyGoal');
+    debugPrint(
+      '🏠 Progress Page: completedAzkarIds = ${progress.completedAzkarIds}',
+    );
+    debugPrint('🏠 Progress Page: progress date = ${progress.date}');
+    debugPrint('🏠 Progress Page: progress id = ${progress.id}');
+    debugPrint(
+      '🏠 Progress Page: is progress empty? = ${progress.azkarCompleted == 0 && progress.completedAzkarIds.isEmpty}',
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -331,7 +514,7 @@ class _ProgressPageState extends State<ProgressPage>
                   Text(
                     completionRate >= 1.0
                         ? 'لقد أكملت هدفك اليومي! استمر في العمل الرائع.'
-                        : 'كل ذكر يقربك إلى الله. واصل رحلتك الروحية.',
+                        : 'كل فئة أذكار تقربك إلى الله. واصل رحلتك الروحية.',
                     style: TextStyle(
                       color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
                       fontSize: 14,
@@ -398,61 +581,200 @@ class _ProgressPageState extends State<ProgressPage>
               ),
               child: Column(
                 children: [
-                  // Progress Ring
+                  // Progress Header with Status
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Goal status indicator
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: completionRate >= 1.0
+                              ? Colors.green.withOpacity(0.2)
+                              : completionRate >= 0.5
+                              ? Colors.orange.withOpacity(0.2)
+                              : Colors.red.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: completionRate >= 1.0
+                                ? Colors.green
+                                : completionRate >= 0.5
+                                ? Colors.orange
+                                : Colors.red,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          completionRate >= 1.0
+                              ? 'مكتمل 🎉'
+                              : completionRate >= 0.5
+                              ? 'في التقدم 💪'
+                              : 'ابدأ الآن 🚀',
+                          style: TextStyle(
+                            color: completionRate >= 1.0
+                                ? Colors.green[700]
+                                : completionRate >= 0.5
+                                ? Colors.orange[700]
+                                : Colors.red[700],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textDirection: TextDirection.rtl,
+                        ),
+                      ),
+                      // Time remaining or completed time
+                      if (completionRate < 1.0)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 16,
+                              color: isDarkTheme
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'باقي ${dailyGoal - progress.azkarCompleted} فئات أذكار',
+                              style: TextStyle(
+                                color: isDarkTheme
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textDirection: TextDirection.rtl,
+                            ),
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              size: 16,
+                              color: Colors.green[600],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'تم الإنجاز!',
+                              style: TextStyle(
+                                color: Colors.green[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textDirection: TextDirection.rtl,
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Enhanced Progress Ring
                   Stack(
                     alignment: Alignment.center,
                     children: [
+                      // Background ring
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              _getGradientColor(0).withOpacity(0.1),
+                              _getGradientColor(1).withOpacity(0.1),
+                            ],
+                          ),
+                        ),
+                      ),
                       AnimatedProgressRing(
                         progress: completionRate.clamp(0.0, 1.0),
-                        size: 90,
-                        strokeWidth: 8,
+                        size: 100,
+                        strokeWidth: 10,
                         centerWidget: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // Current count
                             Text(
                               '${progress.azkarCompleted}',
                               style: TextStyle(
                                 color: isDarkTheme
                                     ? Colors.white
                                     : Color(0xFF1A1A2E),
-                                fontWeight: FontWeight.w800,
-                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 28,
                               ),
                             ),
+                            // Separator line
                             Container(
-                              width: 24,
+                              width: 30,
                               height: 2,
                               decoration: BoxDecoration(
                                 color: Color.lerp(
                                   _getGradientColor(0),
                                   Colors.black,
                                   0.2,
-                                )!.withOpacity(0.3),
+                                )!.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(1),
                               ),
                             ),
                             const SizedBox(height: 2),
+                            // Daily goal
                             Text(
                               '$dailyGoal',
                               style: TextStyle(
                                 color: isDarkTheme
                                     ? Colors.grey[400]
                                     : Colors.grey[500],
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
                         ),
                       ),
+                      // Progress percentage overlay
+                      if (completionRate > 0)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: completionRate >= 1.0
+                                  ? Colors.green.withOpacity(0.9)
+                                  : _getGradientColor(0).withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '${(completionRate * 100).toInt()}%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   // Progress Label
                   Text(
-                    'تقدم الأذكار اليومية',
+                    'تقدم فئات الأذكار اليومية',
                     style: TextStyle(
                       color: isDarkTheme ? Colors.white : Color(0xFF1A1A2E),
                       fontSize: 18,
@@ -463,15 +785,67 @@ class _ProgressPageState extends State<ProgressPage>
 
                   const SizedBox(height: 8),
 
-                  // Percentage
-                  Text(
-                    '${(completionRate * 100).toInt()}% مكتمل',
-                    style: TextStyle(
-                      color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                  // Progress details
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${(completionRate * 100).toInt()}% مكتمل',
+                        style: TextStyle(
+                          color: isDarkTheme
+                              ? Colors.grey[400]
+                              : Colors.grey[600],
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textDirection: TextDirection.rtl,
+                      ),
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: isDarkTheme
+                              ? Colors.grey[600]
+                              : Colors.grey[400],
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        '${progress.azkarCompleted} فئة مكتملة',
+                        style: TextStyle(
+                          color: isDarkTheme
+                              ? Colors.grey[400]
+                              : Colors.grey[600],
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textDirection: TextDirection.rtl,
+                      ),
+                    ],
+                  ),
+
+                  // Progress bar
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: isDarkTheme ? Colors.grey[800] : Colors.grey[200],
                     ),
-                    textDirection: TextDirection.rtl,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: completionRate.clamp(0.0, 1.0),
+                        backgroundColor: Colors.transparent,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          completionRate >= 1.0
+                              ? Colors.green
+                              : _getGradientColor(0),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -480,10 +854,445 @@ class _ProgressPageState extends State<ProgressPage>
 
           const SizedBox(height: 32),
 
-          // Streak and Stats Row
+          // Today's Azkar Details Section
+          if (progress.completedAzkarIds.isNotEmpty) ...[
+            FadeInUp(
+              duration: const Duration(milliseconds: 600),
+              delay: const Duration(milliseconds: 100),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDarkTheme ? null : Colors.white,
+                  gradient: isDarkTheme
+                      ? LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.darkSurface,
+                            AppColors.darkSurface.withOpacity(0.8),
+                          ],
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDarkTheme
+                          ? Colors.black.withOpacity(0.2)
+                          : Colors.grey.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: isDarkTheme
+                        ? (Colors.grey[800] ?? Colors.grey.shade800)
+                        : (Colors.grey[200] ?? Colors.grey.shade200),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.check_circle,
+                            color: Colors.green[600],
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'الأذكار المكتملة من الفئات اليوم',
+                            style: TextStyle(
+                              color: isDarkTheme
+                                  ? Colors.white
+                                  : Color(0xFF1A1A2E),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textDirection: TextDirection.rtl,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${progress.completedAzkarIds.length}',
+                            style: TextStyle(
+                              color: Colors.green[700],
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Show completed azkar details or loading state
+                    if (_isLoadingAzkarDetails)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDarkTheme
+                              ? (Colors.grey[800] ?? Colors.grey.shade800)
+                                    .withOpacity(0.3)
+                              : Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.blue[600],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'جاري تحميل تفاصيل الأذكار...',
+                                style: TextStyle(
+                                  color: isDarkTheme
+                                      ? Colors.grey[300]
+                                      : Colors.grey[700],
+                                  fontSize: 13,
+                                  height: 1.3,
+                                ),
+                                textDirection: TextDirection.rtl,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else if (_completedAzkarDetails.isNotEmpty)
+                      // Show the actual completed azkar titles
+                      Column(
+                        children: [
+                          ...(_completedAzkarDetails.take(5).map((azkar) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isDarkTheme
+                                    ? (Colors.grey[800] ?? Colors.grey.shade800)
+                                          .withOpacity(0.3)
+                                    : Colors.grey[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.green.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.check_circle_outline,
+                                    color: Colors.green[600],
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      azkar.textAr.length > 50
+                                          ? '${azkar.textAr.substring(0, 47)}...'
+                                          : azkar.textAr,
+                                      style: TextStyle(
+                                        color: isDarkTheme
+                                            ? Colors.white
+                                            : Colors.grey[800],
+                                        fontSize: 13,
+                                        height: 1.4,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      textDirection: TextDirection.rtl,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          })),
+                          if (_completedAzkarDetails.length > 5)
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'و ${_completedAzkarDetails.length - 5} أذكار أخرى مكتملة',
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textDirection: TextDirection.rtl,
+                              ),
+                            ),
+                        ],
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDarkTheme
+                              ? (Colors.grey[800] ?? Colors.grey.shade800)
+                                    .withOpacity(0.3)
+                              : Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.timeline,
+                              color: Colors.blue[600],
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'استمر في رحلتك الروحية! كل ذكر يقربك إلى الله أكثر.',
+                                style: TextStyle(
+                                  color: isDarkTheme
+                                      ? Colors.grey[300]
+                                      : Colors.grey[700],
+                                  fontSize: 13,
+                                  height: 1.3,
+                                ),
+                                textDirection: TextDirection.rtl,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          // Best Times Card
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 500),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.darkSurface,
+                          AppColors.darkSurface.withOpacity(0.8),
+                        ],
+                      )
+                    : null,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDarkTheme
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.1),
+                    blurRadius: isDarkTheme ? 32 : 16,
+                    offset: Offset(0, isDarkTheme ? 12 : 6),
+                    spreadRadius: 0,
+                  ),
+                ],
+                border: Border.all(
+                  color: isDarkTheme
+                      ? Colors.amber.withOpacity(0.3)
+                      : Colors.grey.withOpacity(0.2),
+                  width: 1.5,
+                ),
+              ),
+              child: Column(
+                children: [
+                  // Header
+                  Row(
+                    textDirection: TextDirection.rtl,
+                    // mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.amber[400] ?? Colors.amber,
+                              Colors.orange[400] ?? Colors.orange,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.amber.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.schedule,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'الأوقات المثلى للأذكار',
+                              style: TextStyle(
+                                color: isDarkTheme
+                                    ? Colors.white
+                                    : const Color(0xFF1A1A1A),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textDirection: TextDirection.rtl,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'أفضل أوقات اليوم للذكر والدعاء',
+                              style: TextStyle(
+                                color: isDarkTheme
+                                    ? Colors.grey[300]
+                                    : Colors.grey[600],
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textDirection: TextDirection.rtl,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Time periods
+                  Row(
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      Expanded(
+                        child: _buildTimePeriod(
+                          'الفجر',
+                          '5:00 - 7:00',
+                          Icons.wb_sunny,
+                          Colors.orange[300] ?? Colors.orange,
+                          isDarkTheme,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTimePeriod(
+                          'العصر',
+                          '3:00 - 5:00',
+                          Icons.wb_twilight,
+                          Colors.blue[300] ?? Colors.blue,
+                          isDarkTheme,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTimePeriod(
+                          'المغرب',
+                          '6:00 - 8:00',
+                          Icons.nights_stay,
+                          Colors.purple[300] ?? Colors.purple,
+                          isDarkTheme,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Advice text
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: isDarkTheme
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.amber.withOpacity(0.15),
+                                Colors.orange.withOpacity(0.15),
+                              ],
+                            )
+                          : LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.amber.withOpacity(0.1),
+                                Colors.orange.withOpacity(0.1),
+                              ],
+                            ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.amber.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.lightbulb_outline,
+                          color: Colors.amber[600],
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'أذكار الصباح والمساء لها أجر عظيم، احرص على قراءتها في هذه الأوقات المباركة',
+                            style: TextStyle(
+                              color: isDarkTheme
+                                  ? Colors.grey[300]
+                                  : Colors.grey[700],
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              height: 1.4,
+                            ),
+                            textDirection: TextDirection.rtl,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Enhanced Streak and Stats Row
           Row(
             children: [
-              // Streak Card
+              // Streak Card - Enhanced
               Expanded(
                 child: FadeInLeft(
                   duration: const Duration(milliseconds: 600),
@@ -506,49 +1315,46 @@ class _ProgressPageState extends State<ProgressPage>
                       boxShadow: [
                         BoxShadow(
                           color: isDarkTheme
-                              ? Color.lerp(
-                                  _getGradientColor(0),
-                                  Colors.black,
-                                  0.2,
-                                )!.withOpacity(0.08)
+                              ? Colors.black.withOpacity(0.2)
                               : Colors.grey.withOpacity(0.1),
                           blurRadius: isDarkTheme ? 24 : 12,
                           offset: Offset(0, isDarkTheme ? 8 : 4),
                           spreadRadius: 0,
                         ),
-                        if (isDarkTheme)
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
                       ],
                       border: Border.all(
                         color: isDarkTheme
-                            ? Color.lerp(
-                                _getGradientColor(0),
-                                Colors.black,
-                                0.2,
-                              )!.withOpacity(0.1)
+                            ? Colors.orange.withOpacity(0.3)
                             : Colors.grey.withOpacity(0.2),
-                        width: 1,
+                        width: 1.5,
                       ),
                     ),
                     child: Column(
                       children: [
+                        // Enhanced fire icon with glow effect
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: Color.lerp(
-                              _getGradientColor(0),
-                              Colors.black,
-                              0.2,
-                            )!.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.orange[400] ?? Colors.orange,
+                                Colors.red[400] ?? Colors.red,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.orange.withOpacity(0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Icon(
                             Icons.local_fire_department,
-                            color: Colors.orange[300],
+                            color: Colors.white,
                             size: 24,
                           ),
                         ),
@@ -559,8 +1365,8 @@ class _ProgressPageState extends State<ProgressPage>
                             color: isDarkTheme
                                 ? Colors.white
                                 : const Color(0xFF1A1A1A),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 24,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -571,10 +1377,35 @@ class _ProgressPageState extends State<ProgressPage>
                                 ? Colors.grey[300]
                                 : Colors.grey[600],
                             fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                           textDirection: TextDirection.rtl,
                         ),
+                        if (state.currentStreak > 0) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              state.currentStreak >= 7
+                                  ? 'ممتاز! 🏆'
+                                  : state.currentStreak >= 3
+                                  ? 'رائع! 💪'
+                                  : 'استمر! 🚀',
+                              style: TextStyle(
+                                color: Colors.orange[700],
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -583,7 +1414,7 @@ class _ProgressPageState extends State<ProgressPage>
 
               const SizedBox(width: 16),
 
-              // Today's Count Card
+              // Today's Count Card - Enhanced
               Expanded(
                 child: FadeInRight(
                   duration: const Duration(milliseconds: 600),
@@ -606,49 +1437,48 @@ class _ProgressPageState extends State<ProgressPage>
                       boxShadow: [
                         BoxShadow(
                           color: isDarkTheme
-                              ? Color.lerp(
-                                  _getGradientColor(0),
-                                  Colors.black,
-                                  0.2,
-                                )!.withOpacity(0.08)
+                              ? Colors.black.withOpacity(0.2)
                               : Colors.grey.withOpacity(0.1),
                           blurRadius: isDarkTheme ? 24 : 12,
                           offset: Offset(0, isDarkTheme ? 8 : 4),
                           spreadRadius: 0,
                         ),
-                        if (isDarkTheme)
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
                       ],
                       border: Border.all(
                         color: isDarkTheme
-                            ? Color.lerp(
-                                _getGradientColor(0),
-                                Colors.black,
-                                0.2,
-                              )!.withOpacity(0.1)
+                            ? Colors.green.withOpacity(0.3)
                             : Colors.grey.withOpacity(0.2),
-                        width: 1,
+                        width: 1.5,
                       ),
                     ),
                     child: Column(
                       children: [
+                        // Enhanced check icon
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: Color.lerp(
-                              _getGradientColor(0),
-                              Colors.black,
-                              0.2,
-                            )!.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.green[400] ?? Colors.green,
+                                Colors.green[600] ?? Colors.green.shade600,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.green.withOpacity(0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Icon(
-                            Icons.check_circle_outline,
-                            color: Colors.green[300],
+                            completionRate >= 1.0
+                                ? Icons.check_circle
+                                : Icons.check_circle_outline,
+                            color: Colors.white,
                             size: 24,
                           ),
                         ),
@@ -659,8 +1489,8 @@ class _ProgressPageState extends State<ProgressPage>
                             color: isDarkTheme
                                 ? Colors.white
                                 : const Color(0xFF1A1A1A),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 24,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -671,10 +1501,31 @@ class _ProgressPageState extends State<ProgressPage>
                                 ? Colors.grey[300]
                                 : Colors.grey[600],
                             fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                           textDirection: TextDirection.rtl,
                         ),
+                        if (progress.azkarCompleted > 0) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              completionRate >= 1.0 ? 'مكتمل! 🎉' : 'جيد! 👍',
+                              style: TextStyle(
+                                color: Colors.green[700],
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -685,6 +1536,53 @@ class _ProgressPageState extends State<ProgressPage>
 
           const SizedBox(height: 32),
 
+          // DEBUG: Test button to manually add progress (remove in production)
+          if (kDebugMode) ...[
+            FadeInUp(
+              duration: const Duration(milliseconds: 600),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      '🧪 DEBUG: Test Progress System',
+                      style: TextStyle(
+                        color: Colors.orange[700],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Add test azkar completion
+                        context.read<ProgressBloc>().add(
+                          const AddAzkarCompletion(azkarId: 'test-azkar-001'),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Test azkar completion added!'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Add Test Azkar'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           // Additional Cards
           if (progress.reflection != null) ...[
             _buildReflectionCard(context, progress.reflection!, l10n),
@@ -694,356 +1592,6 @@ class _ProgressPageState extends State<ProgressPage>
           if (progress.moodBefore != null || progress.moodAfter != null) ...[
             _buildMoodCard(context, progress, l10n),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeeklyTab(BuildContext context, AppLocalizations l10n) {
-    return BlocBuilder<ProgressBloc, ProgressState>(
-      builder: (context, state) {
-        if (state is ProgressLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is ProgressError) {
-          return _buildErrorState(context, state.message);
-        } else if (state is WeeklyProgressLoaded) {
-          return _buildWeeklyContent(context, state, l10n);
-        }
-
-        // Show loading for other states (when switching tabs)
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
-  }
-
-  Widget _buildWeeklyContent(
-    BuildContext context,
-    WeeklyProgressLoaded state,
-    AppLocalizations l10n,
-  ) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final activeDays = state.weeklyProgress
-        .where((p) => p.azkarCompleted > 0)
-        .length;
-    final totalAzkar = state.weeklyProgress.fold<int>(
-      0,
-      (sum, p) => sum + p.azkarCompleted,
-    );
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16), // Reduced from 24 to 16
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 8), // Reduced from 12 to 8
-          // Weekly Overview Card
-          FadeInDown(
-            duration: const Duration(milliseconds: 600),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: isDarkTheme ? null : Colors.white,
-                gradient: isDarkTheme
-                    ? LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.darkSurface,
-                          AppColors.darkSurface.withOpacity(0.8),
-                        ],
-                      )
-                    : null,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDarkTheme
-                        ? Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.08)
-                        : Colors.grey.withOpacity(0.1),
-                    blurRadius: isDarkTheme ? 24 : 12,
-                    offset: Offset(0, isDarkTheme ? 8 : 4),
-                    spreadRadius: 0,
-                  ),
-                  if (isDarkTheme)
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                ],
-                border: Border.all(
-                  color: isDarkTheme
-                      ? Color.lerp(
-                          _getGradientColor(0),
-                          Colors.black,
-                          0.2,
-                        )!.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Icon(
-                        Icons.calendar_view_week,
-                        color: isDarkTheme
-                            ? Color.lerp(
-                                _getGradientColor(0),
-                                Colors.black,
-                                0.2,
-                              )
-                            : Colors.grey[600],
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'رحلة هذه السنة',
-                        style: TextStyle(
-                          color: isDarkTheme
-                              ? Colors.white
-                              : const Color(0xFF1A1A1A),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textDirection: TextDirection.rtl,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildWeeklyStatItem(
-                          'أيام نشطة',
-                          '$activeDays/365',
-                          Icons.event_available,
-                          const Color(0xFF10B981),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildWeeklyStatItem(
-                          'إجمالي الأذكار',
-                          '$totalAzkar',
-                          Icons.auto_awesome,
-                          const Color(0xFFF59E0B),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 24), // Reduced from 32 to 24
-          // Yearly Chart Card
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isDarkTheme ? null : Colors.white,
-                gradient: isDarkTheme
-                    ? LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.darkSurface,
-                          AppColors.darkSurface.withOpacity(0.8),
-                        ],
-                      )
-                    : null,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDarkTheme
-                        ? Color.lerp(
-                            _getGradientColor(0),
-                            Colors.black,
-                            0.2,
-                          )!.withOpacity(0.08)
-                        : Colors.grey.withOpacity(0.1),
-                    blurRadius: isDarkTheme ? 24 : 12,
-                    offset: Offset(0, isDarkTheme ? 8 : 4),
-                    spreadRadius: 0,
-                  ),
-                  if (isDarkTheme)
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                ],
-                border: Border.all(
-                  color: isDarkTheme
-                      ? Color.lerp(
-                          _getGradientColor(0),
-                          Colors.black,
-                          0.2,
-                        )!.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header with padding
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Year navigation controls (left side)
-                        Row(
-                          children: [
-                            // Previous year button
-                            IconButton(
-                              onPressed: _goToPreviousYear,
-                              icon: Icon(
-                                Icons.arrow_back_ios,
-                                color: isDarkTheme
-                                    ? Colors.white
-                                    : Colors.grey[700],
-                                size: 18,
-                              ),
-                              tooltip: 'السنة السابقة',
-                              padding: const EdgeInsets.all(8),
-                            ),
-                            // Current year display
-                            Text(
-                              '$selectedYear',
-                              style: TextStyle(
-                                color: isDarkTheme
-                                    ? Colors.white
-                                    : const Color(0xFF1A1A1A),
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            // Next year button (disabled if current year)
-                            IconButton(
-                              onPressed: selectedYear >= DateTime.now().year
-                                  ? null
-                                  : _goToNextYear,
-                              icon: Icon(
-                                Icons.arrow_forward_ios,
-                                color: selectedYear >= DateTime.now().year
-                                    ? (isDarkTheme
-                                          ? Colors.grey[600]
-                                          : Colors.grey[400])
-                                    : (isDarkTheme
-                                          ? Colors.white
-                                          : Colors.grey[700]),
-                                size: 18,
-                              ),
-                              tooltip: 'السنة التالية',
-                              padding: const EdgeInsets.all(8),
-                            ),
-                          ],
-                        ),
-                        // Title and icon (right side in RTL)
-                        Row(
-                          textDirection: TextDirection.rtl,
-                          children: [
-                            Text(
-                              'التقدم السنوي',
-                              style: TextStyle(
-                                color: isDarkTheme
-                                    ? Colors.white
-                                    : const Color(0xFF1A1A1A),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              textDirection: TextDirection.rtl,
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.bar_chart,
-                              color: isDarkTheme
-                                  ? Colors.white
-                                  : Colors.grey[600],
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Chart with no padding - takes full width
-                  GestureDetector(
-                    onPanEnd: (details) {
-                      // Handle swipe gestures
-                      if (details.velocity.pixelsPerSecond.dx > 500) {
-                        // Swipe right - go to next year (if not current year)
-                        if (selectedYear < DateTime.now().year) {
-                          _goToNextYear();
-                        }
-                      } else if (details.velocity.pixelsPerSecond.dx < -500) {
-                        // Swipe left - go to previous year
-                        _goToPreviousYear();
-                      }
-                    },
-                    child: _buildYearlyBarChart(
-                      isDarkTheme,
-                      state.weeklyProgress,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeeklyStatItem(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDarkTheme ? color.withOpacity(0.15) : color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(isDarkTheme ? 0.3 : 0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              color: isDarkTheme ? Colors.white : Color(0xFF1A1A2E),
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.rtl,
-          ),
         ],
       ),
     );
@@ -1342,7 +1890,10 @@ class _ProgressPageState extends State<ProgressPage>
                     ],
                   ),
                   const SizedBox(height: 20),
-                  MonthlyCalendar(monthlyProgress: state.monthlyProgress),
+                  MonthlyCalendar(
+                    monthlyProgress: state.monthlyProgress,
+                    initialSelectedDate: widget.selectedDate,
+                  ),
                 ],
               ),
             ),
@@ -1751,146 +2302,421 @@ class _ProgressPageState extends State<ProgressPage>
     }
   }
 
-  /// Build yearly bar chart showing monthly progress across the year
-  Widget _buildYearlyBarChart(bool isDarkTheme, List<dynamic> yearData) {
-    // Generate sample yearly data with Arabic month names
-    final monthNames = [
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-
-    // Create data based on selected year
-    final List<int> monthlyValues = List.generate(12, (index) {
-      final currentYear = DateTime.now().year;
-      final currentMonth = DateTime.now().month - 1;
-
-      if (selectedYear == currentYear) {
-        // Current year - only show data up to current month
-        if (index <= currentMonth) {
-          return (index + 1) * 15 + (index % 3) * 10; // Sample values
-        } else {
-          return 0; // Future months
-        }
-      } else if (selectedYear < currentYear) {
-        // Past years - show full year data
-        return (index + 1) * 12 + (selectedYear % 3) * 8 + (index % 4) * 6;
-      } else {
-        // Future years - no data
-        return 0;
-      }
-    });
-
-    final maxValue = monthlyValues.isNotEmpty && monthlyValues.any((v) => v > 0)
-        ? monthlyValues.reduce((a, b) => a > b ? a : b)
-        : 100;
-
+  Widget _buildTimePeriod(
+    String title,
+    String time,
+    IconData icon,
+    Color color,
+    bool isDarkTheme,
+  ) {
     return Container(
-      height: 250, // Increased height to accommodate year indicator
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: isDarkTheme
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [color.withOpacity(0.15), color.withOpacity(0.1)],
+              )
+            : LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+              ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
       child: Column(
         children: [
-          // Chart area - full width
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                12,
-                0,
-                12,
-                20,
-              ), // Added bottom padding for month labels
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: monthNames.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final month = entry.value;
-                  final value = monthlyValues[index];
-                  final height = maxValue > 0 ? (value / maxValue) * 140 : 0.0;
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              color: isDarkTheme ? Colors.white : const Color(0xFF1A1A2E),
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            time,
+            style: TextStyle(
+              color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
+              fontSize: 12,
+            ),
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
 
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 1,
-                      ), // Reduced padding between bars
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
+  Widget _buildWeeklyTab(BuildContext context, AppLocalizations l10n) {
+    return BlocBuilder<ProgressBloc, ProgressState>(
+      builder: (context, state) {
+        if (state is ProgressLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is ProgressError) {
+          return _buildErrorState(context, state.message);
+        } else if (state is WeeklyProgressLoaded) {
+          return _buildWeeklyContent(context, state, l10n);
+        }
+
+        // Show loading for other states (when switching tabs)
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  Widget _buildWeeklyContent(
+    BuildContext context,
+    WeeklyProgressLoaded state,
+    AppLocalizations l10n,
+  ) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final activeDays = state.weeklyProgress
+        .where((p) => p.azkarCompleted > 0)
+        .length;
+    final totalAzkar = state.weeklyProgress.fold<int>(
+      0,
+      (sum, p) => sum + p.azkarCompleted,
+    );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 12),
+
+          // Weekly Overview Card
+          FadeInDown(
+            duration: const Duration(milliseconds: 600),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.darkSurface,
+                          AppColors.darkSurface.withOpacity(0.8),
+                        ],
+                      )
+                    : LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.05),
+                          Color.lerp(
+                            _getGradientColor(1),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.02),
+                        ],
+                      ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color.lerp(
+                      _getGradientColor(0),
+                      Colors.black,
+                      0.2,
+                    )!.withOpacity(0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+                border: Border.all(
+                  color: Color.lerp(
+                    _getGradientColor(0),
+                    Colors.black,
+                    0.2,
+                  )!.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Icon(
+                        Icons.calendar_view_week,
+                        color: Color.lerp(
+                          _getGradientColor(0),
+                          Colors.black,
+                          0.2,
+                        ),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'رحلة هذه السنة',
+                        style: TextStyle(
+                          color: isDarkTheme ? Colors.white : Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textDirection: TextDirection.rtl,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildWeeklyStatItem(
+                          'أيام نشطة',
+                          '$activeDays/365',
+                          Icons.event_available,
+                          const Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildWeeklyStatItem(
+                          'إجمالي الأذكار',
+                          '$totalAzkar',
+                          Icons.auto_awesome,
+                          const Color(0xFFF59E0B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Weekly Chart Card
+          FadeInUp(
+            duration: const Duration(milliseconds: 800),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDarkTheme ? null : Colors.white,
+                gradient: isDarkTheme
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.darkSurface,
+                          AppColors.darkSurface.withOpacity(0.8),
+                        ],
+                      )
+                    : LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.lerp(
+                            _getGradientColor(0),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.05),
+                          Color.lerp(
+                            _getGradientColor(1),
+                            Colors.black,
+                            0.2,
+                          )!.withOpacity(0.02),
+                        ],
+                      ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color.lerp(
+                      _getGradientColor(0),
+                      Colors.black,
+                      0.2,
+                    )!.withOpacity(0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+                border: Border.all(
+                  color: Color.lerp(
+                    _getGradientColor(0),
+                    Colors.black,
+                    0.2,
+                  )!.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      // Title and icon (right side in RTL)
+                      Row(
+                        textDirection: TextDirection.rtl,
                         children: [
-                          // Value label
-                          if (value > 0)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Text(
-                                '$value',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDarkTheme
-                                      ? Colors.white70
-                                      : Colors.grey[600],
-                                ),
-                              ),
-                            ),
-                          // Bar with key for animation reset when year changes
-                          AnimatedContainer(
-                            key: ValueKey('$selectedYear-$index'),
-                            duration: Duration(
-                              milliseconds: 800 + (index * 100),
-                            ),
-                            height: height,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(3),
-                              ),
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                colors: [
-                                  _getGradientColor(index),
-                                  _getGradientColor(index).withOpacity(0.7),
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _getGradientColor(
-                                    index,
-                                  ).withOpacity(0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          // Month label
                           Text(
-                            month,
+                            'التقويم السنوي',
                             style: TextStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.w500,
-                              color: isDarkTheme
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
+                              color: isDarkTheme ? Colors.white : Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
                             textDirection: TextDirection.rtl,
                           ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.calendar_view_month,
+                            color: Color.lerp(
+                              _getGradientColor(0),
+                              Colors.black,
+                              0.2,
+                            ),
+                            size: 20,
+                          ),
                         ],
                       ),
-                    ),
-                  );
-                }).toList(),
+                      // Legend (left side in RTL)
+                      Row(
+                        textDirection: TextDirection.rtl,
+                        children: [
+                          Text(
+                            'مكتمل',
+                            style: TextStyle(
+                              color: isDarkTheme
+                                  ? Colors.grey[400]
+                                  : Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                            textDirection: TextDirection.rtl,
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade500,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'غير مكتمل',
+                            style: TextStyle(
+                              color: isDarkTheme
+                                  ? Colors.grey[400]
+                                  : Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                            textDirection: TextDirection.rtl,
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: isDarkTheme
+                                  ? Colors.grey.shade600
+                                  : Colors.grey.shade300,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  MonthlyProgressChart(monthlyProgress: state.weeklyProgress),
+                ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildWeeklyStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDarkTheme ? color.withOpacity(0.15) : color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(isDarkTheme ? 0.3 : 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              color: isDarkTheme ? Colors.white : Color(0xFF1A1A2E),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.rtl,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToMonthlyCalendar(DateTime selectedDate) {
+    // Switch to monthly tab (index 1) and pass the selected date
+    _tabController.animateTo(1);
+
+    // Navigate to progress page with monthly tab and selected date
+    context.go(
+      '${AppRoutes.progress}?tab=1&date=${selectedDate.toIso8601String()}',
     );
   }
 }

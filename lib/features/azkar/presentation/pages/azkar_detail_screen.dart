@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import '../../domain/entities/azkar_new.dart';
 import '../../data/services/azkar_database_adapter.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../progress/presentation/bloc/progress_bloc.dart';
 
 class AzkarDetailScreen extends StatefulWidget {
   final Azkar azkar;
@@ -171,9 +173,55 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
     }
   }
 
+  // Helper function to get card color based on category ID
+  Color _getCategoryCardColor(String categoryId, bool isDarkTheme) {
+    switch (categoryId) {
+      case 'morning':
+        return isDarkTheme
+            ? const Color(0xFFE5C068) // Warmer golden beige for dark theme
+            : const Color(0xFFF2D68A); // Light golden beige for light theme
+      case 'evening':
+        return isDarkTheme
+            ? const Color(
+                0xFF7BB3E0,
+              ) // Soft blue with more color for dark theme
+            : const Color(0xFF9BC7ED); // Light soft blue for light theme
+      case 'waking_up':
+        return isDarkTheme
+            ? const Color(
+                0xFFE6A67A,
+              ) // Warm peach with more color for dark theme
+            : const Color(0xFFF0BF9A); // Light warm peach for light theme
+      case 'sleep':
+        return isDarkTheme
+            ? const Color(
+                0xFFB68DC7,
+              ) // Soft lavender with more color for dark theme
+            : const Color(0xFFCBA8DC); // Light soft lavender for light theme
+      case 'prayer_before_salam':
+        return isDarkTheme
+            ? const Color(
+                0xFF8BC797,
+              ) // Fresh sage green with more color for dark theme
+            : const Color(0xFFA6D4B2); // Light fresh sage for light theme
+      case 'after_prayer':
+        return isDarkTheme
+            ? const Color(
+                0xFF7AC7D8,
+              ) // Soft teal with more color for dark theme
+            : const Color(0xFF9AD4E3); // Light soft teal for light theme
+      default:
+        return _parseColor(widget.category.getColor());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final categoryColor = _parseColor(widget.category.getColor());
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final categoryColor = _getCategoryCardColor(
+      widget.category.id,
+      isDarkTheme,
+    );
 
     return Scaffold(
       body: Container(
@@ -280,7 +328,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         duration: const Duration(milliseconds: 600),
         child: Row(
           children: [
-            // Clean back button
+            // Clean back button - original style
             IconButton(
               icon: Icon(
                 Icons.arrow_back,
@@ -289,20 +337,20 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
               onPressed: () => Navigator.pop(context),
               tooltip: 'رجوع',
             ),
-            // Centered title
+            // Centered title with category color
             Expanded(
               child: Text(
                 widget.category.nameAr,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isDarkTheme ? Colors.white : Colors.black,
+                  color: categoryColor,
                 ),
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.center,
               ),
             ),
-            // Favorite heart icon
+            // Favorite heart icon - original style
             IconButton(
               onPressed: _toggleFavorite,
               icon: Icon(
@@ -322,8 +370,6 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
   }
 
   Widget _buildAzkarText(Azkar azkar) {
-    final categoryColor = _parseColor(widget.category.getColor());
-
     return FadeInUp(
       duration: const Duration(milliseconds: 600),
       delay: const Duration(milliseconds: 300),
@@ -570,36 +616,67 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen>
         _pulseController.reverse();
       });
 
-      // Update progress in database
-      try {
-        // TODO: Implement progress tracking with existing database
-        /*
-        await AzkarSupabaseService.updateUserAzkarProgress(
-          azkarId: azkar.id,
-          completedCount: _currentCount,
-          totalCount: azkar.repeatCount,
-        );
-        */
-      } catch (e) {
-        debugPrint('Error updating progress: $e');
+      // If azkar is completed, dispatch AddAzkarCompletion event to update progress
+      if (_isCompleted) {
+        try {
+          // Dispatch the AddAzkarCompletion event to progress bloc
+          context.read<ProgressBloc>().add(
+            AddAzkarCompletion(azkarId: azkar.id),
+          );
+
+          debugPrint(
+            '✅ Azkar completion event dispatched for azkar ID: ${azkar.id}',
+          );
+          debugPrint(
+            '🎯 Progress will be updated automatically by ProgressBloc',
+          );
+        } catch (e) {
+          debugPrint('❌ Error dispatching azkar completion: $e');
+        }
       }
 
-      // Show completion message
+      // Show completion message only when entire category is completed
       if (_isCompleted) {
         HapticFeedback.heavyImpact();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'بارك الله فيك! تم الانتهاء من الذكر',
-              textDirection: TextDirection.rtl,
+
+        // Check if all azkar in the category are completed
+        bool allCategoryAzkarCompleted = true;
+        if (widget.azkarList != null) {
+          for (int i = 0; i < widget.azkarList!.length; i++) {
+            if (!(_azkarCompleted[i] ?? false)) {
+              allCategoryAzkarCompleted = false;
+              break;
+            }
+          }
+        }
+
+        // Show special message only when all azkar in category are completed
+        if (allCategoryAzkarCompleted &&
+            widget.azkarList != null &&
+            widget.azkarList!.length > 1) {
+          // All azkar in category completed - show special message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'بارك الله فيك تم الانتهاء من الذكر',
+                textDirection: TextDirection.rtl,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              backgroundColor: Colors.green[700],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              action: SnackBarAction(
+                label: '🎉',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
             ),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+          );
+        }
+        // No message for individual azkar completion - removed the else block
       }
     }
   }

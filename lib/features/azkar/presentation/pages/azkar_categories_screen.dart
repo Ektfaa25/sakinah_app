@@ -6,6 +6,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/azkar_new.dart';
 import '../../data/services/azkar_database_adapter.dart';
+import '../widgets/azkar_category_card.dart';
 
 class AzkarScreen extends StatefulWidget {
   const AzkarScreen({super.key});
@@ -391,80 +392,14 @@ class _AzkarScreenState extends State<AzkarScreen>
         return FadeInUp(
           duration: const Duration(milliseconds: 600),
           delay: Duration(milliseconds: 100 * index),
-          child: _buildCategoryCard(category, index),
+          child: AzkarCategoryCard(
+            category: category,
+            color: _getCategoryCardColor(category.id),
+            icon: _getIconForCategory(category),
+            onTap: () => _onCategoryTap(category),
+          ),
         );
       },
-    );
-  }
-
-  Widget _buildCategoryCard(AzkarCategory category, int index) {
-    final color = _getGradientColor(index);
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () => _onCategoryTap(category),
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(20), // Reduced padding from 24 to 20
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [color, color.withOpacity(0.30)],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withOpacity(0.6), width: 1),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min, // Add this to prevent overflow
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white, // White background
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: color.withOpacity(0.3), // Border using card color
-                    width: 4,
-                  ),
-                ),
-                child: Icon(
-                  _getIconForCategory(category),
-                  size: 22, // Slightly smaller icon
-                  color: Color.lerp(
-                    color,
-                    Colors.black,
-                    0.4,
-                  ), // Darker shade of the same color
-                ),
-              ),
-              const SizedBox(height: 6), // Reduced spacing from 8 to 6
-              Flexible(
-                // Wrap text in Flexible to prevent overflow
-                child: Text(
-                  category.nameAr,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: isDarkTheme
-                        ? Colors
-                              .white // White text for dark theme
-                        : const Color(0xFF1A1A2E), // Dark text for light theme
-                    fontSize: 11, // Slightly smaller font size
-                  ),
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -547,47 +482,97 @@ class _AzkarScreenState extends State<AzkarScreen>
     }
   }
 
-  // Get gradient colors that match the home page design
+  // Helper function to get card color based on category ID (same as home page)
+  Color _getCategoryCardColor(String categoryId) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    switch (categoryId) {
+      case 'morning':
+        return isDarkTheme
+            ? const Color(0xFFE5C068) // Warmer golden beige for dark theme
+            : const Color(0xFFF2D68A); // Light golden beige for light theme
+      case 'evening':
+        return isDarkTheme
+            ? const Color(
+                0xFF7BB3E0,
+              ) // Soft blue with more color for dark theme
+            : const Color(0xFF9BC7ED); // Light soft blue for light theme
+      case 'waking_up':
+        return isDarkTheme
+            ? const Color(
+                0xFFE6A67A,
+              ) // Warm peach with more color for dark theme
+            : const Color(0xFFF0BF9A); // Light warm peach for light theme
+      case 'sleep':
+        return isDarkTheme
+            ? const Color(
+                0xFFB68DC7,
+              ) // Soft lavender with more color for dark theme
+            : const Color(0xFFCBA8DC); // Light soft lavender for light theme
+      case 'prayer_before_salam':
+        return isDarkTheme
+            ? const Color(
+                0xFF8BC797,
+              ) // Fresh sage green with more color for dark theme
+            : const Color(0xFFA6D4B2); // Light fresh sage for light theme
+      case 'after_prayer':
+        return isDarkTheme
+            ? const Color(
+                0xFF7AC7D8,
+              ) // Soft teal with more color for dark theme
+            : const Color(0xFF9AD4E3); // Light soft teal for light theme
+      default:
+        // For categories not in home page, use a default color based on index
+        return _getGradientColor(
+          categoryId.hashCode % 12,
+        ); // Increased from 6 to 12 for more variety
+    }
+  }
+
+  // Get gradient colors with more variety for azkar categories
   Color _getGradientColor(int index) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     final darkColors = [
-      _getColorFromHex('#E8E2B8'), // Muted warm yellow
-      _getColorFromHex('#9BB3D9'), // Muted soft blue
-      _getColorFromHex('#E8CDB8'), // Muted warm peach
-      _getColorFromHex('#89C5D9'), // Muted cyan
-      _getColorFromHex('#94D9CC'), // Muted mint green
-      _getColorFromHex('#B0D9B8'), // Muted light green
-      _getColorFromHex('#D9B8BC'), // Muted light pink
-      _getColorFromHex('#D4B8D1'), // Muted light purple
-      _getColorFromHex('#C2A8D4'), // Muted light lavender
-      _getColorFromHex('#7FC4D9'), // Muted light turquoise
+      const Color(0xFFE5C068), // Golden beige (morning)
+      const Color(0xFF7BB3E0), // Soft blue (evening)
+      const Color(0xFFE6A67A), // Warm peach (waking up)
+      const Color(0xFFB68DC7), // Soft lavender (sleep)
+      const Color(0xFF8BC797), // Fresh sage green (prayer)
+      const Color(0xFF7AC7D8), // Soft teal (after prayer)
+      const Color(0xFFE8A87C), // Warm coral
+      const Color(0xFFC9A9DD), // Light purple
+      const Color(0xFF87D3C4), // Mint green
+      const Color(0xFFFFB4A2), // Salmon pink
+      const Color(0xFFB5A7E6), // Periwinkle blue
+      const Color(0xFFFFC3A0), // Apricot
+      const Color(0xFFA8E6CF), // Pale green
+      const Color(0xFFFFD3E1), // Light pink
+      const Color(0xFFC4E5F7), // Sky blue
+      const Color(0xFFD4C5F9), // Lavender mist
     ];
 
     final lightColors = [
-      _getColorFromHex('#FBF8CC'), // Light yellow
-      _getColorFromHex('#A3C4F3'), // Light blue
-      _getColorFromHex('#FDE4CF'), // Light peach
-      _getColorFromHex('#90DBF4'), // Light cyan
-      _getColorFromHex('#98F5E1'), // Light mint
-      _getColorFromHex('#B9FBC0'), // Light green
-      _getColorFromHex('#FFCFD2'), // Light pink
-      _getColorFromHex('#F1C0E8'), // Light purple
-      _getColorFromHex('#CFBAF0'), // Light lavender
-      _getColorFromHex('#8EECF5'), // Light turquoise
+      const Color(0xFFF2D68A), // Light golden beige (morning)
+      const Color(0xFF9BC7ED), // Light soft blue (evening)
+      const Color(0xFFF0BF9A), // Light warm peach (waking up)
+      const Color(0xFFCBA8DC), // Light soft lavender (sleep)
+      const Color(0xFFA6D4B2), // Light fresh sage (prayer)
+      const Color(0xFF9AD4E3), // Light soft teal (after prayer)
+      const Color(0xFFF5C2A3), // Light coral
+      const Color(0xFFE0C3F7), // Very light purple
+      const Color(0xFFAAE5D7), // Light mint
+      const Color(0xFFFFCDBA), // Light salmon
+      const Color(0xFFCFC3F0), // Light periwinkle
+      const Color(0xFFFFD6BA), // Light apricot
+      const Color(0xFFC5F2E2), // Very pale green
+      const Color(0xFFFFE5EC), // Very light pink
+      const Color(0xFFDAF0FC), // Very light sky blue
+      const Color(0xFFE8DFFC), // Very light lavender
     ];
 
     final colors = isDarkTheme ? darkColors : lightColors;
     return colors[index % colors.length];
-  }
-
-  /// Helper method to convert hex color string to Color object
-  Color _getColorFromHex(String hexColor) {
-    hexColor = hexColor.replaceAll('#', '');
-    if (hexColor.length == 6) {
-      hexColor = 'FF$hexColor'; // Add alpha channel
-    }
-    return Color(int.parse(hexColor, radix: 16));
   }
 
   IconData _getIconData(String iconName) {

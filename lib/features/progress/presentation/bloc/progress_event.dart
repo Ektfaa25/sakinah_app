@@ -38,7 +38,7 @@ class LoadAchievementStats extends ProgressEvent {
 }
 
 class AddAzkarCompletion extends ProgressEvent {
-  final int azkarId;
+  final String azkarId;
   final String? moodBefore;
   final String? moodAfter;
   final String? reflection;
@@ -83,6 +83,10 @@ class SetDailyGoal extends ProgressEvent {
 
   @override
   List<Object?> get props => [goal];
+}
+
+class LoadDailyGoal extends ProgressEvent {
+  const LoadDailyGoal();
 }
 
 class LoadProgressInRange extends ProgressEvent {

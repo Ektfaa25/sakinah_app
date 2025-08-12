@@ -65,6 +65,9 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
       final categories = await AzkarDatabaseAdapter.getAzkarCategories();
       _categoriesCache = {for (var cat in categories) cat.id: cat};
       print('✅ [Favorites] Cached ${_categoriesCache.length} categories');
+      print(
+        '📋 [Favorites] Available category IDs: ${_categoriesCache.keys.toList()}',
+      );
 
       // Add debugging info
       print('🔍 [Favorites] Calling AzkarDatabaseAdapter.getFavoriteAzkar()');
@@ -73,15 +76,25 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
         '✅ [Favorites] Received ${favoriteAzkar.length} favorite azkar from database',
       );
 
-      // Log each favorite for debugging
+      // Log each favorite for debugging and check for missing categories
       if (favoriteAzkar.isNotEmpty) {
-        print('📋 [Favorites] List of favorites:');
+        print('📋 [Favorites] List of favorites with category check:');
         for (int i = 0; i < favoriteAzkar.length; i++) {
           final azkar = favoriteAzkar[i];
+          final categoryExists = _categoriesCache.containsKey(azkar.categoryId);
           print('  ${i + 1}. ID: ${azkar.id}');
+          print(
+            '     CategoryId: ${azkar.categoryId} ${categoryExists ? "✅" : "❌ NOT FOUND"}',
+          );
           print(
             '     Text: ${azkar.textAr.length > 50 ? azkar.textAr.substring(0, 50) + '...' : azkar.textAr}',
           );
+
+          if (!categoryExists) {
+            print(
+              '     ⚠️ Category ${azkar.categoryId} not found in available categories!',
+            );
+          }
         }
       } else {
         print('💔 [Favorites] No favorites found in database');
@@ -527,32 +540,28 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
     final theme = Theme.of(context);
     // Get category information
     final category = _categoriesCache[azkar.categoryId];
-    final categoryName = category?.nameAr ?? 'غير محدد';
 
-    // Get category color or use default
-    Color categoryColor = const Color(0xFFFF6B9D); // Default pink color
-    if (category != null &&
-        category.color != null &&
-        category.color!.isNotEmpty) {
-      try {
-        // Parse the hex color from category
-        final colorHex = category.color!.replaceAll('#', '');
-        categoryColor = Color(int.parse('FF$colorHex', radix: 16));
-
-        // Special handling for yellow color in light mode for better visibility
-        if (theme.brightness == Brightness.light) {
-          // Check if the color is yellow-ish (hue around 60 degrees)
-          final hsl = HSLColor.fromColor(categoryColor);
-          if (hsl.hue >= 45 && hsl.hue <= 75 && hsl.lightness > 0.7) {
-            // Use a darker, more visible yellow for light mode
-            categoryColor = const Color(0xFFD4A017); // Dark golden yellow
-          }
-        }
-      } catch (e) {
-        // Use default color if parsing fails
-        categoryColor = const Color(0xFFFF6B9D);
-      }
+    // Debug logging to understand the issue
+    if (category == null) {
+      print('⚠️ [Favorites] Category not found for azkar:');
+      print('  - Azkar ID: ${azkar.id}');
+      print('  - CategoryId: ${azkar.categoryId}');
+      print(
+        '  - Available categories in cache: ${_categoriesCache.keys.toList()}',
+      );
     }
+
+    // Get category name with better fallback
+    String categoryName;
+    if (category != null) {
+      categoryName = category.nameAr;
+    } else {
+      // Provide better fallback based on categoryId
+      categoryName = _getFallbackCategoryName(azkar.categoryId);
+    }
+
+    // Get category color using the same system as home page
+    final categoryColor = _getCategoryCardColor(azkar.categoryId);
 
     return Card(
       elevation: 2,
@@ -567,7 +576,9 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
             end: Alignment.centerLeft,
             stops: const [0.0, 0.05, 1.0],
             colors: [
-              categoryColor.withOpacity(0.8), // Vibrant color on the right
+              categoryColor.withOpacity(
+                0.8,
+              ), // Use category color for border gradient
               categoryColor.withOpacity(0.5), // Medium opacity
               Colors.transparent, // Fade to transparent on the left
             ],
@@ -592,31 +603,27 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: Color.lerp(
-                  _getGradientColor(0),
-                  Colors.black,
-                  0.2,
-                )!.withOpacity(0.04), // Reduced from 0.08
-                blurRadius: 12, // Reduced from 24
-                offset: const Offset(0, 4), // Reduced from 8
+                color: categoryColor.withOpacity(
+                  0.04,
+                ), // Use category color for shadow
+                blurRadius: 12,
+                offset: const Offset(0, 4),
                 spreadRadius: 0,
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.02), // Reduced from 0.04
-                blurRadius: 4, // Reduced from 8
-                offset: const Offset(0, 1), // Reduced from 2
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
               ),
             ],
             border: Border.all(
               color: theme.brightness == Brightness.dark
-                  ? Color.lerp(
-                      _getGradientColor(0),
-                      Colors.black,
+                  ? categoryColor.withOpacity(
+                      0.1,
+                    ) // Use category color for border
+                  : categoryColor.withOpacity(
                       0.2,
-                    )!.withOpacity(0.1)
-                  : Colors.grey.withOpacity(
-                      0.2,
-                    ), // Light grey border for white cards
+                    ), // Use category color for border
               width: 1,
             ),
           ),
@@ -842,53 +849,163 @@ class _AzkarFavoritesScreenState extends State<AzkarFavoritesScreen>
       nameEn: 'Favorites',
       description: 'Your favorite azkar',
       icon: 'favorite',
-      color: '#FF6B9D', // Pink color to match favorites theme
+      color: '#E8A87C', // Warm coral color to match defaults
       orderIndex: 0,
       isActive: true,
       createdAt: DateTime.now(),
     );
   }
 
-  // Get gradient colors that match the home page design
-  Color _getGradientColor(int index) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
-    final darkColors = [
-      _getColorFromHex('#E8E2B8'), // Muted warm yellow
-      _getColorFromHex('#9BB3D9'), // Muted soft blue
-      _getColorFromHex('#E8CDB8'), // Muted warm peach
-      _getColorFromHex('#89C5D9'), // Muted cyan
-      _getColorFromHex('#94D9CC'), // Muted mint green
-      _getColorFromHex('#B0D9B8'), // Muted light green
-      _getColorFromHex('#D9B8BC'), // Muted light pink
-      _getColorFromHex('#D4B8D1'), // Muted light purple
-      _getColorFromHex('#C2A8D4'), // Muted light lavender
-      _getColorFromHex('#7FC4D9'), // Muted light turquoise
-    ];
-
-    final lightColors = [
-      _getColorFromHex('#FBF8CC'), // Light yellow
-      _getColorFromHex('#A3C4F3'), // Light blue
-      _getColorFromHex('#FDE4CF'), // Light peach
-      _getColorFromHex('#90DBF4'), // Light cyan
-      _getColorFromHex('#98F5E1'), // Light mint
-      _getColorFromHex('#B9FBC0'), // Light green
-      _getColorFromHex('#FFCFD2'), // Light pink
-      _getColorFromHex('#F1C0E8'), // Light purple
-      _getColorFromHex('#CFBAF0'), // Light lavender
-      _getColorFromHex('#8EECF5'), // Light turquoise
-    ];
-
-    final colors = isDarkTheme ? darkColors : lightColors;
-    return colors[index % colors.length];
+  // Helper function to get fallback category name based on categoryId
+  String _getFallbackCategoryName(String categoryId) {
+    switch (categoryId) {
+      case 'morning':
+        return 'أذكار الصباح';
+      case 'evening':
+        return 'أذكار المساء';
+      case 'waking_up':
+        return 'أذكار الاستيقاظ';
+      case 'sleep':
+        return 'أذكار النوم';
+      case 'prayer_before_salam':
+        return 'أذكار الصلاة';
+      case 'after_prayer':
+        return 'أذكار بعد الصلاة';
+      case 'travel':
+        return 'أذكار السفر';
+      case 'eating':
+        return 'أذكار الطعام';
+      case 'istighfar':
+      case 'istighfar_tawbah':
+        return 'الاستغفار';
+      case 'tasbih':
+      case 'dhikr_general':
+        return 'التسبيح';
+      case 'dua':
+      case 'dua_times_places':
+        return 'الأدعية';
+      case 'quran':
+        return 'القرآن الكريم';
+      case 'ruqyah':
+      case 'ruqyah_sunnah':
+      case 'ruqyah_quran':
+        return 'الرقية الشرعية';
+      case 'protection':
+        return 'أذكار الحماية';
+      case 'home':
+        return 'أذكار البيت';
+      case 'work':
+        return 'أذكار العمل';
+      case 'rain':
+        return 'أذكار المطر';
+      case 'wind':
+        return 'أذكار الريح';
+      case 'general':
+        return 'أذكار عامة';
+      case 'adhan_dhikr':
+        return 'أذكار الآذان';
+      case 'sujood_dua':
+        return 'دعاء السجود';
+      case 'ruku_dua':
+        return 'دعاء الركوع';
+      case 'opening_dua':
+        return 'دعاء الاستفتاح';
+      case 'after_wudu':
+        return 'أذكار الوضوء';
+      case 'salawat_virtue':
+        return 'الصلاة على النبي';
+      case 'funeral_prayer':
+        return 'دعاء الجنازة';
+      case 'distress_dua':
+        return 'دعاء الكرب';
+      case 'spreading_salam':
+        return 'إفشاء السلام';
+      case 'rising_from_ruku':
+        return 'دعاء الرفع من الركوع';
+      case 'meeting_enemy_authority':
+        return 'دعاء لقاء العدو';
+      default:
+        print('⚠️ [Favorites] Unknown categoryId: $categoryId');
+        return 'فئة غير معروفة ($categoryId)';
+    }
   }
 
-  /// Helper method to convert hex color string to Color object
-  Color _getColorFromHex(String hexColor) {
-    hexColor = hexColor.replaceAll('#', '');
-    if (hexColor.length == 6) {
-      hexColor = 'FF$hexColor'; // Add alpha channel
+  // Helper function to get card color based on category ID (same as home page)
+  Color _getCategoryCardColor(String categoryId) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    switch (categoryId) {
+      case 'morning':
+        return isDarkTheme
+            ? const Color(0xFFE5C068) // Warmer golden beige for dark theme
+            : const Color(0xFFF2D68A); // Light golden beige for light theme
+      case 'evening':
+        return isDarkTheme
+            ? const Color(
+                0xFF7BB3E0,
+              ) // Soft blue with more color for dark theme
+            : const Color(0xFF9BC7ED); // Light soft blue for light theme
+      case 'waking_up':
+        return isDarkTheme
+            ? const Color(
+                0xFFE6A67A,
+              ) // Warm peach with more color for dark theme
+            : const Color(0xFFF0BF9A); // Light warm peach for light theme
+      case 'sleep':
+        return isDarkTheme
+            ? const Color(
+                0xFFB68DC7,
+              ) // Soft lavender with more color for dark theme
+            : const Color(0xFFCBA8DC); // Light soft lavender for light theme
+      case 'prayer_before_salam':
+        return isDarkTheme
+            ? const Color(
+                0xFF8BC797,
+              ) // Fresh sage green with more color for dark theme
+            : const Color(0xFFA6D4B2); // Light fresh sage for light theme
+      case 'after_prayer':
+        return isDarkTheme
+            ? const Color(
+                0xFF7AC7D8,
+              ) // Soft teal with more color for dark theme
+            : const Color(0xFF9AD4E3); // Light soft teal for light theme
+
+      // Additional categories with extended color palette
+      case 'general':
+      case 'dhikr_general':
+      case 'tasbih':
+        return isDarkTheme
+            ? const Color(0xFFE8A87C) // Warm coral for dark theme
+            : const Color(0xFFF5C2A3); // Light coral for light theme
+      case 'istighfar':
+      case 'istighfar_tawbah':
+        return isDarkTheme
+            ? const Color(0xFFC9A9DD) // Light purple for dark theme
+            : const Color(0xFFE0C3F7); // Very light purple for light theme
+      case 'ruqyah_sunnah':
+      case 'ruqyah_quran':
+      case 'ruqyah':
+        return isDarkTheme
+            ? const Color(0xFF87D3C4) // Mint green for dark theme
+            : const Color(0xFFAAE5D7); // Light mint for light theme
+      case 'travel':
+        return isDarkTheme
+            ? const Color(0xFFFFB4A2) // Salmon pink for dark theme
+            : const Color(0xFFFFCDBA); // Light salmon for light theme
+      case 'eating':
+        return isDarkTheme
+            ? const Color(0xFFB5A7E6) // Periwinkle blue for dark theme
+            : const Color(0xFFCFC3F0); // Light periwinkle for light theme
+      case 'dua':
+      case 'dua_times_places':
+        return isDarkTheme
+            ? const Color(0xFFFFC3A0) // Apricot for dark theme
+            : const Color(0xFFFFD6BA); // Light apricot for light theme
+      default:
+        // For unknown categories, use a default color
+        return isDarkTheme
+            ? const Color(0xFFA8E6CF) // Pale green for dark theme
+            : const Color(0xFFC5F2E2); // Very pale green for light theme
     }
-    return Color(int.parse(hexColor, radix: 16));
   }
 }

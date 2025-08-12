@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:sakinah_app/core/network/supabase_service.dart';
+import 'package:sakinah_app/features/azkar/data/services/azkar_database_adapter.dart';
 import 'package:sakinah_app/features/progress/data/models/user_progress_model.dart';
 import 'package:sakinah_app/features/progress/domain/entities/user_progress.dart';
 import 'package:sakinah_app/features/progress/domain/repositories/progress_repository.dart';
@@ -6,6 +8,9 @@ import 'package:sakinah_app/features/progress/domain/repositories/progress_repos
 class ProgressRepositoryImpl implements ProgressRepository {
   final SupabaseService _supabaseService;
   bool _isInitialized = false;
+
+  // Default user UUID for anonymous users - matches the pattern used in favorites
+  static const String defaultUserId = '00000000-0000-0000-0000-000000000001';
 
   ProgressRepositoryImpl(this._supabaseService);
 
@@ -19,10 +24,47 @@ class ProgressRepositoryImpl implements ProgressRepository {
 
   @override
   Future<void> clearAll() async {
-    await _supabaseService.client
-        .from('user_progress')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000');
+    // Clear all progress data
+    try {
+      await _supabaseService.client
+          .from('user_progress')
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+    } catch (e) {
+      throw Exception('Failed to clear all progress: $e');
+    }
+  }
+
+  /// Helper method to calculate azkar count based on distinct categories
+  Future<int> _calculateDistinctCategoryAzkarCount(
+    List<String> completedAzkarIds,
+  ) async {
+    if (completedAzkarIds.isEmpty) return 0;
+
+    try {
+      // Fetch azkar details for the completed IDs
+      final azkarDetails = await AzkarDatabaseAdapter.getAzkarByIds(
+        completedAzkarIds,
+      );
+
+      // Group azkar by their categories
+      final Set<String> distinctCategories = {};
+      for (final azkar in azkarDetails) {
+        distinctCategories.add(azkar.categoryId);
+      }
+
+      debugPrint(
+        '📊 Repository: Found ${azkarDetails.length} azkar in ${distinctCategories.length} distinct categories',
+      );
+      debugPrint('📊 Repository: Categories: ${distinctCategories.toList()}');
+
+      // Return the count of distinct categories
+      return distinctCategories.length;
+    } catch (e) {
+      debugPrint('❌ Repository: Error calculating distinct category count: $e');
+      // Fallback to simple count if azkar fetching fails
+      return completedAzkarIds.length;
+    }
   }
 
   @override
@@ -44,17 +86,34 @@ class ProgressRepositoryImpl implements ProgressRepository {
   @override
   Future<UserProgress?> getProgressByDate(DateTime date) async {
     try {
-      final dateString = date.toIso8601String().split('T')[0];
+      debugPrint('🔍 ProgressRepository: Fetching progress for date: $date');
+
       final response = await _supabaseService.client
           .from('user_progress')
           .select()
-          .eq('date', dateString)
+          .eq('user_id', defaultUserId) // Use proper UUID format
+          .eq('date', date.toIso8601String().split('T')[0])
           .maybeSingle();
 
-      if (response == null) return null;
-      return UserProgressModel.fromJson(response);
+      debugPrint('🔍 ProgressRepository: Supabase response: $response');
+
+      if (response == null) {
+        debugPrint('🔍 ProgressRepository: No progress found for date: $date');
+        return null;
+      }
+
+      final progress = UserProgressModel.fromJson(response);
+      debugPrint(
+        '🔍 ProgressRepository: Mapped progress - azkarCompleted: ${progress.azkarCompleted}',
+      );
+      debugPrint(
+        '🔍 ProgressRepository: Mapped progress - completedAzkarIds: ${progress.completedAzkarIds}',
+      );
+
+      return progress;
     } catch (e) {
-      throw Exception('Failed to fetch progress by date: $e');
+      debugPrint('❌ ProgressRepository: Error fetching progress: $e');
+      throw Exception('Failed to get progress by date: $e');
     }
   }
 
@@ -95,6 +154,7 @@ class ProgressRepositoryImpl implements ProgressRepository {
   Future<int> updateDailyProgress(UserProgress progress) async {
     try {
       final progressModel = UserProgressModel(
+        userId: defaultUserId, // Add the missing userId
         date: progress.date,
         azkarCompleted: progress.azkarCompleted,
         streakCount: progress.streakCount,
@@ -102,6 +162,7 @@ class ProgressRepositoryImpl implements ProgressRepository {
         reflection: progress.reflection,
         moodBefore: progress.moodBefore,
         moodAfter: progress.moodAfter,
+        createdAt: DateTime.now(),
       );
 
       final existingProgress = await getProgressByDate(progress.date);
@@ -141,49 +202,79 @@ class ProgressRepositoryImpl implements ProgressRepository {
 
   @override
   Future<void> addAzkarCompletion({
-    required int azkarId,
+    required String azkarId,
     String? moodBefore,
     String? moodAfter,
     String? reflection,
   }) async {
     try {
-      final today = DateTime.now();
+      debugPrint('📊 Repository: Adding azkar completion for ID: $azkarId');
+
+      final now = DateTime.now();
+      final today = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ); // Date only, no time
       final todayProgress = await getProgressByDate(today);
+
+      debugPrint(
+        '📊 Repository: Today progress exists: ${todayProgress != null}',
+      );
+      debugPrint(
+        '📊 Repository: Current azkar completed: ${todayProgress?.azkarCompleted ?? 0}',
+      );
 
       if (todayProgress != null) {
         // Update existing progress
-        final updatedCompletedIds = List<int>.from(
+        final updatedCompletedIds = List<String>.from(
           todayProgress.completedAzkarIds,
         );
         if (!updatedCompletedIds.contains(azkarId)) {
           updatedCompletedIds.add(azkarId);
         }
 
+        // Calculate azkar completed based on distinct categories
+        final distinctCategoryCount =
+            await _calculateDistinctCategoryAzkarCount(updatedCompletedIds);
+
         final updatedProgress = todayProgress.copyWith(
-          azkarCompleted: updatedCompletedIds.length,
+          azkarCompleted: distinctCategoryCount,
           completedAzkarIds: updatedCompletedIds,
           moodBefore: moodBefore ?? todayProgress.moodBefore,
           moodAfter: moodAfter ?? todayProgress.moodAfter,
           reflection: reflection ?? todayProgress.reflection,
         );
 
+        debugPrint(
+          '📊 Repository: Updating progress - ${updatedCompletedIds.length} total azkar in $distinctCategoryCount categories',
+        );
         await updateDailyProgress(updatedProgress);
       } else {
-        // Create new progress entry
+        // Create new progress entry - calculate distinct categories for single azkar
+        final distinctCategoryCount =
+            await _calculateDistinctCategoryAzkarCount([azkarId]);
+
         final newProgress = UserProgress(
           date: today,
-          azkarCompleted: 1,
+          azkarCompleted: distinctCategoryCount,
           streakCount: await calculateCurrentStreak() + 1,
           completedAzkarIds: [azkarId],
           moodBefore: moodBefore,
           moodAfter: moodAfter,
           reflection: reflection,
-          createdAt: today,
+          createdAt: now, // Use the full timestamp for creation time
         );
 
+        debugPrint(
+          '📊 Repository: Creating new progress entry - 1 azkar in $distinctCategoryCount categories',
+        );
         await updateDailyProgress(newProgress);
       }
+
+      debugPrint('✅ Repository: Successfully added azkar completion');
     } catch (e) {
+      debugPrint('❌ Repository: Failed to add azkar completion: $e');
       throw Exception('Failed to add azkar completion: $e');
     }
   }
@@ -342,7 +433,7 @@ class ProgressRepositoryImpl implements ProgressRepository {
           date: DateTime.parse(progressData['date']),
           azkarCompleted: progressData['azkarCompleted'] ?? 0,
           streakCount: progressData['streakCount'] ?? 0,
-          completedAzkarIds: List<int>.from(
+          completedAzkarIds: List<String>.from(
             progressData['completedAzkarIds'] ?? [],
           ),
           reflection: progressData['reflection'],

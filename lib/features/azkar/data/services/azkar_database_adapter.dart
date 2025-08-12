@@ -7,14 +7,18 @@ class AzkarDatabaseAdapter {
 
   // Mapping between category names in Arabic and category IDs for simplified English names
   static const Map<String, String> _categoryMapping = {
+    // Main categories that match home page
     'أذكار الصباح': 'morning',
     'أذكار المساء': 'evening',
     'أذكار النوم': 'sleep',
+    'أذكار الاستيقاظ من النوم': 'waking_up',
+    'الدعاء بعد التشهد الأخير قبل السلام': 'prayer_before_salam',
+    'الأذكار بعد السلام من الصلاة': 'after_prayer',
+
+    // Additional categories
     'الرقية الشرعية من السنة النبوية': 'ruqyah_sunnah',
     'الرقية الشرعية من القرآن الكريم': 'ruqyah_quran',
     'التسبيح، التحميد، التهليل، التكبير': 'dhikr_general',
-    'الدعاء بعد التشهد الأخير قبل السلام': 'prayer_before_salam',
-    'الأذكار بعد السلام من الصلاة': 'after_prayer',
     'أماكن وأوقات إجابة الدعاء ': 'dua_times_places',
     'دعاء السجود': 'sujood_dua',
     'الاستغفار و التوبة': 'istighfar_tawbah',
@@ -23,12 +27,20 @@ class AzkarDatabaseAdapter {
     'دعاء الركوع': 'ruku_dua',
     'دعاء لقاء العدو و ذي السلطان': 'meeting_enemy_authority',
     'فضل الصلاة على النبي صلى الله عليه و سلم': 'salawat_virtue',
-    'أذكار الاستيقاظ من النوم': 'waking_up',
     'الدعاء للميت في الصلاة عليه': 'funeral_prayer',
     'دعاء الكرب': 'distress_dua',
     'إفشاء السلام': 'spreading_salam',
     'الذكر بعد الفراغ من الوضوء': 'after_wudu',
     'دعاء الرفع من الركوع': 'rising_from_ruku',
+
+    // Additional mappings for potential variations
+    'أذكار الصباح والمساء': 'morning',
+    'أذكار طعام': 'eating',
+    'أذكار السفر': 'travel',
+    'أذكار البيت': 'home',
+    'أذكار العمل': 'work',
+    'أذكار المطر': 'rain',
+    'أذكار الريح': 'wind',
   };
 
   /// Fetch all azkar categories from the azkar_categories table
@@ -145,6 +157,32 @@ class AzkarDatabaseAdapter {
       return _adaptAzkarFromExistingSchema(response, categoryId);
     } catch (e) {
       print('❌ Error fetching azkar with ID $azkarId: $e');
+      throw Exception('Failed to load azkar: $e');
+    }
+  }
+
+  /// Get multiple azkar by their IDs
+  static Future<List<Azkar>> getAzkarByIds(List<String> azkarIds) async {
+    if (azkarIds.isEmpty) return [];
+
+    try {
+      print('🔍 Fetching ${azkarIds.length} azkar by IDs: $azkarIds');
+
+      final response = await _supabase
+          .from('azkar')
+          .select('*')
+          .inFilter('id', azkarIds)
+          .order('created_at', ascending: true);
+
+      print('✅ Successfully fetched ${(response as List).length} azkar by IDs');
+
+      return (response as List).map((json) {
+        final categoryName = json['category'] as String;
+        final categoryId = _categoryMapping[categoryName] ?? 'general';
+        return _adaptAzkarFromExistingSchema(json, categoryId);
+      }).toList();
+    } catch (e) {
+      print('❌ Error fetching azkar by IDs: $e');
       throw Exception('Failed to load azkar: $e');
     }
   }
@@ -323,6 +361,18 @@ class AzkarDatabaseAdapter {
           // Determine category ID from the Arabic category name
           final categoryName = azkarData['category'] as String;
           final categoryId = _categoryMapping[categoryName] ?? 'general';
+
+          // Log mapping for debugging
+          if (!_categoryMapping.containsKey(categoryName)) {
+            print(
+              '⚠️ Unknown category mapping: "$categoryName" -> using "general"',
+            );
+            print(
+              '🔧 Available mappings: ${_categoryMapping.keys.take(5).join(", ")}...',
+            );
+          } else {
+            print('✅ Mapped category: "$categoryName" -> "$categoryId"');
+          }
 
           final azkar = _adaptAzkarFromExistingSchema(azkarData, categoryId);
           favoriteAzkar.add(azkar);

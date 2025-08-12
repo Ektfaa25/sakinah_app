@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sakinah_app/features/azkar/domain/entities/azkar.dart';
-import 'package:sakinah_app/shared/widgets/glassy_container.dart';
 
 class AzkarCard extends StatefulWidget {
   final Azkar azkar;
@@ -100,9 +99,28 @@ class _AzkarCardState extends State<AzkarCard>
         onTap: _handleTap,
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: GlassyContainer(
-            child: Padding(
+          child: Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
               padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    colorScheme.primary,
+                    colorScheme.primary.withOpacity(0.30),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: colorScheme.primary.withOpacity(0.6),
+                  width: 1,
+                ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -114,7 +132,9 @@ class _AzkarCardState extends State<AzkarCard>
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontSize: 24,
                         height: 1.8,
-                        color: colorScheme.onSurface,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : const Color(0xFF1A1A2E),
                         fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
@@ -203,9 +223,12 @@ class _AzkarCardState extends State<AzkarCard>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest
-                                  .withOpacity(0.3),
+                              color: Colors.white.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: colorScheme.primary.withOpacity(0.3),
+                                width: 1,
+                              ),
                             ),
                             child: Text(
                               widget.azkar.transliteration!,
@@ -227,10 +250,10 @@ class _AzkarCardState extends State<AzkarCard>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary.withOpacity(0.1),
+                              color: Colors.white.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: colorScheme.primary.withOpacity(0.2),
+                                color: colorScheme.primary.withOpacity(0.3),
                                 width: 1,
                               ),
                             ),

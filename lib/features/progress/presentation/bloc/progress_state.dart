@@ -202,3 +202,12 @@ class DailyGoalUpdated extends ProgressState {
   @override
   List<Object?> get props => [goal];
 }
+
+class DailyGoalLoaded extends ProgressState {
+  final int goal;
+
+  const DailyGoalLoaded(this.goal);
+
+  @override
+  List<Object?> get props => [goal];
+}

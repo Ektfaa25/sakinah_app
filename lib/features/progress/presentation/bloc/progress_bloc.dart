@@ -1,17 +1,23 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:sakinah_app/features/progress/domain/entities/user_progress.dart';
 import 'package:sakinah_app/features/progress/domain/repositories/progress_repository.dart';
+import 'package:sakinah_app/core/storage/preferences_service.dart';
 
 part 'progress_event.dart';
 part 'progress_state.dart';
 
 class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
   final ProgressRepository _progressRepository;
+  final PreferencesService _preferencesService;
 
-  ProgressBloc({required ProgressRepository progressRepository})
-    : _progressRepository = progressRepository,
-      super(const ProgressInitial()) {
+  ProgressBloc({
+    required ProgressRepository progressRepository,
+    required PreferencesService preferencesService,
+  }) : _progressRepository = progressRepository,
+       _preferencesService = preferencesService,
+       super(const ProgressInitial()) {
     on<LoadTodayProgress>(_onLoadTodayProgress);
     on<LoadWeeklyProgress>(_onLoadWeeklyProgress);
     on<LoadMonthlyProgress>(_onLoadMonthlyProgress);
@@ -23,6 +29,7 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     on<RefreshProgress>(_onRefreshProgress);
     on<SetDailyGoal>(_onSetDailyGoal);
     on<LoadProgressInRange>(_onLoadProgressInRange);
+    on<LoadDailyGoal>(_onLoadDailyGoal);
   }
 
   Future<void> _onLoadTodayProgress(
@@ -34,10 +41,20 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
 
       final today = DateTime.now();
       final todayDate = DateTime(today.year, today.month, today.day);
+
+      debugPrint('🔄 ProgressBloc: Loading progress for date: $todayDate');
+
       final todayProgress = await _progressRepository.getProgressByDate(
         todayDate,
       );
       final currentStreak = await _progressRepository.getCurrentStreak();
+
+      debugPrint(
+        '🔄 ProgressBloc: Loaded progress - azkarCompleted: ${todayProgress?.azkarCompleted ?? 0}',
+      );
+      debugPrint(
+        '🔄 ProgressBloc: Loaded progress - completedAzkarIds: ${todayProgress?.completedAzkarIds ?? []}',
+      );
 
       emit(
         TodayProgressLoaded(
@@ -46,6 +63,7 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
         ),
       );
     } catch (e) {
+      debugPrint('❌ ProgressBloc: Failed to load today\'s progress: $e');
       emit(ProgressError('Failed to load today\'s progress: ${e.toString()}'));
     }
   }
@@ -135,6 +153,10 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     Emitter<ProgressState> emit,
   ) async {
     try {
+      debugPrint(
+        '🎯 ProgressBloc: Received AddAzkarCompletion for azkar ID: ${event.azkarId}',
+      );
+
       await _progressRepository.addAzkarCompletion(
         azkarId: event.azkarId,
         moodBefore: event.moodBefore,
@@ -142,9 +164,94 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
         reflection: event.reflection,
       );
 
-      // Reload today's progress after adding completion
-      add(const LoadTodayProgress());
+      debugPrint(
+        '✅ ProgressBloc: Successfully added azkar completion to repository',
+      );
+
+      // Determine what type of state to reload based on current state
+      final currentState = state;
+
+      if (currentState is MonthlyProgressLoaded) {
+        // If viewing monthly calendar, reload monthly progress
+        debugPrint(
+          '🔄 ProgressBloc: Reloading monthly progress for calendar update',
+        );
+
+        final monthStart = DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          1,
+        );
+        final monthlyProgress = await _progressRepository.getMonthlyProgress(
+          monthStart,
+        );
+        final currentStreak = await _progressRepository.getCurrentStreak();
+
+        emit(
+          MonthlyProgressLoaded(
+            monthlyProgress: monthlyProgress,
+            currentStreak: currentStreak,
+          ),
+        );
+
+        debugPrint(
+          '🔄 ProgressBloc: Emitted updated MonthlyProgressLoaded state',
+        );
+      } else if (currentState is WeeklyProgressLoaded) {
+        // If viewing weekly progress, reload weekly progress
+        debugPrint('🔄 ProgressBloc: Reloading weekly progress');
+
+        final now = DateTime.now();
+        final weekStart = now.subtract(Duration(days: now.weekday - 1));
+        final weeklyProgress = await _progressRepository.getWeeklyProgress(
+          weekStart,
+        );
+        final currentStreak = await _progressRepository.getCurrentStreak();
+
+        emit(
+          WeeklyProgressLoaded(
+            weeklyProgress: weeklyProgress,
+            currentStreak: currentStreak,
+          ),
+        );
+
+        debugPrint(
+          '🔄 ProgressBloc: Emitted updated WeeklyProgressLoaded state',
+        );
+      } else {
+        // Default: reload today's progress
+        final today = DateTime.now();
+        final todayDate = DateTime(today.year, today.month, today.day);
+
+        debugPrint(
+          '🔄 ProgressBloc: Force reloading progress for date: $todayDate',
+        );
+
+        final todayProgress = await _progressRepository.getProgressByDate(
+          todayDate,
+        );
+        final currentStreak = await _progressRepository.getCurrentStreak();
+
+        debugPrint(
+          '✅ ProgressBloc: Reloaded progress - azkarCompleted: ${todayProgress?.azkarCompleted ?? 0}',
+        );
+        debugPrint(
+          '✅ ProgressBloc: Reloaded progress - completedAzkarIds: ${todayProgress?.completedAzkarIds ?? []}',
+        );
+
+        emit(
+          TodayProgressLoaded(
+            progress: todayProgress ?? UserProgress.empty(todayDate),
+            currentStreak: currentStreak,
+          ),
+        );
+
+        debugPrint(
+          '🔄 ProgressBloc: Emitted updated TodayProgressLoaded state',
+        );
+      }
     } catch (e) {
+      debugPrint('❌ ProgressBloc: Failed to add azkar completion: $e');
       emit(ProgressError('Failed to add azkar completion: ${e.toString()}'));
     }
   }
@@ -217,11 +324,22 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     Emitter<ProgressState> emit,
   ) async {
     try {
-      // Store the daily goal in settings or database
-      // For now, we'll just emit the updated goal
+      await _preferencesService.setDailyGoal(event.goal);
       emit(DailyGoalUpdated(event.goal));
     } catch (e) {
       emit(ProgressError('Failed to set daily goal: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onLoadDailyGoal(
+    LoadDailyGoal event,
+    Emitter<ProgressState> emit,
+  ) async {
+    try {
+      final goal = _preferencesService.getDailyGoal();
+      emit(DailyGoalLoaded(goal));
+    } catch (e) {
+      emit(ProgressError('Failed to load daily goal: ${e.toString()}'));
     }
   }
 

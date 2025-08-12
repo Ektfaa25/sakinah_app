@@ -11,9 +11,9 @@ import 'package:sakinah_app/features/azkar/presentation/pages/azkar_display_page
 import 'package:sakinah_app/features/azkar/presentation/pages/azkar_categories_screen.dart';
 import 'package:sakinah_app/features/azkar/presentation/pages/azkar_detail_screen.dart';
 import 'package:sakinah_app/features/azkar/presentation/pages/azkar_favorites_screen.dart';
+import 'package:sakinah_app/features/azkar/presentation/pages/azkar_card_demo_screen.dart';
 import 'package:sakinah_app/features/azkar/domain/entities/azkar_new.dart';
 import 'package:sakinah_app/features/progress/presentation/pages/progress_page.dart';
-import 'package:sakinah_app/features/progress/presentation/bloc/progress_bloc.dart';
 import 'package:sakinah_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:sakinah_app/features/splash/presentation/pages/splash_screen.dart';
 
@@ -113,14 +113,40 @@ class AppRouter {
               builder: (context, state) => const AzkarFavoritesScreen(),
             ),
 
+            // Azkar Card Demo route
+            GoRoute(
+              path: AppRoutes.azkarCardDemo,
+              name: 'azkar-card-demo',
+              builder: (context, state) => const AzkarCardDemoScreen(),
+            ),
+
             // Progress route
             GoRoute(
               path: AppRoutes.progress,
               name: 'progress',
-              builder: (context, state) => BlocProvider(
-                create: (context) => sl<ProgressBloc>(),
-                child: const ProgressPage(),
-              ),
+              builder: (context, state) {
+                // Parse tab index from query parameters
+                final tabIndexString = state.uri.queryParameters['tab'];
+                final tabIndex = tabIndexString != null
+                    ? int.tryParse(tabIndexString)
+                    : null;
+
+                // Parse selected date from query parameters
+                final dateString = state.uri.queryParameters['date'];
+                DateTime? selectedDate;
+                if (dateString != null) {
+                  try {
+                    selectedDate = DateTime.parse(dateString);
+                  } catch (e) {
+                    selectedDate = null;
+                  }
+                }
+
+                return ProgressPage(
+                  initialTabIndex: tabIndex,
+                  selectedDate: selectedDate,
+                );
+              },
             ),
 
             // Settings route

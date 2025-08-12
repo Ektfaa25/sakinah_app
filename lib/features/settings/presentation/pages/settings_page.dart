@@ -1,6 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:animate_do/animate_do.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../progress/presentation/bloc/progress_bloc.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -17,129 +22,185 @@ class _SettingsPageState extends State<SettingsPage> {
   String _selectedLanguage = 'العربية';
   int _dailyGoal = 5;
   String _reminderTime = '07:00';
+  late ProgressBloc _progressBloc;
+  Timer? _goalSaveTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressBloc = sl<ProgressBloc>();
+    _progressBloc.add(const LoadDailyGoal());
+  }
+
+  @override
+  void dispose() {
+    _goalSaveTimer?.cancel();
+    _progressBloc.close();
+    super.dispose();
+  }
+
+  void _saveDailyGoalDebounced(int goal) {
+    _goalSaveTimer?.cancel();
+    _goalSaveTimer = Timer(const Duration(milliseconds: 500), () {
+      _progressBloc.add(SetDailyGoal(goal));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDarkTheme ? null : Colors.white,
-        gradient: isDarkTheme
-            ? LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.darkBackground.withOpacity(0.9),
-                  AppColors.darkSurface.withOpacity(0.9),
+    return BlocListener<ProgressBloc, ProgressState>(
+      bloc: _progressBloc,
+      listener: (context, state) {
+        if (state is DailyGoalLoaded) {
+          setState(() {
+            _dailyGoal = state.goal;
+          });
+        } else if (state is DailyGoalUpdated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                textDirection: TextDirection.rtl,
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'تم حفظ الهدف اليومي: ${state.goal} أذكار',
+                    textDirection: TextDirection.rtl,
+                  ),
                 ],
-              )
-            : null,
-        boxShadow: [
-          BoxShadow(
-            color: isDarkTheme
-                ? Colors.black.withOpacity(0.15) // Reduced from 0.3
-                : Colors.black.withOpacity(0.04), // Reduced from 0.1
-            blurRadius: 6, // Reduced from 10
-            offset: const Offset(0, -1), // Reduced from -2
-          ),
-        ],
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color: Theme.of(context).colorScheme.onBackground,
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              duration: const Duration(seconds: 2),
             ),
-            onPressed: () => Navigator.pop(context),
-            tooltip: 'رجوع',
-          ),
-          title: Text(
-            'الإعدادات',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onBackground,
+          );
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDarkTheme ? null : Colors.white,
+          gradient: isDarkTheme
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.darkBackground.withOpacity(0.9),
+                    AppColors.darkSurface.withOpacity(0.9),
+                  ],
+                )
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: isDarkTheme
+                  ? Colors.black.withOpacity(0.15) // Reduced from 0.3
+                  : Colors.black.withOpacity(0.04), // Reduced from 0.1
+              blurRadius: 6, // Reduced from 10
+              offset: const Offset(0, -1), // Reduced from -2
             ),
-            textDirection: TextDirection.rtl,
-          ),
-          centerTitle: true,
+          ],
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 8),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+              onPressed: () => Navigator.pop(context),
+              tooltip: 'رجوع',
+            ),
+            title: Text(
+              'الإعدادات',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+              textDirection: TextDirection.rtl,
+            ),
+            centerTitle: true,
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 8),
 
-                      // Profile Section
-                      _buildProfileSection(),
+                        // Profile Section
+                        _buildProfileSection(),
 
-                      const SizedBox(height: 32),
+                        const SizedBox(height: 32),
 
-                      // Preferences Section
-                      _buildSectionTitle('التفضيلات', Icons.tune),
-                      const SizedBox(height: 16),
-                      _buildPreferencesSection(),
+                        // Preferences Section
+                        _buildSectionTitle('التفضيلات', Icons.tune),
+                        const SizedBox(height: 16),
+                        _buildPreferencesSection(),
 
-                      const SizedBox(height: 32),
+                        const SizedBox(height: 32),
 
-                      // Notifications Section
-                      _buildSectionTitle(
-                        'الإشعارات',
-                        Icons.notifications_outlined,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildNotificationsSection(),
-
-                      const SizedBox(height: 32),
-
-                      // Data & Backup Section
-                      _buildSectionTitle(
-                        'البيانات والنسخ الاحتياطي',
-                        Icons.backup_outlined,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildDataBackupSection(),
-
-                      const SizedBox(height: 32),
-
-                      // About Section
-                      _buildSectionTitle('حول التطبيق', Icons.info_outlined),
-                      const SizedBox(height: 16),
-                      _buildAboutSection(),
-
-                      const SizedBox(height: 32),
-
-                      // Footer
-                      Center(
-                        child: Text(
-                          'Made w luv by Ektfaa🩷',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDarkTheme
-                                ? Colors.grey[300]
-                                : Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
+                        // Notifications Section
+                        _buildSectionTitle(
+                          'الإشعارات',
+                          Icons.notifications_outlined,
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        _buildNotificationsSection(),
 
-                      const SizedBox(height: 24),
-                    ],
+                        const SizedBox(height: 32),
+
+                        // Data & Backup Section
+                        _buildSectionTitle(
+                          'البيانات والنسخ الاحتياطي',
+                          Icons.backup_outlined,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildDataBackupSection(),
+
+                        const SizedBox(height: 32),
+
+                        // About Section
+                        _buildSectionTitle('حول التطبيق', Icons.info_outlined),
+                        const SizedBox(height: 16),
+                        _buildAboutSection(),
+
+                        const SizedBox(height: 32),
+
+                        // Footer
+                        Center(
+                          child: Text(
+                            'Made w luv by Ektfaa🩷',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDarkTheme
+                                  ? Colors.grey[300]
+                                  : Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -154,31 +215,23 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: isDarkTheme ? null : Colors.white,
-          gradient: isDarkTheme
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    const Color(0xFF6366F1).withOpacity(0.08),
-                    const Color(0xFF8B5CF6).withOpacity(0.04),
-                  ],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(20),
+          color: isDarkTheme
+              ? AppColors.darkSurface.withOpacity(0.8)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: isDarkTheme
-                  ? const Color(0xFF6366F1).withOpacity(0.2)
-                  : Colors.grey.withOpacity(0.1),
-              blurRadius: isDarkTheme ? 12 : 8,
-              offset: Offset(0, isDarkTheme ? 4 : 2),
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
             color: isDarkTheme
-                ? const Color(0xFF6366F1).withOpacity(0.2)
-                : Colors.grey.withOpacity(0.2),
+                ? AppColors.darkSurface.withOpacity(0.3)
+                : Colors.grey.withOpacity(0.1),
             width: 1,
           ),
         ),
@@ -278,21 +331,7 @@ class _SettingsPageState extends State<SettingsPage> {
               color: Color.lerp(_getGradientColor(0), Colors.black, 0.2)!,
             ),
             _buildDivider(),
-            _buildSliderTile(
-              title: 'الهدف اليومي',
-              subtitle: '$_dailyGoal أذكار يومياً',
-              icon: Icons.flag,
-              value: _dailyGoal.toDouble(),
-              min: 1,
-              max: 20,
-              divisions: 19,
-              onChanged: (value) {
-                setState(() {
-                  _dailyGoal = value.toInt();
-                });
-              },
-              color: Color.lerp(_getGradientColor(4), Colors.black, 0.2)!,
-            ),
+            _buildGoalSelectionTile(),
             _buildDivider(),
             _buildTimeTile(
               title: 'وقت التذكير',
@@ -455,6 +494,248 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildGoalSelectionTile() {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final color = Color.lerp(_getGradientColor(4), Colors.black, 0.2)!;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header with icon and title
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.flag, color: color, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'الهدف اليومي',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDarkTheme
+                              ? Colors.white
+                              : const Color(0xFF1A1A2E),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: Text(
+                          _dailyGoal == 1
+                              ? 'ذكر واحد يومياً'
+                              : '$_dailyGoal أذكار يومياً',
+                          key: ValueKey(_dailyGoal),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDarkTheme
+                                ? Colors.grey[300]
+                                : Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  width: 60,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [color, color.withOpacity(0.8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        '$_dailyGoal',
+                        key: ValueKey(_dailyGoal),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Quick preset buttons
+            Text(
+              'أهداف مقترحة',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 12),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              textDirection: TextDirection.rtl,
+              children: [3, 5, 7, 10, 15, 20]
+                  .map(
+                    (goal) => _buildGoalPresetButton(goal, color, isDarkTheme),
+                  )
+                  .toList(),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Custom slider for fine-tuning
+            Text(
+              'أو اختر هدفاً مخصصاً',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isDarkTheme ? Colors.grey[300] : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 12),
+
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: color,
+                inactiveTrackColor: color.withOpacity(0.2),
+                thumbColor: color,
+                overlayColor: color.withOpacity(0.1),
+                trackHeight: 4,
+                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
+                overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
+              ),
+              child: Slider(
+                value: _dailyGoal.toDouble(),
+                min: 1,
+                max: 20,
+                divisions: 19,
+                onChanged: (value) {
+                  if (value.toInt() != _dailyGoal) {
+                    HapticFeedback.selectionClick();
+                    setState(() {
+                      _dailyGoal = value.toInt();
+                    });
+                    _saveDailyGoalDebounced(value.toInt());
+                  }
+                },
+              ),
+            ),
+
+            // Min/Max labels
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '1',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDarkTheme ? Colors.grey[400] : Colors.grey[500],
+                    ),
+                  ),
+                  Text(
+                    '20',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDarkTheme ? Colors.grey[400] : Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGoalPresetButton(int goal, Color color, bool isDarkTheme) {
+    final isSelected = _dailyGoal == goal;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        setState(() {
+          _dailyGoal = goal;
+        });
+        _saveDailyGoalDebounced(goal);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color
+              : (isDarkTheme ? Colors.grey[200] : Colors.grey[100]),
+          borderRadius: BorderRadius.circular(60),
+          border: Border.all(
+            color: isSelected
+                ? color
+                : (isDarkTheme ? Colors.grey[600]! : Colors.grey[300]!),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          '$goal',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected
+                ? Colors.white
+                : (isDarkTheme ? Colors.grey[800] : Colors.black87),
+          ),
+        ),
+      ),
     );
   }
 
@@ -704,95 +985,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSliderTile({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required double value,
-    required double min,
-    required double max,
-    required int divisions,
-    required Function(double) onChanged,
-    required Color color,
-  }) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(
-                value.toInt().toString(),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDarkTheme
-                            ? Colors.white
-                            : const Color(0xFF1A1A2E),
-                      ),
-                      textDirection: TextDirection.rtl,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDarkTheme
-                            ? Colors.grey[300]
-                            : Colors.grey[600],
-                      ),
-                      textDirection: TextDirection.rtl,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: color,
-              inactiveTrackColor: color.withOpacity(0.2),
-              thumbColor: color,
-              overlayColor: color.withOpacity(0.9),
-            ),
-            child: Slider(
-              value: value,
-              min: min,
-              max: max,
-              divisions: divisions,
-              onChanged: onChanged,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTimeTile({
     required String title,
     required String subtitle,
@@ -812,39 +1004,93 @@ class _SettingsPageState extends State<SettingsPage> {
             minute: int.parse(time.split(':')[1]),
           ),
           builder: (context, child) {
+            // Get theme-appropriate color
+            final baseColor = _getGradientColor(6);
+            final themeColor = isDarkTheme
+                ? Color.lerp(
+                    baseColor,
+                    Colors.white,
+                    0.1,
+                  )! // Lighten for dark theme
+                : Color.lerp(
+                    baseColor,
+                    Colors.black,
+                    0.2,
+                  )!; // Darken for light theme
+
             return Theme(
               data: Theme.of(context).copyWith(
                 timePickerTheme: TimePickerThemeData(
                   backgroundColor: isDarkTheme
                       ? AppColors.darkSurface
                       : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: themeColor.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
                   hourMinuteTextColor: isDarkTheme
-                      ? Colors.white
-                      : const Color(0xFF1A1A2E),
-                  hourMinuteColor: const Color(
-                    0xFFE3F2FD,
-                  ), // Light baby blue background
+                      ? Colors
+                            .black // Black text on white background in dark mode
+                      : Colors.black87,
+                  hourMinuteColor: MaterialStateColor.resolveWith((states) {
+                    if (states.contains(MaterialState.selected)) {
+                      return themeColor;
+                    }
+                    return isDarkTheme
+                        ? Colors
+                              .white // White for dark mode
+                        : themeColor.withOpacity(0.1);
+                  }),
                   dayPeriodTextColor: isDarkTheme
-                      ? Colors.white
-                      : const Color(0xFF1A1A2E),
-                  dayPeriodColor: const Color(
-                    0xFFE3F2FD,
-                  ), // Light baby blue background
-                  dialHandColor: const Color(
-                    0xFF64B5F6,
-                  ), // Baby blue for dial hand
-                  dialTextColor: isDarkTheme
-                      ? Colors.white
-                      : const Color(0xFF1A1A2E),
-                  entryModeIconColor: const Color(
-                    0xFF64B5F6,
-                  ), // Baby blue for icons
+                      ? Colors
+                            .black // Black text on white background in dark mode
+                      : Colors.black87,
+                  dayPeriodColor: MaterialStateColor.resolveWith((states) {
+                    if (states.contains(MaterialState.selected)) {
+                      return themeColor;
+                    }
+                    return isDarkTheme
+                        ? Colors
+                              .white // White for dark mode
+                        : themeColor.withOpacity(0.1);
+                  }),
+                  dialHandColor: themeColor,
+                  dialBackgroundColor: isDarkTheme
+                      ? Colors
+                            .white // White for dark mode
+                      : themeColor.withOpacity(0.1),
+                  dialTextColor: isDarkTheme ? Colors.black : Colors.black87,
+                  entryModeIconColor: themeColor,
+                  cancelButtonStyle: TextButton.styleFrom(
+                    foregroundColor: isDarkTheme
+                        ? Colors.white70
+                        : Colors.black54,
+                  ),
+                  confirmButtonStyle: ElevatedButton.styleFrom(
+                    backgroundColor: themeColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   helpTextStyle: TextStyle(
-                    color: isDarkTheme ? Colors.white : const Color(0xFF1A1A2E),
+                    color: themeColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  hourMinuteTextStyle: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  dayPeriodTextStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 colorScheme: ColorScheme.fromSeed(
-                  seedColor: const Color(0xFF64B5F6), // Baby blue
+                  seedColor: themeColor,
                   brightness: isDarkTheme ? Brightness.dark : Brightness.light,
                 ),
               ),

@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:sakinah_app/core/database/drift_service.dart';
 import 'package:sakinah_app/core/network/supabase_service.dart';
+import 'package:sakinah_app/core/storage/preferences_service.dart';
 import 'package:sakinah_app/features/azkar/data/services/azkar_supabase_service.dart';
 
 // Repository imports
@@ -43,12 +44,16 @@ Future<void> _initCoreServices() async {
   // Supabase service (singleton)
   sl.registerLazySingleton<SupabaseService>(() => SupabaseService.instance);
 
+  // Preferences service (singleton)
+  sl.registerLazySingleton<PreferencesService>(() => PreferencesService());
+
   // Azkar Supabase service (singleton)
   sl.registerLazySingleton<AzkarSupabaseService>(() => AzkarSupabaseService());
 
   // Initialize services
   await sl<DriftService>().initializeDatabase();
   await SupabaseService.initialize();
+  await sl<PreferencesService>().init();
 }
 
 /// Initialize repositories
@@ -102,7 +107,10 @@ Future<void> _initBlocs() async {
 
   // Progress BLoC
   sl.registerFactory(
-    () => ProgressBloc(progressRepository: sl<ProgressRepository>()),
+    () => ProgressBloc(
+      progressRepository: sl<ProgressRepository>(),
+      preferencesService: sl<PreferencesService>(),
+    ),
   );
 }
 
@@ -114,6 +122,7 @@ Future<void> resetDependencies() async {
 /// Convenience getters for frequently used services
 DriftService get driftService => sl<DriftService>();
 SupabaseService get supabaseService => sl<SupabaseService>();
+PreferencesService get preferencesService => sl<PreferencesService>();
 
 // Repository getters
 MoodRepository get moodRepository => sl<MoodRepository>();
